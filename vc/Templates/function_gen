@@ -1,0 +1,62 @@
+import Clear.ReasoningPrinciple
+
+\<imports>
+
+namespace \<namespace>
+
+section
+
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities \<opens>
+
+def \<statement_name> : FunctionDefinition := <f
+    function \<statement_name>(\<args_sep_comma>)\<return_modifiers>\<return_value>
+    
+\<func_body>
+    
+>
+
+set_option maxRecDepth 4000
+set_option maxHeartbeats 300000
+
+def \<statement_name>_concrete_of_code
+: {
+    C :
+      \<underscores_return_value_args>
+      State → State → Prop
+    // ∀ {s₀ s₉ : State} {\<return_value_space> \<args_sep_space> fuel},
+         execCall fuel \<statement_name> [\<return_value>] (s₀, [\<args_sep_comma>]) = s₉ →
+         Spec (C \<return_value_space> \<args_sep_space>) s₀ s₉
+  } := by
+  constructor
+  intros s₀ s₉ \<return_value_space> \<args_sep_space> fuel
+  unfold \<statement_name>
+
+  unfold Spec
+  rcases s₀ with ⟨evm, store⟩ | _ | c <;> dsimp only
+  rotate_left 1
+  · generalize Def _ _ _ = f; aesop
+  · generalize Def _ _ _ = f; aesop
+  swap
+  generalize hok : Ok evm store = s₀
+  intros h _
+  revert h
+
+  unfold execCall
+  unfold call
+  unfold params body rets
+  conv => simp_match
+  conv => pattern List.map _ _; simp
+  conv => pattern mkOk _; rw [← hok]; simp
+  conv => pattern setStore _; rw [← hok]; simp
+
+  generalize hs₁ : initcall _ _ _ = s₁
+  let_unfold s₁
+  generalize hbody : exec _ _ _ = s₂
+  revert hbody
+  generalize hs₉ : multifill' _ _ = s₉'
+
+\<func_tactics>
+
+end
+
+end \<namespace>

@@ -1,0 +1,86 @@
+import Clear.ReasoningPrinciple
+
+\<imports>
+
+namespace \<contract>
+
+set_option autoImplicit false
+
+section
+
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities \<opens>
+
+def \<statement_name>_cond := <<
+    \<code_cond>
+>>
+
+def \<statement_name>_post : List Stmt := <ss
+    \<code_post>
+>
+
+def \<statement_name>_body : List Stmt := <ss
+\<code_body>
+>
+
+def \<statement_name> := <s
+\<code>
+>
+
+set_option maxRecDepth 4000
+
+-- =============================================================================
+--  POST
+-- =============================================================================
+
+def \<statement_name>_post_concrete_of_code
+: {
+    C : State → State → Prop
+    // ∀ {s₀ s₉ fuel}
+    , exec fuel (Block \<statement_name>_post) s₀ = s₉
+    → Spec C s₀ s₉
+  } := by
+  constructor
+  intros s₀ s₉ fuel
+
+  unfold Spec \<statement_name>_post
+  rcases s₀ with ⟨evm₀, store₀⟩ | _ | c <;> dsimp only
+  rotate_left 1
+  · aesop
+  · aesop
+  swap
+  generalize hok : Ok evm₀ store₀ = s₀
+  intros h _
+  revert h
+
+\<tacs_post>
+
+-- =============================================================================
+--  BODY
+-- =============================================================================
+
+def \<statement_name>_body_concrete_of_code
+: {
+    C : State → State → Prop
+    // ∀ {s₀ s₉ fuel}
+    , exec fuel (Block \<statement_name>_body) s₀ = s₉
+    → Spec C s₀ s₉
+  }
+:= by
+  constructor
+  intros s₀ s₉ fuel
+
+  unfold Spec \<statement_name>_body
+  rcases s₀ with ⟨evm₀, store₀⟩ | _ | c <;> dsimp only
+  rotate_left 1
+  · aesop
+  · aesop
+  swap
+  generalize hok : Ok evm₀ store₀ = s₀
+  intros h _
+  revert h
+
+\<tacs_body>
+
+end
+
+end \<contract>

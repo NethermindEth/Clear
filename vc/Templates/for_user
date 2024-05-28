@@ -1,0 +1,41 @@
+import Clear.ReasoningPrinciple
+
+\<imports>
+
+namespace \<contract>
+
+set_option autoImplicit false
+
+section
+
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities \<opens>
+
+def ACond_\<statement_name> (s₀ : State) : Literal := sorry 
+def APost_\<statement_name> (s₀ s₉ : State) : Prop := sorry
+def ABody_\<statement_name> (s₀ s₉ : State) : Prop := sorry
+def AFor_\<statement_name> (s₀ s₉ : State) : Prop := sorry
+
+lemma \<statement_name>_cond_abs_of_code {s₀ fuel} : eval fuel \<statement_name>_cond (s₀) = (s₀, ACond_\<statement_name> (s₀)) := by
+  unfold eval ACond_\<statement_name>
+  sorry
+
+lemma \<statement_name>_concrete_of_post_abs {s₀ s₉ : State} :
+  Spec \<statement_name>_post_concrete_of_code s₀ s₉ →
+  Spec APost_\<statement_name> s₀ s₉ := by
+  sorry
+
+lemma \<statement_name>_concrete_of_body_abs {s₀ s₉ : State} :
+  Spec \<statement_name>_body_concrete_of_code s₀ s₉ →
+  Spec ABody_\<statement_name> s₀ s₉ := by
+  sorry
+
+lemma AZero_\<statement_name> : ∀ s₀, isOk s₀ → ACond_\<statement_name> (👌 s₀) = 0 → AFor_\<statement_name> s₀ s₀ := sorry
+lemma AOk_\<statement_name> : ∀ s₀ s₂ s₄ s₅, isOk s₀ → isOk s₂ → ¬ ❓ s₅ → ¬ ACond_\<statement_name> s₀ = 0 → ABody_\<statement_name> s₀ s₂ → APost_\<statement_name> s₂ s₄ → Spec AFor_\<statement_name> s₄ s₅ → AFor_\<statement_name> s₀ s₅
+:= sorry
+lemma AContinue_\<statement_name> : ∀ s₀ s₂ s₄ s₅, isOk s₀ → isContinue s₂ → ¬ ACond_\<statement_name> s₀ = 0 → ABody_\<statement_name> s₀ s₂ → Spec APost_\<statement_name> (🧟s₂) s₄ → Spec AFor_\<statement_name> s₄ s₅ → AFor_\<statement_name> s₀ s₅ := sorry
+lemma ABreak_\<statement_name> : ∀ s₀ s₂, isOk s₀ → isBreak s₂ → ¬ ACond_\<statement_name> s₀ = 0 → ABody_\<statement_name> s₀ s₂ → AFor_\<statement_name> s₀ (🧟s₂) := sorry
+lemma ALeave_\<statement_name> : ∀ s₀ s₂, isOk s₀ → isLeave s₂ → ¬ ACond_\<statement_name> s₀ = 0 → ABody_\<statement_name> s₀ s₂ → AFor_\<statement_name> s₀ s₂ := sorry
+
+end
+
+end \<contract>

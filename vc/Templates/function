@@ -1,0 +1,18 @@
+import Clear.ReasoningPrinciple
+
+\<imports>
+
+namespace \<namespace>
+
+section
+
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities \<opens>
+
+lemma \<statement_name>_abs_of_code {s₀ s₉ : State} \<ret_vals_and_args> {fuel : Nat} :
+  execCall fuel \<statement_name> [\<return_value>] (s₀, [\<args_sep_comma>]) = s₉ →
+  Spec (A_\<statement_name> \<return_value_space> \<args_sep_space>) s₀ s₉
+:= λ h ↦ \<statement_name>_abs_of_concrete (\<statement_name>_concrete_of_code.2 h)
+
+end
+
+end \<namespace>

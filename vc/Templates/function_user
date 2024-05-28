@@ -1,0 +1,21 @@
+import Clear.ReasoningPrinciple
+
+\<imports>
+
+namespace \<namespace>
+
+section
+
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities \<opens>
+
+def A_\<statement_name> \<ret_vals> \<fargs> (s₀ s₉ : State) : Prop := sorry
+
+lemma \<statement_name>_abs_of_concrete {s₀ s₉ : State} \<ret_vals_and_args> :
+  Spec (\<statement_name>_concrete_of_code.1 \<return_value_space> \<args_sep_space>) s₀ s₉ →
+  Spec (A_\<statement_name> \<return_value_space> \<args_sep_space>) s₀ s₉ := by
+  unfold \<statement_name>_concrete_of_code A_\<statement_name>
+  sorry
+
+end
+
+end \<namespace>

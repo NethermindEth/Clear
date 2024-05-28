@@ -1,0 +1,20 @@
+import Clear.ReasoningPrinciple
+
+\<imports>
+
+namespace \<contract>
+
+section
+
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities \<opens>
+
+def A_\<statement_name> (s₀ s₉ : State) : Prop := sorry
+
+lemma \<statement_name>_abs_of_concrete {s₀ s₉ : State} :
+  Spec \<statement_name>_concrete_of_code s₀ s₉ →
+  Spec A_\<statement_name> s₀ s₉ := by
+  sorry
+
+end
+
+end \<contract>
