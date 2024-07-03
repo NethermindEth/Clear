@@ -1,9 +1,9 @@
 # Clear.
 
-Prove anything* about YUL programs.
+Prove anything* about Yul programs.
 
 There are two parts.
-  - A Lean framework with a YUL model.
+  - A Lean framework with a Yul model.
   - A verification condition generator.
 
 ## The Lean framework
