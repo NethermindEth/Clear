@@ -1,5 +1,8 @@
 # Clear.
 
+<img width="1280" alt="Clear - Github" src="https://github.com/NethermindEth/Clear/assets/114106639/883dea50-b23a-4133-ab1f-4d31bb340e8a">
+
+
 Prove anything* about Yul programs.
 
 There are two parts.
