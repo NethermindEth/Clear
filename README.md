@@ -1,6 +1,6 @@
 # Clear.
 
-<img width="500" alt="Clear - Github" src="https://github.com/NethermindEth/Clear/assets/114106639/883dea50-b23a-4133-ab1f-4d31bb340e8a">
+<img width="700" alt="Clear - Github" src="https://github.com/NethermindEth/Clear/assets/114106639/883dea50-b23a-4133-ab1f-4d31bb340e8a">
 
 
 Prove anything* about Yul programs.
