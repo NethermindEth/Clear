@@ -1,6 +1,6 @@
 # Clear.
 
-<img width="700" alt="Clear - Github (1)" src="https://github.com/NethermindEth/Clear/assets/114106639/9d92cbbc-5a55-4808-ae48-525647c1c0d6">
+<img width="600" alt="Clear - Github (1)" src="https://github.com/NethermindEth/Clear/assets/114106639/9d92cbbc-5a55-4808-ae48-525647c1c0d6">
 
 
 
