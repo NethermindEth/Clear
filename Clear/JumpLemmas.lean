@@ -255,7 +255,7 @@ lemma evalArgs_Jump_ih
   (eval_ih : ∀ {s} {expr'}, isJump c s → sizeOf expr' < sizeOf expr → isJump c (eval fuel expr' s).1) :
   isJump c (evalArgs fuel args s).1 := by
   induction args generalizing s with
-    | nil => exact h
+    | nil => unfold evalArgs; exact h
     | cons x xs ih =>
       unfold evalArgs
       simp at hsize
@@ -346,7 +346,7 @@ lemma evalTail_Jump_ih'
 lemma evalArgs_Jump
   (h : isJump c s) : isJump c (evalArgs fuel args s).1 := by
   induction args generalizing s with
-    | nil => exact h
+    | nil => unfold evalArgs; exact h
     | cons x xs ih => unfold evalArgs; aesop
 
 /--
@@ -501,9 +501,9 @@ lemma exec_Jump (h : isJump c s) : isJump c (exec fuel stmt s)
     · apply Switch_Jump (stmt := Switch cond cases' default') h (by simp_arith) _ (by aesop)
       rcases cases' <;> [aesop; (aesop (config := { warnOnNonterminal := false}); linarith)]
     · exact If_Jump_ih (stmt := If cond body) h (by simp_arith) (by rcases cond <;> aesop)
-    · exact isJump_setContinue h
-    · exact isJump_setBreak h
-    · exact isJump_setLeave h
+    · unfold exec; exact isJump_setContinue h
+    · unfold exec; exact isJump_setBreak h
+    · unfold exec; exact isJump_setLeave h
 
 end
 

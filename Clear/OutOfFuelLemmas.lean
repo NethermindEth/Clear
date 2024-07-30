@@ -340,7 +340,7 @@ lemma evalArgs_Inf_ih
   (eval_ih : ∀ {s} {expr'}, isOutOfFuel s → sizeOf expr' < sizeOf expr → isOutOfFuel (eval fuel expr' s).1) :
   isOutOfFuel (evalArgs fuel args s).1 := by
   induction args generalizing s with
-    | nil => exact h
+    | nil => unfold evalArgs; exact h
     | cons x xs ih =>
       unfold evalArgs evalTail
       have : sizeOf x < sizeOf expr := by simp at hsize; linarith
@@ -451,7 +451,7 @@ lemma evalArgs_Inf
 : isOutOfFuel (evalArgs fuel args s).1
 := by
   induction args generalizing s with
-    | nil => exact h
+    | nil => unfold evalArgs; exact h
     | cons x xs ih =>
       unfold evalArgs
       apply evalTail_Inf_ih'
@@ -728,9 +728,9 @@ lemma exec_Inf (h : isOutOfFuel s) : isOutOfFuel (exec fuel stmt s)
     · apply @If_Inf_ih _ _ (If cond body) _ _ h
       simp_arith
       rcases cond <;> exact ih₁
-    · exact isOutOfFuel_setContinue h
-    · exact isOutOfFuel_setBreak h
-    · exact isOutOfFuel_setLeave h
+    · unfold exec; exact isOutOfFuel_setContinue h
+    · unfold exec; exact isOutOfFuel_setBreak h
+    · unfold exec; exact isOutOfFuel_setLeave h
 
 -- ============================================================================
 --  TACTICS

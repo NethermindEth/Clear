@@ -238,7 +238,7 @@ variable {s s₀ s₁ : State}
   Traversing an empty list is the identity on states.
 -/
 @[simp]
-lemma nil : exec fuel (.Block []) s = s := rfl
+lemma nil : exec fuel (.Block []) s = s := by unfold exec; rfl
 
 /--
   Traversing a nonempty list is the same traversing the tail from the state yielded from executing the head.
@@ -253,7 +253,7 @@ lemma cons : exec fuel (.Block (stmt :: stmts)) s = exec fuel (.Block stmts) (ex
 /--
   Evaluating a literal gives you back that literal and the state you started in.
 -/
-lemma Lit' : eval fuel (.Lit x) s = (s, x) := rfl
+lemma Lit' : eval fuel (.Lit x) s = (s, x) := by unfold eval; rfl
 
 /--
   Evaluating a variable does a varstore lookup.
@@ -288,7 +288,8 @@ lemma call_def : call fuel xs f s =
   (s₃, List.map s₂.lookup! f.rets) := by unfold call; rfl
 
 @[simp]
-lemma evalTail_nil : evalTail fuel [] (s, x) = (s, [x]) := by unfold evalTail; aesop
+lemma evalTail_nil : evalTail fuel [] (s, x) = (s, [x]) := by
+  conv_lhs => unfold evalTail cons' evalArgs
 
 @[simp]
 lemma evalTail_cons : evalTail fuel (arg :: args) (s, x) =
