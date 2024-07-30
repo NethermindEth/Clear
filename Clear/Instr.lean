@@ -1,6 +1,7 @@
 import Mathlib.Data.Nat.Defs
 import Clear.UInt256
 
+set_option linter.dupNamespace false
 namespace Clear.Instr
 
   inductive AInstr : Type where

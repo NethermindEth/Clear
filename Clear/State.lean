@@ -2,9 +2,6 @@ import Clear.Ast
 import Clear.EVMState
 import Clear.Wheels
 
--- Print structures more concisely in the infoview.
-set_option pp.structureInstances false
-
 namespace Clear
 
 open Ast
@@ -172,7 +169,8 @@ def mload (addr : Literal) : State → Literal
 -- | All state-related functions should be prefix operators so they can be read right-to-left.
 
 -- State queries
-notation:65 s:64"[" var "]!" => State.lookup! var s
+-- TODO: make this an GetElem instance
+notation:65 s:64"[" var "]!!" => State.lookup! var s
 notation "❓" => State.isOutOfFuel
 
 -- State transformers
@@ -393,13 +391,13 @@ lemma overwrite?_insert : (s.overwrite? (s'.insert var x)) = s.overwrite? s'
 
 -- | Looking up a variable you've just inserted gives you the value you inserted.
 @[simp]
-lemma lookup_insert : (Ok evm store)⟦var ↦ x⟧[var]! = x
+lemma lookup_insert : (Ok evm store)⟦var ↦ x⟧[var]!! = x
 := by
   unfold insert lookup!
   aesop
 
 @[aesop norm simp]
-lemma lookup_insert' (h : isOk s) : s⟦var ↦ x⟧[var]! = x
+lemma lookup_insert' (h : isOk s) : s⟦var ↦ x⟧[var]!! = x
 := by
   unfold insert lookup!
   rcases s <;> simp at *
@@ -414,11 +412,11 @@ lemma insert_insert : insert var val (insert var val' s) = insert var val s
 
 -- | Looking up a variable in a default state returns 0.
 @[simp]
-lemma lookup_default : default[var]! = 0 := by aesop
+lemma lookup_default : default[var]!! = 0 := by aesop
 
 -- | Inserts preserve lookups when the variable you're looking up is different from the one you inserted.
 -- @[aesop unsafe 3% apply (rule_sets := [Clear.aesop_varstore])]
-lemma lookup_insert_of_ne (h : var' ≠ var) : s⟦var ↦ x⟧[var']! = s[var']!
+lemma lookup_insert_of_ne (h : var' ≠ var) : s⟦var ↦ x⟧[var']!! = s[var']!!
 := by
   unfold State.lookup! insert
   rcases s with ⟨evm, store⟩ | _ | _ | _ <;> simp
@@ -441,25 +439,25 @@ lemma revive_of_ok (h : isOk s) : 🧟s = s
     simp only at h
 
 -- | Revives are transparent to lookups when the state being revived is Ok.
-lemma lookup_revive_of_ok (h : isOk s) : (🧟s)[var]! = s[var]!
+lemma lookup_revive_of_ok (h : isOk s) : (🧟s)[var]!! = s[var]!!
 := by
   rw [revive_of_ok]
   assumption
 
 @[simp]
-lemma lookup_setContinue : (setContinue s)[var]! = s[var]!
+lemma lookup_setContinue : (setContinue s)[var]!! = s[var]!!
 := by
   unfold lookup! setContinue
   rcases s <;> simp
 
 @[simp]
-lemma lookup_setBreak : (setBreak s)[var]! = s[var]!
+lemma lookup_setBreak : (setBreak s)[var]!! = s[var]!!
 := by
   unfold lookup! setBreak
   rcases s <;> simp
 
 @[simp]
-lemma lookup_setLeave : (setLeave s)[var]! = s[var]!
+lemma lookup_setLeave : (setLeave s)[var]!! = s[var]!!
 := by
   unfold lookup! setLeave
   rcases s <;> simp
@@ -590,14 +588,14 @@ lemma setStore_same : s.setStore s = s
   rcases s <;> simp
 
 @[simp]
-lemma lookup_initcall_1 : (initcall (va :: vars) (a :: vals) (Ok evm store))[va]! = a
+lemma lookup_initcall_1 : (initcall (va :: vars) (a :: vals) (Ok evm store))[va]!! = a
 := by
   unfold initcall
   simp
   rw [lookup_insert']
   aesop
 
-lemma lookup_initcall_2 (ha : vb ≠ va) : (initcall (va :: vb :: vars) (a :: b :: vals) (Ok evm store))[vb]! = b
+lemma lookup_initcall_2 (ha : vb ≠ va) : (initcall (va :: vb :: vars) (a :: b :: vals) (Ok evm store))[vb]!! = b
 := by
   unfold initcall
   simp
@@ -605,7 +603,7 @@ lemma lookup_initcall_2 (ha : vb ≠ va) : (initcall (va :: vb :: vars) (a :: b 
   rw [lookup_insert']
   aesop
 
-lemma lookup_initcall_3 (ha : vc ≠ va) (hb : vc ≠ vb) : (initcall (va :: vb :: vc :: vars) (a :: b :: c :: vals) (Ok evm store))[vc]! = c
+lemma lookup_initcall_3 (ha : vc ≠ va) (hb : vc ≠ vb) : (initcall (va :: vb :: vc :: vars) (a :: b :: c :: vals) (Ok evm store))[vc]!! = c
 := by
   unfold initcall
   simp
@@ -614,7 +612,7 @@ lemma lookup_initcall_3 (ha : vc ≠ va) (hb : vc ≠ vb) : (initcall (va :: vb 
   rw [lookup_insert']
   aesop
 
-lemma lookup_initcall_4 (ha : vd ≠ va) (hb : vd ≠ vb) (hc : vd ≠ vc) : (initcall (va :: vb :: vc :: vd :: vars) (a :: b :: c :: d :: vals) (Ok evm store))[vd]! = d
+lemma lookup_initcall_4 (ha : vd ≠ va) (hb : vd ≠ vb) (hc : vd ≠ vc) : (initcall (va :: vb :: vc :: vd :: vars) (a :: b :: c :: d :: vals) (Ok evm store))[vd]!! = d
 := by
   unfold initcall
   simp
@@ -624,7 +622,7 @@ lemma lookup_initcall_4 (ha : vd ≠ va) (hb : vd ≠ vb) (hc : vd ≠ vc) : (in
   rw [lookup_insert']
   aesop
 
-lemma lookup_initcall_5 (ha : ve ≠ va) (hb : ve ≠ vb) (hc : ve ≠ vc) (hd : ve ≠ vd) : (initcall (va :: vb :: vc :: vd :: ve :: vars) (a :: b :: c :: d :: e :: vals) (Ok evm store))[ve]! = e
+lemma lookup_initcall_5 (ha : ve ≠ va) (hb : ve ≠ vb) (hc : ve ≠ vc) (hd : ve ≠ vd) : (initcall (va :: vb :: vc :: vd :: ve :: vars) (a :: b :: c :: d :: e :: vals) (Ok evm store))[ve]!! = e
 := by
   unfold initcall
   simp

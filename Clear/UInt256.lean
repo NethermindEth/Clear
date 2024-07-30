@@ -133,7 +133,7 @@ private lemma fromBytes'_le : fromBytes' bs < 2^(8 * bs.length) := by
     unfold fromBytes'
     have h := b.val.isLt
     simp only [List.length_cons, Nat.mul_succ, Nat.add_comm, Nat.pow_add]
-    have ih :=
+    have :=
       Nat.add_le_of_le_sub
         (Nat.one_le_pow _ _ (by decide))
         (Nat.le_sub_one_of_lt ih)
@@ -210,7 +210,7 @@ private lemma fromBytes'_toBytes' {x : ℕ} : fromBytes' (toBytes' x) = x := by
     simp only
     have := Nat.div_lt_self (Nat.zero_lt_succ n) (by decide : 1 < UInt8.size)
     rw [fromBytes'_toBytes']
-    simp [UInt8.size, add_comm]; norm_num
+    simp [UInt8.size, add_comm]
     apply Nat.div_add_mod
 
 def fromBytes! (bs : List UInt8) : ℕ := fromBytes' (bs.take 32)

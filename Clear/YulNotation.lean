@@ -35,7 +35,7 @@ def idFn : ParserFn := fun c s => Id.run do
     let s := takeWhileFn idSubsequentChar.contains c (s.next input start)
     let stop := s.pos
     let name := .str .anonymous (input.extract start stop)
-    if yulKeywords.contains name.getString then
+    if yulKeywords.contains name.lastComponentAsString then
       return s.mkError "yul identifier"
     mkIdResult start none name c s
 
@@ -114,7 +114,7 @@ partial def translatePrimOp' (primOp : P) : TSyntax `term :=
   Syntax.mkStrLit primOp.toString 
 
 partial def translateIdent (idn : TSyntax `ident) : TSyntax `term :=
-  Syntax.mkStrLit idn.getId.getString
+  Syntax.mkStrLit idn.getId.lastComponentAsString
 
 open P in
 def parseFunction : String → PrimOp ⊕ Identifier
@@ -192,7 +192,7 @@ partial def translateExpr (expr : TSyntax `expr) : MacroM (TSyntax `term) :=
   | `(expr| $num:num) => `(Expr.Lit $num)
   | `(expr| $name:ident($args:expr,*)) => do
     let args' ← (args : TSyntaxArray `expr).mapM translateExpr
-    let f' := parseFunction (TSyntax.getId name).getString
+    let f' := parseFunction (TSyntax.getId name).lastComponentAsString
     match f' with
       | .inl primOp =>
         let primOp' := Lean.mkIdent (Name.fromComponents [`P, primOp.toString.toName])
@@ -272,7 +272,7 @@ partial def translateStmt (stmt : TSyntax `stmt) : MacroM (TSyntax `term) :=
   -- LetCall
   | `(stmt| let $ids:ident,* := $f:ident ( $es:expr,* )) => do
     let ids' := (ids : TSyntaxArray _).map translateIdent
-    let f' := parseFunction (TSyntax.getId f).getString
+    let f' := parseFunction (TSyntax.getId f).lastComponentAsString
     let es' ← (es : TSyntaxArray _).mapM translateExpr
     match f' with
       | .inl primOp =>
@@ -300,7 +300,7 @@ partial def translateStmt (stmt : TSyntax `stmt) : MacroM (TSyntax `term) :=
   -- AssignCall
   | `(stmt| $ids:ident,* := $f:ident ( $es:expr,* )) => do
     let ids' := (ids : TSyntaxArray _).map translateIdent
-    let f' := parseFunction (TSyntax.getId f).getString
+    let f' := parseFunction (TSyntax.getId f).lastComponentAsString
     let es' ← (es : TSyntaxArray _).mapM translateExpr
     match f' with
       | .inl primOp =>
@@ -317,7 +317,7 @@ partial def translateStmt (stmt : TSyntax `stmt) : MacroM (TSyntax `term) :=
 
   -- ExprStmt
   | `(stmt| $f:ident ( $es:expr,* )) => do
-    let f' := parseFunction (TSyntax.getId f).getString
+    let f' := parseFunction (TSyntax.getId f).lastComponentAsString
     let es' ← (es : TSyntaxArray _).mapM translateExpr
     match f' with
       | .inl primOp =>
