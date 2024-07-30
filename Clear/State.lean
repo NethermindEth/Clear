@@ -2,9 +2,6 @@ import Clear.Ast
 import Clear.EVMState
 import Clear.Wheels
 
--- Print structures more concisely in the infoview.
-set_option pp.structureInstances false
-
 namespace Clear
 
 open Ast
