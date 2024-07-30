@@ -2,7 +2,7 @@
 https://docs.soliditylang.org/en/v0.8.9/yul.html
 -/
 
-import Std.Tactic.Basic
+import Batteries.Tactic.Basic
 import Mathlib.Data.Fin.Basic
 import Clear.UInt256
 
