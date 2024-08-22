@@ -11,7 +11,7 @@ import Mathlib.Tactic
 
 -- 2^256
 @[simp]
-def UInt256.size : ℕ := 115792089237316195423570985008687907853269984665640564039457584007913129639936
+def UInt256.size : ℕ := 2 ^ 256
 
 instance : NeZero UInt256.size := ⟨by decide⟩
 
@@ -26,6 +26,10 @@ instance : NatCast UInt256 := ⟨Fin.ofNat⟩
 
 abbrev Nat.toUInt256 : ℕ → UInt256 := Fin.ofNat
 abbrev UInt8.toUInt256 (a : UInt8) : UInt256 := a.toNat.toUInt256
+
+lemma UInt256.size_def
+  : UInt256.size = 115792089237316195423570985008687907853269984665640564039457584007913129639936 := by
+  unfold size; simp
 
 def Bool.toUInt256 (b : Bool) : UInt256 := if b then 1 else 0
 
