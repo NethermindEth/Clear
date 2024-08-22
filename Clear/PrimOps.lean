@@ -50,12 +50,12 @@ def primCall (s : State) : PrimOp → List Literal → State × List Literal
   | .Sar, [a,b]               => (s, [UInt256.sar a b])
   | .Keccak256, [a,b]         =>
     match s.evm.keccak256 a b with
-    | .some (val, evm') => (s.setEvm evm', [val])
+    | .some a => (s.setEvm a.snd, [a.fst])
     -- This is the hash collision case. It's essentially an unrecoverable
     -- error, and we model it similar to how we model infinite loops, except we
     -- put the error in the EVM instead, so we don't have to bother with it in
     -- the interpreter.
-    | _ => (s.setEvm s.evm.addHashCollision, [0])
+    | .none => (s.setEvm s.evm.addHashCollision, [0])
   | .Address, []              => (s, [s.evm.execution_env.code_owner])
   | .Balance, [a]             => (s, [s.evm.balanceOf a])
   | .Origin, []               => (s, [s.evm.execution_env.sender])
@@ -129,7 +129,7 @@ lemma EVMByte'           : primCall s .Byte [a,b]                    = (s, [UInt
 lemma EVMShl'            : primCall s .Shl [a,b]                     = (s, [Fin.shiftLeft b a]) := rfl
 lemma EVMShr'            : primCall s .Shr [a,b]                     = (s, [Fin.shiftRight b a]) := rfl
 lemma EVMSar'            : primCall s .Sar [a,b]                     = (s, [UInt256.sar a b]) := rfl
-lemma EVMKeccak256'      : primCall s .Keccak256 [a,b]               = match s.evm.keccak256 a b with | .some (val, evm') => (s.setEvm evm', [val]) | _ => (s.setEvm s.evm.addHashCollision, [0]) := rfl
+lemma EVMKeccak256'      : primCall s .Keccak256 [a,b]               = match s.evm.keccak256 a b with | .some a => (s.setEvm a.snd, [a.fst]) | .none => (s.setEvm s.evm.addHashCollision, [0]) := rfl
 lemma EVMAddress'        : primCall s .Address []                    = (s, ([s.evm.execution_env.code_owner] : List Literal)) := rfl
 lemma EVMBalance'        : primCall s .Balance [a]                   = (s, [s.evm.balanceOf a]) := rfl
 lemma EVMOrigin'         : primCall s .Origin []                     = (s, ([s.evm.execution_env.sender] : List Literal)) := rfl
