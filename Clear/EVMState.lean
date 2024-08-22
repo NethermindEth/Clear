@@ -28,19 +28,110 @@ def ByteArray.byteArrayToUInt256 (μ₀ : UInt256) (size : ℕ) (Id : ByteArray)
   let r : (ℕ × UInt256) := Array.foldl step ((size - 1) * 8, 0) arr1
   r.2
 
-
 namespace Clear
 
--- 2^160 https://www.wolframalpha.com/input?i=2%5E160
-def Address.size : Nat := 1461501637330902918203684832716283019655932542976
-
+def Address.size : Nat := 2 ^ 160
 abbrev Address : Type := Fin Address.size
 
 instance : Inhabited Address := ⟨Fin.ofNat 0⟩
+instance : NeZero Address.size := ⟨by decide⟩
 
-def Address.ofNat {n : ℕ} : Address := Fin.ofNat n
-def Address.ofUInt256 (v : UInt256) : Address := Fin.ofNat (v.val  % Address.size)
-instance {n : Nat} : OfNat Address n := ⟨Fin.ofNat n⟩
+namespace Address
+
+def top : ℕ := (⊤ : Address).val
+
+lemma top_def : top = 2 ^ 160 - 1 := by
+  unfold top
+  rw [Fin.top_eq_last]
+  simp
+
+lemma top_def' : top = 1461501637330902918203684832716283019655932542975 := by
+  rw [top_def]; simp
+
+lemma size_def : size = 1461501637330902918203684832716283019655932542976 := by
+  unfold size; simp
+
+def ofNat (n : ℕ) : Address := Fin.ofNat n
+def ofUInt256 (u : UInt256) : Address := Fin.ofNat (u.val % size)
+
+instance {n : Nat} : OfNat Address n := ⟨ofNat n⟩
+instance : NeZero top := ⟨by decide⟩
+
+lemma zero_lt_top  : 0 < top := by decide
+lemma zero_le_top  : 0 ≤ top := le_of_lt zero_lt_top
+
+lemma zero_lt_size : 0 < size := by decide
+lemma zero_le_size : 0 ≤ size := le_of_lt zero_lt_size
+
+lemma one_lt_top  : 1 < top := by decide
+lemma one_le_top  : 1 ≤ top := le_of_lt one_lt_top
+
+lemma one_lt_size : 1 < size := by decide
+lemma one_le_size : 1 ≤ size := le_of_lt one_lt_size
+
+lemma top_eq_pred_size : top = size - 1 := by
+  unfold size top
+  rw [Fin.top_eq_last]
+  simp
+
+lemma top_eq_pred_size_ofUInt256 : top.toUInt256 = size.toUInt256 - 1 := by
+  unfold size top
+  rw [Fin.top_eq_last]
+  simp
+  decide
+
+lemma succ_top_eq_size : top + 1 = size := by
+  rw [top_eq_pred_size, Nat.sub_add_cancel (le_of_lt one_lt_size)]
+
+lemma top_lt_size : top < size := by
+  rw [← succ_top_eq_size]; simp
+
+lemma top_le_size : top ≤ size := le_of_lt top_lt_size
+
+lemma size_lt_UInt256_size : size < UInt256.size := by decide
+lemma size_le_UInt256_size : size ≤ UInt256.size := le_of_lt size_lt_UInt256_size
+
+lemma top_lt_UInt256_size : top < UInt256.size := by decide
+lemma top_le_UInt256_size : top ≤ UInt256.size := le_of_lt top_lt_UInt256_size
+
+lemma ofUInt256_lt_UInt256_size {u : UInt256} : ↑(ofUInt256 u) < UInt256.size := by
+  unfold ofUInt256 Fin.ofNat
+  simp; rw [← size_def]; simp
+  simp_rw [← UInt256.size_def]
+  trans size
+  · exact Nat.mod_lt u (LT.lt.gt zero_lt_size)
+  · exact size_lt_UInt256_size
+
+lemma ofUInt256_eq_mod (u : UInt256) : ↑(ofUInt256 u) = u.val % size := by
+  unfold ofUInt256 Fin.ofNat
+  simp_rw [← top_def', succ_top_eq_size]
+  simp
+
+lemma and_size_eq_ofUInt256 {u : UInt256}
+  : Fin.land u (size.toUInt256 - 1) = ofUInt256 u := by
+  rw [ Fin.natCast_def ]
+  simp_rw [ Nat.mod_eq_of_lt ofUInt256_lt_UInt256_size ]
+
+  rw [← top_eq_pred_size_ofUInt256]
+  unfold Fin.land
+  simp [-UInt256.size]; rw [← UInt256.size_def]
+  -- this ought to be in mathlib...
+  have Nat.land_eq_and (p q : Nat) : p.land q = p &&& q := rfl
+  rw [ Nat.land_eq_and u.val
+     , Nat.mod_eq_of_lt top_lt_UInt256_size
+     , top_def
+     , Nat.and_pow_two_is_mod u.val 160
+     , ← size
+     ]
+  have : u.val % size < UInt256.size := by
+    trans size
+    · apply Nat.mod_lt u.val
+      exact LT.lt.gt zero_lt_size
+    · exact size_lt_UInt256_size
+  simp_rw [Nat.mod_eq_of_lt this]
+  symm; exact ofUInt256_eq_mod u
+
+end Address
 
 instance byteArrayDecEq : DecidableEq ByteArray := λ xs ys => by {
   rcases xs with ⟨ xs1 ⟩ ; rcases ys with ⟨ ys1 ⟩
