@@ -3,6 +3,7 @@ import Clear.ExecLemmas
 import Clear.OutOfFuelLemmas
 import Clear.JumpLemmas
 import Clear.YulNotation
+import Clear.Wheels
 
 namespace Clear.Abstraction
 
@@ -18,7 +19,7 @@ variable {s s₀ s₁ sEnd : State}
 
 -- | General form for relational specs (concrete and abstract).
 @[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
-def Spec (R : State → State → Prop) (s₀ s₁ : State) : Prop :=
+def Spec (R : State → State → Prop) (s₀ s₁ : State) :=
   match s₀ with
     | OutOfFuel => ❓ s₁
     | Checkpoint c => s₁.isJump c
@@ -29,6 +30,30 @@ lemma Spec_ok_unfold {P : State → State → Prop} :
   ∀ {s s' : State}, s.isOk → ¬ ❓ s' → Spec P s s' → P s s' := by
     intros s s' h h'
     unfold Spec
+    aesop
+
+-- | Specs that are somewhat pure
+@[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
+def PureSpec (R : State → State → Prop) : State → State → Prop :=
+  Spec (R ∩ (preserved on evm))
+
+lemma PureSpec_ok_unfold {P : State → State → Prop} :
+  ∀ {s s' : State}, s.isOk → ¬ ❓ s' → PureSpec P s s' → (P ∩ (preserved on evm)) s s' := by
+    intros s s' h h'
+    unfold PureSpec Spec
+    aesop
+
+-- | Specs for code that might result in hash collision
+@[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
+def CollidingSpec (R : State → State → Prop) (s₀ s₁ : State) : Prop :=
+  if s₀.evm.hash_collision
+  then ❓ s₁
+  else ¬ s₁.evm.hash_collision → Spec R s₀ s₁
+
+lemma CollidingSpec_ok_unfold {P : State → State → Prop} :
+  ∀ {s s' : State}, s.isOk → ¬ ❓ s' → ¬ s'.evm.hash_collision → CollidingSpec P s s' → P s s' := by
+    intros s s' h h' h''
+    unfold CollidingSpec Spec
     aesop
 
 open Lean Elab Tactic in
@@ -45,6 +70,12 @@ lemma isOutOfFuel_Spec (spec : Spec R s₀ s₁) (h : isOutOfFuel s₀) : isOutO
 lemma not_isOutOfFuel_Spec (spec : Spec R s₀ s₁) (h : ¬ isOutOfFuel s₁) : ¬ isOutOfFuel s₀ := by
   intros hs₀
   aesop_spec
+
+-- | No hash collision  propagates backwards through specs.
+-- lemma not_hashCollision_Spec
+--   (spec : CollidingSpec R s₀ s₁) (h : ¬ s₁.evm.hasHashCollision) : ¬ s₀.evm.hasHashCollision := by
+--   intros hs₀
+--   aesop_spec
 
 -- ============================================================================
 --  TACTICS
@@ -151,7 +182,7 @@ elab "clr_funargs" "at" h:ident : tactic => do
     simp only [multifill_cons, multifill_nil', isOk_insert, isOk_Ok, isOutOfFuel_Ok,
       not_false_eq_true, imp_false, Ok.injEq, and_imp, forall_apply_eq_imp_iff₂,
       forall_apply_eq_imp_iff] at $h:ident
-    repeat (rw [←State.insert] at $h:ident)    
+    repeat (rw [←State.insert] at $h:ident)
   ))
 
 end Clear
