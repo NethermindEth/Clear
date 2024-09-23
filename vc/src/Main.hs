@@ -259,7 +259,7 @@ fillInFunction topLevelContract file imports (FuncDef _ contract fargs ret body)
         funcArgs     = generateGuarded (null fargs) $ "(" ++ unwords fargs ++ " : Literal)"
         opens        = opensOfImports topLevelContract imports
         retVals      = generateGuarded (null ret) $ "(" ++ unwords ret ++ " : Identifier)"
-        rValsAndArgs = generateGuarded (null (ret ++ fargs)) "{" ++ unwords ret ++ " " ++ argsSepSpace ++ "}"
+        rValsAndArgs = generateGuarded (null (ret ++ fargs)) $ "{" ++ unwords ret ++ " " ++ argsSepSpace ++ "}"
         replaceIn ttype =
           replaceMany [
             ("\\<imports>",                       leanImports ++ internalImports topLevelContract contract file ttype),
