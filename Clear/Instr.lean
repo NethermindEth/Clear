@@ -1,110 +1,109 @@
 import Mathlib.Data.Nat.Defs
 import Clear.UInt256
 
-set_option linter.dupNamespace false
+inductive AInstr : Type where
+| STOP
+| ADD
+| MUL
+| SUB
+| DIV
+| SDIV
+| MOD
+| SMOD
+| ADDMOD
+| MULMOD
+| EXP
+| SIGNEXTEND
+| LT
+| GT
+| SLT
+| SGT
+| EQ
+| ISZERO
+| AND
+| OR
+| XOR
+| NOT
+| BYTE
+| SHL
+| SHR
+| SAR
+deriving DecidableEq
+
+inductive EInstr : Type where
+| KECCAK256
+| ADDRESS
+| BALANCE
+| ORIGIN
+| CALLER
+| CALLVALUE
+| CALLDATALOAD
+| CALLDATASIZE
+| CALLDATACOPY
+| GASPRICE
+| CODESIZE
+| CODECOPY
+| EXTCODESIZE
+| EXTCODECOPY
+| RETURNDATASIZE
+| RETURNDATACOPY
+| EXTCODEHASH
+deriving DecidableEq
+
+inductive BInstr : Type where
+| BLOCKHASH
+| COINBASE
+| TIMESTAMP
+| NUMBER
+| PREVRANDAO
+| DIFFICULTY
+| GASLIMIT
+| CHAINID
+| SELFBALANCE
+deriving DecidableEq
+
+
+inductive MInstr : Type where
+| POP
+| MLOAD
+| MSTORE
+| MSTORE8
+| SLOAD
+| SSTORE
+| PC
+| MSIZE
+| GAS
+| PUSH (n : Fin 32)
+| DUP (n : Fin 16)
+| SWAP (n : Fin 16)
+| LOG ( n : Fin 5)
+deriving DecidableEq
+
+inductive SInstr : Type where
+| JUMP
+| JUMPI
+| JUMPDEST
+| CREATE
+| CALL
+| CALLCODE
+| RETURN
+| DELEGATECALL
+| CREATE2
+| STATICCALL
+| REVERT
+| INVALID
+| SELFDESTRUCT
+deriving DecidableEq
+
+
+inductive Instr where
+| Arith (_ : AInstr)
+| Env (_ : EInstr)
+| Block (_ : BInstr)
+| Memory (_ : MInstr)
+deriving DecidableEq
+
 namespace Clear.Instr
-
-  inductive AInstr : Type where
-  | STOP
-  | ADD
-  | MUL
-  | SUB
-  | DIV
-  | SDIV
-  | MOD
-  | SMOD
-  | ADDMOD
-  | MULMOD
-  | EXP
-  | SIGNEXTEND
-  | LT
-  | GT
-  | SLT
-  | SGT
-  | EQ
-  | ISZERO
-  | AND
-  | OR
-  | XOR
-  | NOT
-  | BYTE
-  | SHL
-  | SHR
-  | SAR
-  deriving DecidableEq
-
-  inductive EInstr : Type where
-  | KECCAK256
-  | ADDRESS
-  | BALANCE
-  | ORIGIN
-  | CALLER
-  | CALLVALUE
-  | CALLDATALOAD
-  | CALLDATASIZE
-  | CALLDATACOPY
-  | GASPRICE
-  | CODESIZE
-  | CODECOPY
-  | EXTCODESIZE
-  | EXTCODECOPY
-  | RETURNDATASIZE
-  | RETURNDATACOPY
-  | EXTCODEHASH
-  deriving DecidableEq
-
-  inductive BInstr : Type where
-  | BLOCKHASH
-  | COINBASE
-  | TIMESTAMP
-  | NUMBER
-  | PREVRANDAO
-  | DIFFICULTY
-  | GASLIMIT
-  | CHAINID
-  | SELFBALANCE
-  deriving DecidableEq
-
-
-  inductive MInstr : Type where
-  | POP
-  | MLOAD
-  | MSTORE
-  | MSTORE8
-  | SLOAD
-  | SSTORE
-  | PC
-  | MSIZE
-  | GAS
-  | PUSH (n : Fin 32)
-  | DUP (n : Fin 16)
-  | SWAP (n : Fin 16)
-  | LOG ( n : Fin 5)
-  deriving DecidableEq
-
-  inductive SInstr : Type where
-  | JUMP
-  | JUMPI
-  | JUMPDEST
-  | CREATE
-  | CALL
-  | CALLCODE
-  | RETURN
-  | DELEGATECALL
-  | CREATE2
-  | STATICCALL
-  | REVERT
-  | INVALID
-  | SELFDESTRUCT
-  deriving DecidableEq
-
-
-  inductive Instr where
-  | Arith (_ : AInstr)
-  | Env (_ : EInstr)
-  | Block (_ : BInstr)
-  | Memory (_ : MInstr)
-  deriving DecidableEq
 
   def serializeAInstr (i : AInstr) : UInt8 :=
     open AInstr in
@@ -205,12 +204,11 @@ namespace Clear.Instr
     | SELFDESTRUCT => 255
 
   def serializeInstr (i : Instr) : UInt8 :=
-    open Instr in
     match i with
-    | Arith a => serializeAInstr a
-    | Env e => serializeEInstr e
-    | Block b => serializeBInstr b
-    | Memory m => serializeMInstr m
+    | Instr.Arith a => serializeAInstr a
+    | Instr.Env e => serializeEInstr e
+    | Instr.Block b => serializeBInstr b
+    | Instr.Memory m => serializeMInstr m
 
    def δ (i : Instr) : Option ℕ :=
      match i with
