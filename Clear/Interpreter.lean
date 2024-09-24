@@ -194,7 +194,7 @@ mutual
               | .OutOfFuel                      => s₂✏️⟦s⟧?
               | .Checkpoint (.Break _ _)      => 🧟s₂✏️⟦s⟧?
               | .Checkpoint (.Leave _ _)      => s₂✏️⟦s⟧?
-              | .Checkpoint (.Continue _ _) 
+              | .Checkpoint (.Continue _ _)
               | _ =>
                 let s₃ := exec fuel (.Block post) (🧟 s₂)
                 let s₄ := s₃✏️⟦s⟧?
@@ -234,11 +234,14 @@ variable {s s₀ s₁ : State}
 --  TRAVERSE LEMMAS
 -- ============================================================================
 
+section
+unseal exec
+
 /-
   Traversing an empty list is the identity on states.
 -/
 @[simp]
-lemma nil : exec fuel (.Block []) s = s := by unfold exec; rfl
+lemma nil : exec fuel (.Block []) s = s := by rfl
 
 /--
   Traversing a nonempty list is the same traversing the tail from the state yielded from executing the head.
@@ -246,19 +249,26 @@ lemma nil : exec fuel (.Block []) s = s := by unfold exec; rfl
 lemma cons : exec fuel (.Block (stmt :: stmts)) s = exec fuel (.Block stmts) (exec fuel stmt s) := by
   conv_lhs => unfold exec
 
+end
+
 -- ============================================================================
 --  EVAL LEMMAS
 -- ============================================================================
 
+section
+unseal eval
+
 /--
   Evaluating a literal gives you back that literal and the state you started in.
 -/
-lemma Lit' : eval fuel (.Lit x) s = (s, x) := by unfold eval; rfl
+lemma Lit' : eval fuel (.Lit x) s = (s, x) := by rfl
 
 /--
   Evaluating a variable does a varstore lookup.
 -/
-lemma Var' : eval fuel (.Var var) s = (s, s[var]!!) := by unfold eval; rfl
+lemma Var' : eval fuel (.Var var) s = (s, s[var]!!) := by rfl
+
+end
 
 /--
   A call in an expression.
