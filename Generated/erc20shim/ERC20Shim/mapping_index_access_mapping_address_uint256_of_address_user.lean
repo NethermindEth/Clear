@@ -145,6 +145,7 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
        , interval_of_0_eq_nil
        ]
     unfold_let
+    rw [mstore_preserves_keccak_map, mstore_preserves_keccak_map]
     rw [hasAddress]
 
 

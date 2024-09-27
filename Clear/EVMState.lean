@@ -1871,6 +1871,12 @@ lemma lookup_mstore_of_next :
     evm.machine_state.memory.lookupWord (p + (k + 1) * 32) := by
   sorry
 
+lemma mstore_preserves_keccak_map :
+  (mstore evm addr val).keccak_map = evm.keccak_map := by
+  unfold mstore
+  unfold updateMemory
+  simp
+
 section Interval
 
 variable {p : UInt256}
