@@ -23,14 +23,19 @@ variable {s s' : State}
 --  EXEC LEMMAS
 -- ============================================================================
 
+section
+unseal exec
+
 -- | Executing a continue is the same as setting the `jump` field to `Continue`.
-lemma Continue' : exec fuel .Continue s = 🔁 s := rfl
+lemma Continue' : exec fuel .Continue s = 🔁 s := by rfl
 
 -- | Executing a break is the same as setting the `jump` field to `Break`.
-lemma Break' : exec fuel .Break s = 💔 s := rfl
+lemma Break' : exec fuel .Break s = 💔 s := by rfl
 
 -- | Executing a `Leave` is the same as setting the `jump` field to `Leave`.
-lemma Leave' : exec fuel .Leave s = 🚪 s := rfl
+lemma Leave' : exec fuel .Leave s = 🚪 s := by rfl
+
+end
 
 -- | Executing a `Let` binds the given variable names with value 0.
 lemma Let' : exec fuel (.Let vars) s = List.foldr (λ var s ↦ s.insert var 0) s vars := by unfold exec; rfl
@@ -91,13 +96,13 @@ lemma For' : exec fuel (.For cond post body) s =
             | .OutOfFuel                      => s₂✏️⟦s⟧?
             | .Checkpoint (.Break _ _)      => 🧟s₂✏️⟦s⟧?
             | .Checkpoint (.Leave _ _)      => s₂✏️⟦s⟧?
-            | .Checkpoint (.Continue _ _) 
+            | .Checkpoint (.Continue _ _)
             | _ =>
               let s₃ := exec fuel (.Block post) (🧟 s₂)
               let s₄ := s₃✏️⟦s⟧?
               let s₅ := exec fuel (.For cond post body) s₄
               let s₆ := s₅✏️⟦s⟧?
-              s₆ := by            
+              s₆ := by
   conv_lhs => unfold exec loop
   try rfl -- TODO(update Lean version): rfl is necessary in 4.8.0 because conv no longer does it
 

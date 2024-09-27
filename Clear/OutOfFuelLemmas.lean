@@ -14,7 +14,7 @@ lemma List.exists_append_singleton_of_nonempty {α : Type} {xs : List α}
     rcases h₁ with ⟨last, init, hrev⟩
     rw [←List.reverse_inj] at hrev
     aesop
-    
+
 @[simp]
 lemma List.mapAccumr_nil {α β σ : Type} {f : α → σ → σ × β} {s : σ} :
   List.mapAccumr f [] s = (s, []) := by
@@ -64,7 +64,7 @@ variable {s s₁ s₂ : State}
 @[simp]
 lemma isOutOfFuel_diverge_Ok : isOutOfFuel (diverge (Ok evm store)) := by
   simp [isOutOfFuel, diverge]
-  
+
 /--
   Varstore inserts preserve infinite loops.
 -/
@@ -220,7 +220,7 @@ lemma isOutOfFuel_diverge_mkOk : isOutOfFuel (diverge (mkOk s)) := by
   unfold mkOk diverge isOutOfFuel
   rcases s <;> aesop
 
-/-- 
+/--
   Helper lemma to show that `keccak256` primop preserves infinite loops.
 -/
 lemma isOutOfFuel_keccak256 (h : isOutOfFuel s) :
@@ -334,6 +334,9 @@ lemma evalTail_Inf_ih
   (ih : ∀ {s : State}, isOutOfFuel s → sizeOf args < sizeOf expr → isOutOfFuel (evalArgs fuel args s).1) :
   isOutOfFuel (evalTail fuel args inputs).1 := by unfold evalTail; aesop
 
+section
+unseal evalArgs
+
 lemma evalArgs_Inf_ih
   (h : isOutOfFuel s)
   (hsize : sizeOf args < sizeOf expr)
@@ -346,6 +349,8 @@ lemma evalArgs_Inf_ih
       have : sizeOf x < sizeOf expr := by simp at hsize; linarith
       have : sizeOf xs < sizeOf expr := by simp at hsize; linarith
       aesop
+
+end
 
 /--
   The `call` helper function for user-defined function calls preserves infinite loops.
@@ -446,6 +451,9 @@ lemma evalTail_Inf_ih'
   apply cons'_Inf
   apply ih h
 
+section
+unseal evalArgs
+
 lemma evalArgs_Inf
   (h : isOutOfFuel s)
 : isOutOfFuel (evalArgs fuel args s).1
@@ -457,6 +465,8 @@ lemma evalArgs_Inf
       apply evalTail_Inf_ih'
       apply eval_Inf h
       assumption
+
+end
 
 -- | Executing a call directly from `exec` preserves infinite loops.
 lemma Call_Inf
@@ -673,6 +683,9 @@ lemma For_Inf
           · apply isOutOfFuel_overwrite?
             assumption
 
+section
+unseal exec
+
 -- | An `exec` preserves infinite loops.
 @[aesop unsafe 10% apply]
 lemma exec_Inf (h : isOutOfFuel s) : isOutOfFuel (exec fuel stmt s)
@@ -731,6 +744,8 @@ lemma exec_Inf (h : isOutOfFuel s) : isOutOfFuel (exec fuel stmt s)
     · exact isOutOfFuel_setContinue h
     · exact isOutOfFuel_setBreak h
     · exact isOutOfFuel_setLeave h
+
+end
 
 -- ============================================================================
 --  TACTICS

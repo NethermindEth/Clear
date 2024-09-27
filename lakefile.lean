@@ -2,11 +2,10 @@ import Lake
 open Lake DSL
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git"@"aae9d296f859fb97923157dc9ae60fbaf718af8a"
+  "https://github.com/leanprover-community/mathlib4.git"@"v4.9.1"
 
 package «clear» {
-  moreLeanArgs := #["-DautoImplicit=false"]
-  moreServerOptions := #[⟨`DautoImplicit, false⟩]
+  leanOptions := #[⟨`autoImplicit, false⟩]
 }
 
 lean_lib «Clear» {

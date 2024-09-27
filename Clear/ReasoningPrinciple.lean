@@ -4,9 +4,6 @@ import Clear.Utilities
 open Clear Ast Expr Stmt State Interpreter ExecLemmas OutOfFuelLemmas JumpLemmas Abstraction PrimOps
 namespace Clear.ReasoningPrinciple
 
--- Print structures more concisely in the infoview.
-set_option pp.structureInstances false
-
 variable {s₀ s₉ : State}
          {fuel : ℕ}
 
