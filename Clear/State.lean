@@ -405,7 +405,6 @@ lemma lookup_insert' (h : isOk s) : s⟦var ↦ x⟧[var]!! = x
 := by
   unfold insert lookup!
   rcases s <;> simp at *
-  aesop
 
 -- | Inserting with the same key twice overwrites.
 @[simp]
