@@ -101,4 +101,43 @@ lemma evm_eq_symm_of_isPure_ok_ok {evm evm'} {vs vs'} (h : isPure (Ok evm vs) (O
   symm
   aesop_spec
 
+def preservesEvm (s₀ : State) (s₁ : State) : Prop :=
+  match s₀, s₁ with
+  | .Ok e₀ _, .Ok e₁ _ => preserved e₀ e₁
+  | _, _ => True
+
+@[simp]
+lemma preservesEvm_rfl {s : State} : preservesEvm s s := by
+  unfold preservesEvm preserved
+  dsimp [(· ∩ ·)]
+  cases s <;> simp
+
+@[simp]
+lemma preservesEvm_trans {s₀ s₁ s₂} :
+  isOk s₁ → preservesEvm s₀ s₁ → preservesEvm s₁ s₂ → preservesEvm s₀ s₂ := by
+  unfold preservesEvm
+  match s₀ with
+  | .OutOfFuel | .Checkpoint _ => simp
+  | .Ok e₀ σ₀ =>
+    match s₂ with
+    | .OutOfFuel | .Checkpoint _ => simp
+    | .Ok e₂ σ₂ =>
+      match s₁ with
+      | .OutOfFuel | .Checkpoint _ => simp
+      | .Ok e₁ σ₁ =>
+        simp
+        exact preserved_trans
+
+@[simp]
+lemma sload_eq_of_preservesEvm {s s' : State} {a : UInt256} :
+  isOk s → isOk s' → preservesEvm s s' →
+  s.evm.sload a = s'.evm.sload a := by
+  unfold isOk preservesEvm
+  cases s <;> cases s' <;> simp
+  intro h
+  unfold EVMState.sload EVMState.lookupAccount
+  rw [ preserves_account_map h
+     , preserves_execution_env h
+     ]
+
 end Clear.Utilities

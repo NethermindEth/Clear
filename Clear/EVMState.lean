@@ -419,6 +419,40 @@ def preserved : EVMState → EVMState → Prop :=
   (Eq on EVMState.hash_collision) ∩
   (Eq on EVMState.execution_env)
 
+def preserves_account_map :
+  {evm evm' : EVMState} → preserved evm evm' → evm.account_map = evm'.account_map := by
+  intro evm evm' h
+  exact h.1.1
+
+def preserves_collision :
+  {evm evm' : EVMState} → preserved evm evm' → evm.hash_collision = evm'.hash_collision := by
+  intro _ _ h
+  exact h.1.2
+
+def preserves_execution_env :
+  {evm evm' : EVMState} → preserved evm evm' → evm.execution_env = evm'.execution_env := by
+  intro _ _ h
+  exact h.2
+
+@[simp]
+lemma preserved_rfl {e : EVM} : preserved e e := by
+  unfold preserved
+  dsimp [(· ∩ ·)]
+  simp
+
+@[simp]
+lemma preserved_trans {e₀ e₁ e₂ : EVM} :
+  preserved e₀ e₁ → preserved e₁ e₂ → preserved e₀ e₂ := by
+  unfold preserved
+  dsimp [(· ∩ ·)]
+  intro h₀ h₁
+  have acc := Eq.trans (preserves_account_map h₀) (preserves_account_map h₁)
+  have col := Eq.trans (preserves_collision h₀) (preserves_collision h₁)
+  have env := Eq.trans (preserves_execution_env h₀) (preserves_execution_env h₁)
+  apply And.intro
+  apply And.intro
+  all_goals assumption
+
 -- functions for querying balance
 
 namespace EVMState
