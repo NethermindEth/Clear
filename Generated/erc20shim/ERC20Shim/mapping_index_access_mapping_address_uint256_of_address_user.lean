@@ -22,7 +22,7 @@ def A_mapping_index_access_mapping_address_uint256_of_address (dataSlot : Identi
   ∀ {map : AddressMap}, account ∈ map →
   ∀ address,
   s₀.evm.keccak_map.lookup [ ↑account , slot ] = some address →
-  s₉[dataSlot]!! = address
+  s₉.isOk ∧ s₉[dataSlot]!! = address
 
 -- Helper reifications
 lemma shift_eq_size : Fin.shiftLeft (n := UInt256.size) 1 160 = Address.size := by
