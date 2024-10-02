@@ -22,7 +22,7 @@ def A_mapping_index_access_mapping_address_uint256_of_address (dataSlot : Identi
   ∀ {map : AddressMap}, account ∈ map →
   ∀ address,
   s₀.evm.keccak_map.lookup [ ↑account , slot ] = some address →
-  s₉.isOk ∧ s₉[dataSlot]!! = address
+  preservesEvm s₀ s₉ ∧ s₉.isOk ∧ s₉[dataSlot]!! = address
 
 -- Helper reifications
 lemma shift_eq_size : Fin.shiftLeft (n := UInt256.size) 1 160 = Address.size := by
@@ -66,10 +66,18 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
   unfold setEvm State.insert State.lookup! at prog
   simp at prog
 
+
   rw [← prog]
   unfold State.lookup!
-  simp
 
-end
+  apply And.intro
+  · apply preservesEvm_eq
+    simp
+    apply preserved_trans (e₁ := mstore evm 0 ↑↑account)
+    · exact mstore_preserves
+    · exact mstore_preserves
+  · simp
+
+  end
 
 end Generated.erc20shim.ERC20Shim

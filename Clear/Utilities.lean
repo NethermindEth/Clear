@@ -106,6 +106,20 @@ def preservesEvm (s₀ : State) (s₁ : State) : Prop :=
   | .Ok e₀ _, .Ok e₁ _ => preserved e₀ e₁
   | _, _ => True
 
+lemma preservesEvm_eq (s₀ : State) (s₁ : State) : preserved s₀.evm s₁.evm → preservesEvm s₀ s₁ := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp
+
+lemma preservesEvm_of_isOk {s₀ s₁ : State} :
+  s₀.isOk → s₁.isOk → preservesEvm s₀ s₁ →
+  (s₀.evm.account_map = s₁.evm.account_map ∧
+  s₀.evm.hash_collision = s₁.evm.hash_collision ∧
+  s₀.evm.execution_env = s₁.evm.execution_env) := by
+  unfold isOk preservesEvm
+  cases s₀ <;> cases s₁ <;> simp
+  rw [preserved_def]
+  intro _; assumption
+
 @[simp]
 lemma preservesEvm_rfl {s : State} : preservesEvm s s := by
   unfold preservesEvm preserved

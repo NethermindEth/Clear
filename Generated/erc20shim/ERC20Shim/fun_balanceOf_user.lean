@@ -35,13 +35,18 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   simp at keccak
   clr_spec at keccak
   
-  obtain ⟨is_ok, lookup⟩ := keccak hasBal bal_addr hasAddr
+  obtain ⟨preserves, is_ok, lookup⟩ := keccak hasBal bal_addr hasAddr
   obtain ⟨evmₛ, varstareₛ, ok_state⟩ := State_of_isOk is_ok
   rw [lookup, ok_state] at prog
   rw [← prog]
   
   unfold State.lookup!
   simp
+  have : sload _ bal_addr = sload s.evm bal_addr := sload_eq_of_preservesEvm (by simp) is_ok preserves
+  symm
+  rw [ok_state] at this
+  simp at this
+  exact this
 
 end
 
