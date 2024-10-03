@@ -3,6 +3,7 @@ import Mathlib.Data.Fin.Basic
 import Clear.Ast
 import Clear.Instr
 import Clear.UInt256
+import Clear.Wheels
 
 open Clear Instr UInt256
 
@@ -162,6 +163,44 @@ instance : Inhabited EVMState :=
   ⟨ ∅ , default, default , ∅ , default, ∅ , default , False ⟩
 
 abbrev EVM := EVMState
+
+def preserved : EVMState → EVMState → Prop :=
+  (Eq on EVMState.account_map) ∩
+  (Eq on EVMState.hash_collision) ∩
+  (Eq on EVMState.execution_env)
+
+lemma preserved_def {e₀ e₁ : EVM} : preserved e₀ e₁ =
+  (e₀.account_map   = e₁.account_map ∧
+  e₀.hash_collision = e₁.hash_collision ∧
+  e₀.execution_env  = e₁.execution_env) := by
+  unfold preserved
+  dsimp [(· ∩ ·)]
+  simp [Function.onFun, and_assoc]
+
+def preserves_account_map {evm evm' : EVMState} (h : preserved evm evm') :
+  evm.account_map = evm'.account_map := h.1.1
+
+def preserves_collision {evm evm' : EVMState} (h : preserved evm evm') :
+  evm.hash_collision = evm'.hash_collision := h.1.2
+
+def preserves_execution_env {evm evm' : EVMState} (h : preserved evm evm') :
+  evm.execution_env = evm'.execution_env := h.2
+
+@[simp]
+lemma preserved_rfl {e : EVM} : preserved e e := by
+  rw [preserved_def]
+  simp
+
+@[simp]
+lemma preserved_trans {e₀ e₁ e₂ : EVM} :
+  preserved e₀ e₁ → preserved e₁ e₂ → preserved e₀ e₂ := by
+  rw (config := {occs := .pos [3]}) [preserved_def]
+  intro h₀ h₁
+  have acc := Eq.trans (preserves_account_map h₀) (preserves_account_map h₁)
+  have col := Eq.trans (preserves_collision h₀) (preserves_collision h₁)
+  have env := Eq.trans (preserves_execution_env h₀) (preserves_execution_env h₁)
+  constructor; swap; constructor
+  all_goals assumption
 
 -- functions for querying balance
 
@@ -338,6 +377,11 @@ def evm_return (σ : EVMState) (mstart s : UInt256) : EVMState :=
 
 def evm_revert (σ : EVMState) (mstart s : UInt256) : EVMState :=
   σ.evm_return mstart s
+
+lemma mstore_preserves {evm} {pos val} : preserved evm (evm.mstore pos val) := by
+  unfold mstore updateMemory
+  rw [preserved_def]
+  simp
 
 end
 
