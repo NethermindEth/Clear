@@ -13,7 +13,10 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 
 def A_fun_balanceOf (var : Identifier) (var_account : Literal) (s₀ s₉ : State) : Prop :=
   let account := Address.ofUInt256 var_account
-  ∀ {erc20 : ERC20}, account ∈ erc20.balances →
+  ∀ {erc20 : ERC20},
+  -- this: `account ∈ erc20.balances`
+  -- can be derived from: `erc20.balances.lookup account = some (s₀.evm.sload bal_addr)`
+  -- by Finmap.mem_of_lookup_eq_some
   ∀ bal_addr,
   s₀.evm.keccak_map.lookup [ ↑account , ERC20Private.balances ] = some bal_addr →
   erc20.balances.lookup account = some (s₀.evm.sload bal_addr) →
@@ -28,14 +31,14 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   apply spec_eq
   clr_funargs
 
-  intro hasFuel ⟨s, keccak, prog⟩ erc20 hasBal bal_addr hasAddr loadAddr
+  intro hasFuel ⟨s, keccak, prog⟩ erc20 bal_addr hasAddr loadAddr
   clr_varstore
 
   unfold A_mapping_index_access_mapping_address_uint256_of_address at keccak
   simp at keccak
   clr_spec at keccak
   
-  obtain ⟨preserves, is_ok, lookup⟩ := keccak hasBal bal_addr hasAddr
+  obtain ⟨preserves, is_ok, lookup⟩ := keccak hasAddr
   obtain ⟨evmₛ, varstareₛ, ok_state⟩ := State_of_isOk is_ok
   rw [lookup, ok_state] at prog
   rw [← prog]
