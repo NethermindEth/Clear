@@ -87,6 +87,17 @@ def preservesEvm (s₀ : State) (s₁ : State) : Prop :=
   | .Ok e₀ _, .Ok e₁ _ => preserved e₀ e₁
   | _, _ => True
 
+lemma preservesEvm_of_isOk {s₀ s₁ : State} (s₀_ok : s₀.isOk) (s₁_ok : s₁.isOk) :
+  preservesEvm s₀ s₁ →
+  (s₀.evm.account_map = s₁.evm.account_map ∧
+  s₀.evm.hash_collision = s₁.evm.hash_collision ∧
+  s₀.evm.execution_env = s₁.evm.execution_env ∧
+  s₀.evm.keccak_map = s₁.evm.keccak_map) := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp at *
+  rw [preserved_def]
+  intro _; assumption
+
 @[simp]
 lemma preservesEvm_rfl {s : State} : preservesEvm s s := by
   unfold preservesEvm
@@ -98,6 +109,12 @@ lemma preservesEvm_trans {s₀ s₁ s₂} (h : s₁.isOk) :
   unfold preservesEvm
   cases s₀ <;> cases s₁ <;> cases s₂ <;> simp_all
   exact preserved_trans
+
+lemma preservesEvm_eq (s₀ : State) (s₁ : State) :
+  preserved s₀.evm s₁.evm → preservesEvm s₀ s₁ := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp
+  simp [evm]
 
 lemma sload_eq_of_preservesEvm
   {s s' : State} {a : UInt256} (h : s.isOk) (h' : s'.isOk) (hss : preservesEvm s s') :

@@ -196,6 +196,15 @@ lemma preserved_rfl {e : EVM} : preserved e e := by
   rw [preserved_def]
   simp
 
+lemma preserved_symm {e₀ e₁ : EVM} : preserved e₀ e₁ = preserved e₁ e₀ := by
+  rw [preserved_def, preserved_def]
+  ext
+  apply Iff.intro <;> {
+    intro ⟨acc, col, env, kec⟩
+    symm at acc col env kec
+    exact ⟨acc, col, env, kec⟩
+  }
+
 @[simp]
 lemma preserved_trans {e₀ e₁ e₂ : EVM} :
   preserved e₀ e₁ → preserved e₁ e₂ → preserved e₀ e₂ := by
