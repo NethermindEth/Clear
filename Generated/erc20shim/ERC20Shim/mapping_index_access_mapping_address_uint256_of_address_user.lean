@@ -18,9 +18,8 @@ set_option linter.setOption false
 set_option pp.coercions false
 
 def A_mapping_index_access_mapping_address_uint256_of_address (dataSlot : Identifier) (slot key : Literal) (s₀ s₉ : State) : Prop :=
-  let account := Address.ofUInt256 key
-  -- ∀ {map : AddressMap}, account ∈ map →
   ∀ {address},
+  let account := Address.ofUInt256 key
   s₀.evm.keccak_map.lookup [ ↑account , slot ] = some address →
   preservesEvm s₀ s₉ ∧ s₉.isOk ∧ s₉[dataSlot]!! = address
 

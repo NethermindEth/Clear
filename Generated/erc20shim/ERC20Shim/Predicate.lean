@@ -17,6 +17,8 @@ structure ERC20 where
   balances : BalanceMap
   allowances : AllowanceMap
 
+#check Address.ofUInt256
+
 structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
   hasSupply : s.evm.sload ERC20Private.totalSupply = erc20.supply
 
@@ -24,8 +26,17 @@ structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
     ∀ {account}, (account ∈ erc20.balances) →
     ∃ (address : UInt256),
     s.evm.keccak_map.lookup [ ↑account , ERC20Private.balances ] = some address ∧
+
     -- address ∈ s.evm.keccak_map.lookup [ ↑account , ERC20Private.balances ]
+
     erc20.balances.lookup account = some (s.evm.sload address)
+
+  balD :
+    erc20.balances.keys = 
+      let fn x := x
+      { (fn address) | ∃ account, account ∈ erc20.balances ∧
+                                  address = s.evm.keccak_map.keys
+
     -- equivalent statements
     -- s.evm.sload address ∈ erc20.balances.lookup account
     -- ⟨account, s.evm.sload address⟩ ∈ erc20.balances.entries
