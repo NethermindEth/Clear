@@ -1,10 +1,11 @@
 import Mathlib.Data.Finmap
 
 import Clear.State
+import Clear.Utilities
 
 import Generated.erc20shim.ERC20Shim.Variables
 
-open Clear
+open Clear State Utilities
 
 namespace Generated.erc20shim.ERC20Shim
 
@@ -16,52 +17,48 @@ structure ERC20 where
   balances : BalanceMap
   allowances : AllowanceMap
 
--- structure HasBalance (balances : BalanceMap) (account : Address) (s : State) where
---   address : Address
---   keccak : s.evm.keccak_map.lookup [ ↑account , ERC20Private.balances ] = some address
---   balance : some (s.evm.sload address) = balances.lookup account
+structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
+  hasSupply : s.evm.sload ERC20Private.totalSupply = erc20.supply
 
-abbrev HasBalance (balances : BalanceMap) (account : Address) (s : State) :=
-  ∃ address,
-  s.evm.keccak_map.lookup [ ↑account , ERC20Private.balances ] = some address ∧
-  some (s.evm.sload address) = balances.lookup account
+  hasBalance :
+    ∀ {account}, (account ∈ erc20.balances) →
+    ∃ (address : UInt256),
+    s.evm.keccak_map.lookup [ ↑account , ERC20Private.balances ] = some address ∧
+    -- address ∈ s.evm.keccak_map.lookup [ ↑account , ERC20Private.balances ]
+    erc20.balances.lookup account = some (s.evm.sload address)
+    -- equivalent statements
+    -- s.evm.sload address ∈ erc20.balances.lookup account
+    -- ⟨account, s.evm.sload address⟩ ∈ erc20.balances.entries
 
-namespace HasBalance
+  hasAllowance :
+    ∀ {owner spender}, (⟨owner, spender⟩ ∈ erc20.allowances) →
+    ∃ (address  : UInt256) (intermediate : UInt256),
+    s.evm.keccak_map.lookup [ ↑owner , ERC20Private.allowances ] = some intermediate →
+    s.evm.keccak_map.lookup [ ↑spender , intermediate ] = some address →
+    erc20.allowances.lookup ⟨owner, spender⟩ = some (s.evm.sload address)
 
-variable {balances : BalanceMap} {account : Address} {s : State}
+lemma IsERC20_of_insert {erc20} {s : State} :
+  ∀ {var val}, IsERC20 erc20 s → IsERC20 erc20 (s⟦var↦val⟧) := by
+  intro var val is_erc
+  constructor <;> rw [State.evm_insert]
+  · exact is_erc.hasSupply
+  · exact is_erc.hasBalance
+  · exact is_erc.hasAllowance
 
--- theorem keccak (address(h : HasBalance balances account s) :
---   ∃ address, s.evm.keccak_map.lookup [ ↑account , ERC20Private.balances ] = some address := 
---   let ⟨addr, keccak, _⟩ := h
---   ⟨addr, keccak⟩
+lemma IsERC20_of_ok_forall_store {erc20} {evm} {s₀ s₁} :
+  IsERC20 erc20 (Ok evm s₀) → IsERC20 erc20 (Ok evm s₁) := by
+  intro is_erc
+  constructor <;> (rw [State.evm]; simp)
+  · exact is_erc.hasSupply
+  · exact is_erc.hasBalance
+  · exact is_erc.hasAllowance
 
--- theorem balance (h : HasBalance balances account s) :
---   ∃ address, some (s.evm.sload address) = balances.lookup account :=
---   let ⟨addr, _, balance⟩ := h
---   ⟨addr, balance⟩
-
-end HasBalance
-
--- structure HasAllowance (allowances : AllowanceMap) (owner : Address) (spender : Address) (s : State) where
---   address : Address
---   keccak : s.evm.keccak_map.lookup [ ↑owner, ↑spender, ERC20Private.allowances ] = some address
---   allowance : some (s.evm.sload address) = allowances.lookup ⟨owner, spender⟩
-
-def HasAllowance (allowances : AllowanceMap) (owner : Address) (spender : Address) (s : State) : Prop :=
-  ∃ address,
-  s.evm.keccak_map.lookup [ ↑owner, ↑spender, ERC20Private.allowances ] = some address ∧
-  some (s.evm.sload address) = allowances.lookup ⟨owner, spender⟩
-
--- def balance_predicate (erc20 : ERC20) (s : State) : Prop :=
---   ∀ account,
---   account ∈ erc20.balances → HasBalance erc20.balances account s
-
--- def balance_predicate (erc20 : ERC20) (s : State) : ? :=
---   ∀ account,
---   account ∈ erc20.balances → HasBalance erc20.balances account s
-
-def allowance_predicate (erc20 : ERC20) (s : State) : Prop :=
-  ∀ (owner spender : Address),
-  ⟨owner, spender⟩ ∈ erc20.allowances → HasAllowance erc20.allowances owner spender s
+lemma IsERC20_of_ok_of_preserved {erc20} {store} {σ₀ σ₁} (h : preserved σ₀ σ₁) : 
+  IsERC20 erc20 (Ok σ₀ store) → IsERC20 erc20 (Ok σ₁ store) := by
+  sorry
+  
+lemma IsERC20_of_preservesEvm {erc20} {s₀ s₁} :
+  preservesEvm s₀ s₁ → IsERC20 erc20 s₀ → IsERC20 erc20 s₁ := by
+  sorry
 
 end Generated.erc20shim.ERC20Shim
