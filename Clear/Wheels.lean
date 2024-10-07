@@ -1,16 +1,6 @@
 import Aesop
 
-import Mathlib.Data.Rel
 import Mathlib.Tactic.ApplyAt
-
-instance instRelInter {α β} : Inter (Rel α β) where
-  inter r s := λ a b ↦ r a b ∧ s a b
-
-def Rel.inter {α β} (r : α → β → Prop) (s : α → β → Prop) : α → β → Prop :=
-  λ a b ↦ r a b ∧ s a b
-
-instance instFunInter {α β : Type} : Inter (α → β → Prop) where
-  inter r s := λ a b ↦ r a b ∧ s a b
 
 declare_aesop_rule_sets [Clear.aesop_ok, Clear.aesop_spec, Clear.aesop_varstore]
 

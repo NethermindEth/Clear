@@ -165,10 +165,10 @@ instance : Inhabited EVMState :=
 abbrev EVM := EVMState
 
 def preserved : EVMState → EVMState → Prop :=
-  (Eq on EVMState.account_map) ∩
-  (Eq on EVMState.hash_collision) ∩
-  (Eq on EVMState.execution_env) ∩
-  (Eq on EVMState.keccak_map)
+  λ a b ↦ (Eq on EVMState.account_map) a b ∧
+          (Eq on EVMState.hash_collision) a b ∧
+          (Eq on EVMState.execution_env) a b ∧
+          (Eq on EVMState.keccak_map) a b
 
 lemma preserved_def {e₀ e₁ : EVM} : preserved e₀ e₁ =
   (e₀.account_map   = e₁.account_map ∧
@@ -176,20 +176,27 @@ lemma preserved_def {e₀ e₁ : EVM} : preserved e₀ e₁ =
   e₀.execution_env = e₁.execution_env ∧
   e₀.keccak_map = e₁.keccak_map)  := by
   unfold preserved
-  dsimp [(· ∩ ·)]
-  simp [Function.onFun, and_assoc]
+  dsimp
 
 def preserves_account_map {evm evm' : EVMState} (h : preserved evm evm') :
-  evm.account_map = evm'.account_map := h.1.1.1
+  evm.account_map = evm'.account_map := by
+  rw [preserved_def] at h
+  exact h.1
 
 def preserves_collision {evm evm' : EVMState} (h : preserved evm evm') :
-  evm.hash_collision = evm'.hash_collision := h.1.1.2
+  evm.hash_collision = evm'.hash_collision := by
+  rw [preserved_def] at h
+  exact h.2.1
 
 def preserves_execution_env {evm evm' : EVMState} (h : preserved evm evm') :
-  evm.execution_env = evm'.execution_env := h.1.2
+  evm.execution_env = evm'.execution_env := by
+  rw [preserved_def] at h
+  exact h.2.2.1
 
 def preserves_keccak_map {evm evm' : EVMState} (h : preserved evm evm') :
-  evm.keccak_map = evm'.keccak_map := h.2
+  evm.keccak_map = evm'.keccak_map := by
+  rw [preserved_def] at h
+  exact h.2.2.2
 
 @[simp]
 lemma preserved_rfl {e : EVM} : preserved e e := by
