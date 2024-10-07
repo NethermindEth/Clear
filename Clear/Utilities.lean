@@ -142,16 +142,24 @@ lemma preservesEvm_trans {s₀ s₁ s₂} :
         simp
         exact preserved_trans
 
-@[simp]
+lemma preservesEvm_symm {s₀ s₁} : preservesEvm s₀ s₁ = preservesEvm s₁ s₀ := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp
+  exact Eq.to_iff preserved_symm
+
+lemma preservesEvm_of_insert {s₀ s₁} {var val} :
+  preservesEvm s₀ s₁ ↔ preservesEvm s₀ (s₁⟦var ↦ val⟧) := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp
+  swap
+  unfold State.insert; simp
+  unfold State.insert; simp
+
 lemma sload_eq_of_preservesEvm {s s' : State} {a : UInt256} :
   isOk s → isOk s' → preservesEvm s s' →
   s.evm.sload a = s'.evm.sload a := by
   unfold isOk preservesEvm
   cases s <;> cases s' <;> simp
-  intro h
-  unfold EVMState.sload EVMState.lookupAccount
-  rw [ preserves_account_map h
-     , preserves_execution_env h
-     ]
+  exact EVMState.sload_eq_of_preserved
 
 end Clear.Utilities

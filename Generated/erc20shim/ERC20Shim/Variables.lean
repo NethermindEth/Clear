@@ -9,11 +9,14 @@ open Clear
 namespace Generated.erc20shim.ERC20Shim
 
 structure PrivateAddresses where
-    balances    : UInt256
-    allowances  : UInt256
-    totalSupply : UInt256
-    name        : UInt256
-    symbol      : UInt256
+  balances    : UInt256
+  allowances  : UInt256
+  totalSupply : UInt256
+  name        : UInt256
+  symbol      : UInt256
+
+def PrivateAddresses.toFinset (p : PrivateAddresses) : Finset UInt256 :=
+  { p.balances, p.allowances, p.totalSupply, p.name, p.symbol }
 
 def ERC20Private : PrivateAddresses :=
   { balances := 0, allowances := 1, totalSupply := 2, name := 3, symbol := 4 }

@@ -607,6 +607,11 @@ def selfbalance (σ : EVMState) : UInt256 :=
 
 -- memory and storage operations
 
+def storage (σ : EVMState) : Finmap (λ _ : UInt256 ↦ UInt256) :=
+  match σ.lookupAccount σ.execution_env.code_owner with
+  | .some act => act.storage
+  | .none => ∅
+
 def mload (σ : EVMState) (spos : UInt256) : UInt256 :=
   σ.machine_state.memory.lookupWord spos
 
@@ -661,6 +666,13 @@ lemma mstore_preserves {evm} {pos val} : preserved evm (evm.mstore pos val) := b
   unfold mstore updateMemory
   rw [preserved_def]
   simp
+
+lemma sload_eq_of_preserved {σ₀ σ₁} {pos} (h : preserved σ₀ σ₁) :
+  sload σ₀ pos = sload σ₁ pos := by
+  unfold sload lookupAccount
+  rw [ preserves_account_map h
+     , preserves_execution_env h
+     ]
 
 end
 

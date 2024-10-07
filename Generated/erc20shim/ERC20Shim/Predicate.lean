@@ -17,8 +17,6 @@ structure ERC20 where
   balances : BalanceMap
   allowances : AllowanceMap
 
-#check Address.ofUInt256
-
 structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
   hasSupply : s.evm.sload ERC20Private.totalSupply = erc20.supply
 
@@ -31,22 +29,27 @@ structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
 
     erc20.balances.lookup account = some (s.evm.sload address)
 
-  balD :
-    erc20.balances.keys = 
-      let fn x := x
-      { (fn address) | ∃ account, account ∈ erc20.balances ∧
-                                  address = s.evm.keccak_map.keys
-
-    -- equivalent statements
-    -- s.evm.sload address ∈ erc20.balances.lookup account
-    -- ⟨account, s.evm.sload address⟩ ∈ erc20.balances.entries
-
   hasAllowance :
     ∀ {owner spender}, (⟨owner, spender⟩ ∈ erc20.allowances) →
     ∃ (address  : UInt256) (intermediate : UInt256),
     s.evm.keccak_map.lookup [ ↑owner , ERC20Private.allowances ] = some intermediate →
     s.evm.keccak_map.lookup [ ↑spender , intermediate ] = some address →
     erc20.allowances.lookup ⟨owner, spender⟩ = some (s.evm.sload address)
+
+  storageDom :
+    (storage s.evm).keys =
+      { address | ∃ account,
+        account ∈ erc20.balances ∧
+        some address = s.evm.keccak_map.lookup [ ↑account, ERC20Private.balances ] } ∪
+      { address | ∃ owner spender,
+        ⟨owner, spender⟩ ∈ erc20.allowances ∧
+        ∃ intermediate, s.evm.keccak_map.lookup [ ↑owner , ERC20Private.allowances ] = some intermediate ∧
+        s.evm.keccak_map.lookup [ ↑spender , intermediate ] = some address } ∪
+      ERC20Private.toFinset
+
+    -- equivalent statements
+    -- s.evm.sload address ∈ erc20.balances.lookup account
+    -- ⟨account, s.evm.sload address⟩ ∈ erc20.balances.entries
 
 lemma IsERC20_of_insert {erc20} {s : State} :
   ∀ {var val}, IsERC20 erc20 s → IsERC20 erc20 (s⟦var↦val⟧) := by
@@ -55,6 +58,7 @@ lemma IsERC20_of_insert {erc20} {s : State} :
   · exact is_erc.hasSupply
   · exact is_erc.hasBalance
   · exact is_erc.hasAllowance
+  · exact is_erc.storageDom
 
 lemma IsERC20_of_ok_forall_store {erc20} {evm} {s₀ s₁} :
   IsERC20 erc20 (Ok evm s₀) → IsERC20 erc20 (Ok evm s₁) := by
@@ -63,6 +67,8 @@ lemma IsERC20_of_ok_forall_store {erc20} {evm} {s₀ s₁} :
   · exact is_erc.hasSupply
   · exact is_erc.hasBalance
   · exact is_erc.hasAllowance
+  · have := get_evm_of_ok ▸ is_erc.storageDom
+    exact this
 
 lemma IsERC20_of_ok_of_preserved {erc20} {store} {σ₀ σ₁} (h : preserved σ₀ σ₁) : 
   IsERC20 erc20 (Ok σ₀ store) → IsERC20 erc20 (Ok σ₁ store) := by
