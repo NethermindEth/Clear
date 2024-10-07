@@ -36,7 +36,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   have : Address.ofUInt256 var_account ∈ erc20.balances := sorry
   obtain ⟨address, hasAddress, hasBalance⟩ := is_erc20.hasBalance this
   obtain ⟨preserves, is_ok, lookup⟩ := keccak hasAddress
-  obtain ⟨evmₛ, varstareₛ, ok_state⟩ := State_of_isOk is_ok
+  obtain ⟨evmₛ, varstoreₛ, ok_state⟩ := State_of_isOk is_ok
 
   unfold reviveJump at code
   simp [ok_state] at code lookup
@@ -45,23 +45,29 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   clr_varstore
 
   have preserves_final : preservesEvm (Ok evm varstore) (Ok evmₛ varstore⟦var↦sload evmₛ address⟧) := by
-    -- preservesEvm s₀ s₉ := by
-    sorry
+    aesop
   apply And.intro
   rw [← code]
   exact IsERC20_of_preservesEvm preserves_final is_erc20
 
   apply And.intro
-  rw [lookup, ok_state] at code
-  rw [← code]
-
-  unfold State.lookup!
-  simp
-  have : sload _ bal_addr = sload s.evm bal_addr := sload_eq_of_preservesEvm (by simp) is_ok preserves
-  symm
-  rw [ok_state] at this
-  simp at this
-  exact this
+  · rw [←code]
+    unfold preservesEvm
+    aesop
+  · rw [← code]
+    have : Ok evmₛ varstore⟦var↦sload evmₛ address⟧[var]!! = sload evmₛ address := by aesop
+    rw [this]
+    simp
+    rw [hasBalance]
+    have hPreserved : preserved (Ok evm varstore).evm evmₛ := by
+      unfold preservesEvm at preserves_final
+      aesop
+    have : sload (Ok evm varstore).evm address = sload evmₛ address := by
+      unfold EVMState.sload EVMState.lookupAccount
+      rw [ preserves_account_map hPreserved
+        , preserves_execution_env hPreserved
+        ]
+    rw [this]
 
 end
 
