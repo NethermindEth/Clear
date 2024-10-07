@@ -65,7 +65,7 @@ def Account.lookupStorage (act : Account) (k : UInt256) : UInt256 :=
   | _ => 0
 
 def Account.updateStorage (act : Account) (k v : UInt256) : Account :=
-  if v == default then
+  if v == 0 then
     { act with storage := act.storage.erase k }
   else
     { act with storage := Finmap.insert k v act.storage}
