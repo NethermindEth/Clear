@@ -32,29 +32,29 @@ lemma Spec_ok_unfold {P : State → State → Prop} :
     unfold Spec
     aesop
 
--- | Specs that are somewhat pure
-@[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
-def PureSpec (R : State → State → Prop) : State → State → Prop :=
-  Spec (R ∩ (preserved on evm))
+-- -- | Specs that are somewhat pure
+-- @[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
+-- def PureSpec (R : State → State → Prop) : State → State → Prop :=
+--   Spec (R ∩ (preserved on evm))
 
-lemma PureSpec_ok_unfold {P : State → State → Prop} :
-  ∀ {s s' : State}, s.isOk → ¬ ❓ s' → PureSpec P s s' → (P ∩ (preserved on evm)) s s' := by
-    intros s s' h h'
-    unfold PureSpec Spec
-    aesop
+-- lemma PureSpec_ok_unfold {P : State → State → Prop} :
+--   ∀ {s s' : State}, s.isOk → ¬ ❓ s' → PureSpec P s s' → (P ∩ (preserved on evm)) s s' := by
+--     intros s s' h h'
+--     unfold PureSpec Spec
+--     aesop
 
--- | Specs for code that might result in hash collision
-@[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
-def CollidingSpec (R : State → State → Prop) (s₀ s₁ : State) : Prop :=
-  if s₀.evm.hash_collision
-  then ❓ s₁
-  else ¬ s₁.evm.hash_collision → Spec R s₀ s₁
+-- -- | Specs for code that might result in hash collision
+-- @[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
+-- def CollidingSpec (R : State → State → Prop) (s₀ s₁ : State) : Prop :=
+--   if s₀.evm.hash_collision
+--   then ❓ s₁
+--   else ¬ s₁.evm.hash_collision → Spec R s₀ s₁
 
-lemma CollidingSpec_ok_unfold {P : State → State → Prop} :
-  ∀ {s s' : State}, s.isOk → ¬ ❓ s' → ¬ s'.evm.hash_collision → CollidingSpec P s s' → P s s' := by
-    intros s s' h h' h''
-    unfold CollidingSpec Spec
-    aesop
+-- lemma CollidingSpec_ok_unfold {P : State → State → Prop} :
+--   ∀ {s s' : State}, s.isOk → ¬ ❓ s' → ¬ s'.evm.hash_collision → CollidingSpec P s s' → P s s' := by
+--     intros s s' h h' h''
+--     unfold CollidingSpec Spec
+--     aesop
 
 open Lean Elab Tactic in
 elab "clr_spec" "at" h:ident : tactic => do

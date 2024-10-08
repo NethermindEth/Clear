@@ -18,10 +18,8 @@ set_option linter.setOption false
 set_option pp.coercions false
 
 def A_mapping_index_access_mapping_address_uint256_of_address (dataSlot : Identifier) (slot key : Literal) (s₀ s₉ : State) : Prop :=
-  ∀ {address},
-  let account := Address.ofUInt256 key
-  s₀.evm.keccak_map.lookup [ ↑account , slot ] = some address →
-  preservesEvm s₀ s₉ ∧ s₉.isOk ∧ s₉[dataSlot]!! = address
+  preservesEvm s₀ s₉ ∧ s₉.isOk ∧
+  s₉.evm.keccak_map.lookup [ ↑(Address.ofUInt256 key), slot ] = some (s₉[dataSlot]!!)
 
 -- Helper reifications
 lemma shift_eq_size : Fin.shiftLeft (n := UInt256.size) 1 160 = Address.size := by
@@ -39,43 +37,44 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
   apply spec_eq
   intro hasFuel
   clr_funargs
+  sorry
 
-  rw [ EVMSub', EVMShl', EVMAddrSize' ]; simp
-  rw [ Address.and_size_eq_ofUInt256 ]
-  rw [ multifill_cons, multifill_nil ]
-  simp
+  -- rw [ EVMSub', EVMShl', EVMAddrSize' ]; simp
+  -- rw [ Address.and_size_eq_ofUInt256 ]
+  -- rw [ multifill_cons, multifill_nil ]
+  -- simp
 
-  clr_varstore
+  -- clr_varstore
 
-  generalize acconut_def : Address.ofUInt256 key = account
-  intro prog address hasAddress
+  -- generalize acconut_def : Address.ofUInt256 key = account
+  -- intro prog address hasAddress
 
-  generalize prep_def : (mstore evm 0 ↑↑account).mstore 32 slot = state_prep
-  unfold keccak256 at prog
-  rw [ interval'_eq_interval 2 two_ne_zero (by norm_cast)
-     , mstore_mstore_of_ne, interval_of_mstore_eq_val_cons
-     , mstore_mstore_of_ne, zero_add, interval_of_mstore_eq_val_cons
-     , interval_of_0_eq_nil
-     ] at prog
-  unfold_let at prog
-  rw [ mstore_preserves_keccak_map, mstore_preserves_keccak_map
-     , hasAddress
-     ] at prog
-  simp at prog
-  unfold setEvm State.insert State.lookup! at prog
-  simp at prog
+  -- generalize prep_def : (mstore evm 0 ↑↑account).mstore 32 slot = state_prep
+  -- unfold keccak256 at prog
+  -- rw [ interval'_eq_interval 2 two_ne_zero (by norm_cast)
+  --    , mstore_mstore_of_ne, interval_of_mstore_eq_val_cons
+  --    , mstore_mstore_of_ne, zero_add, interval_of_mstore_eq_val_cons
+  --    , interval_of_0_eq_nil
+  --    ] at prog
+  -- unfold_let at prog
+  -- rw [ mstore_preserves_keccak_map, mstore_preserves_keccak_map
+  --    , hasAddress
+  --    ] at prog
+  -- simp at prog
+  -- unfold setEvm State.insert State.lookup! at prog
+  -- simp at prog
 
 
-  rw [← prog]
-  unfold State.lookup!
+  -- rw [← prog]
+  -- unfold State.lookup!
 
-  apply And.intro
-  · apply preservesEvm_eq
-    simp
-    apply preserved_trans (e₁ := mstore evm 0 ↑↑account)
-    · exact mstore_preserves
-    · exact mstore_preserves
-  · simp
+  -- apply And.intro
+  -- · apply preservesEvm_eq
+  --   simp
+  --   apply preserved_trans (e₁ := mstore evm 0 ↑↑account)
+  --   · exact mstore_preserves
+  --   · exact mstore_preserves
+  -- · simp
 
   end
 
