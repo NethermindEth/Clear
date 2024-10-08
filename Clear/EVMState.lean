@@ -96,11 +96,8 @@ lemma top_le_UInt256_size : top ≤ UInt256.size := le_of_lt top_lt_UInt256_size
 
 lemma ofUInt256_lt_UInt256_size {u : UInt256} : ↑(ofUInt256 u) < UInt256.size := by
   unfold ofUInt256 Fin.ofNat
-  simp; rw [← size_def]; simp
-  simp_rw [← UInt256.size_def]
-  trans size
-  · exact Nat.mod_lt u (LT.lt.gt zero_lt_size)
-  · exact size_lt_UInt256_size
+  trans (2 ^ 160) <;>
+    simp only [UInt256.size, Nat.reducePow, Nat.reduceAdd, gt_iff_lt, Nat.ofNat_pos, Nat.mod_lt, Nat.reduceLT]
 
 lemma ofUInt256_eq_mod (u : UInt256) : ↑(ofUInt256 u) = u.val % size := by
   unfold ofUInt256 Fin.ofNat
