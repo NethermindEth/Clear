@@ -164,37 +164,42 @@ instance : Inhabited EVMState :=
 
 abbrev EVM := EVMState
 
+instance instFinmapPreorder : Preorder (Finmap (λ _ : List UInt256 ↦ UInt256)) where
+  le a b := a.keys ⊆ b.keys ∧ ∀ {key}, key ∈ a → a.lookup key = b.lookup key
+  le_refl := by aesop
+  le_trans := by aesop (add safe forward subset_trans)
+
 def preserved : EVMState → EVMState → Prop :=
   λ a b ↦ (Eq on EVMState.account_map) a b ∧
           (Eq on EVMState.hash_collision) a b ∧
           (Eq on EVMState.execution_env) a b ∧
-          (Eq on EVMState.keccak_map) a b
+          (a.keccak_map ≤ b.keccak_map)
 
-lemma preserved_def {e₀ e₁ : EVM} : preserved e₀ e₁ =
-  (e₀.account_map   = e₁.account_map ∧
-  e₀.hash_collision = e₁.hash_collision ∧
-  e₀.execution_env = e₁.execution_env ∧
-  e₀.keccak_map = e₁.keccak_map)  := by
+lemma preserved_def {σ₀ σ₁ : EVM} : preserved σ₀ σ₁ =
+  (σ₀.account_map    = σ₁.account_map ∧
+   σ₀.hash_collision = σ₁.hash_collision ∧
+   σ₀.execution_env  = σ₁.execution_env ∧
+   σ₀.keccak_map     ≤ σ₁.keccak_map) := by
   unfold preserved
   dsimp
 
-def preserves_account_map {evm evm' : EVMState} (h : preserved evm evm') :
+def preserved_account_map {evm evm' : EVMState} (h : preserved evm evm') :
   evm.account_map = evm'.account_map := by
   rw [preserved_def] at h
   exact h.1
 
-def preserves_collision {evm evm' : EVMState} (h : preserved evm evm') :
+def preserved_collision {evm evm' : EVMState} (h : preserved evm evm') :
   evm.hash_collision = evm'.hash_collision := by
   rw [preserved_def] at h
   exact h.2.1
 
-def preserves_execution_env {evm evm' : EVMState} (h : preserved evm evm') :
+def preserved_execution_env {evm evm' : EVMState} (h : preserved evm evm') :
   evm.execution_env = evm'.execution_env := by
   rw [preserved_def] at h
   exact h.2.2.1
 
-def preserves_keccak_map {evm evm' : EVMState} (h : preserved evm evm') :
-  evm.keccak_map = evm'.keccak_map := by
+def mono_keccak_map {evm evm' : EVMState} (h : preserved evm evm') :
+  evm.keccak_map ≤ evm'.keccak_map := by
   rw [preserved_def] at h
   exact h.2.2.2
 
@@ -203,26 +208,15 @@ lemma preserved_rfl {e : EVM} : preserved e e := by
   rw [preserved_def]
   simp
 
-lemma preserved_symm {e₀ e₁ : EVM} : preserved e₀ e₁ = preserved e₁ e₀ := by
-  rw [preserved_def, preserved_def]
-  ext
-  apply Iff.intro <;> {
-    intro ⟨acc, col, env, kec⟩
-    symm at acc col env kec
-    exact ⟨acc, col, env, kec⟩
-  }
-
-@[simp]
 lemma preserved_trans {e₀ e₁ e₂ : EVM} :
   preserved e₀ e₁ → preserved e₁ e₂ → preserved e₀ e₂ := by
   rw (config := {occs := .pos [3]}) [preserved_def]
   intro h₀ h₁
-  have acc := Eq.trans (preserves_account_map h₀) (preserves_account_map h₁)
-  have col := Eq.trans (preserves_collision h₀) (preserves_collision h₁)
-  have env := Eq.trans (preserves_execution_env h₀) (preserves_execution_env h₁)
-  have kec := Eq.trans (preserves_keccak_map h₀) (preserves_keccak_map h₁)
-  constructor; swap; constructor; swap; constructor
-  all_goals assumption
+  have acc := Eq.trans (preserved_account_map h₀) (preserved_account_map h₁)
+  have col := Eq.trans (preserved_collision h₀) (preserved_collision h₁)
+  have env := Eq.trans (preserved_execution_env h₀) (preserved_execution_env h₁)
+  have kec := le_trans (mono_keccak_map h₀) (mono_keccak_map h₁)
+  aesop
 
 -- functions for querying balance
 
@@ -400,10 +394,17 @@ def evm_return (σ : EVMState) (mstart s : UInt256) : EVMState :=
 def evm_revert (σ : EVMState) (mstart s : UInt256) : EVMState :=
   σ.evm_return mstart s
 
-lemma mstore_preserves {evm} {pos val} : preserved evm (evm.mstore pos val) := by
+lemma mstore_preserved {σ} {pos val} : preserved σ (σ.mstore pos val) := by
   unfold mstore updateMemory
   rw [preserved_def]
   simp
+
+lemma sload_eq_of_preserved {σ₀ σ₁} {pos} (h : preserved σ₀ σ₁) :
+  sload σ₀ pos = sload σ₁ pos := by
+  unfold sload lookupAccount
+  rw [ preserved_account_map h
+     , preserved_execution_env h
+     ]
 
 end
 
