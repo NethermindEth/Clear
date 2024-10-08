@@ -84,7 +84,7 @@ lemma evm_eq_symm_of_isPure_ok_ok {evm evm'} {vs vs'} (h : isPure (Ok evm vs) (O
 
 def preservesEvm (s₀ : State) (s₁ : State) : Prop :=
   match s₀, s₁ with
-  | .Ok e₀ _, .Ok e₁ _ => preserved e₀ e₁
+  | .Ok e₀ _, .Ok e₁ _ => Preserved e₀ e₁
   | _, _ => True
 
 lemma preservesEvm_of_isOk {s₀ s₁ : State} (s₀_ok : s₀.isOk) (s₁_ok : s₁.isOk) :
@@ -95,7 +95,7 @@ lemma preservesEvm_of_isOk {s₀ s₁ : State} (s₀_ok : s₀.isOk) (s₁_ok : 
   s₀.evm.keccak_map ≤ s₁.evm.keccak_map) := by
   unfold preservesEvm
   cases s₀ <;> cases s₁ <;> simp at *
-  rw [preserved_def]
+  rw [Preserved_def]
   intro _; assumption
 
 @[simp]
@@ -107,10 +107,10 @@ lemma preservesEvm_trans {s₀ s₁ s₂} (h : s₁.isOk) :
   preservesEvm s₀ s₁ → preservesEvm s₁ s₂ → preservesEvm s₀ s₂ := by
   unfold preservesEvm
   cases s₀ <;> cases s₁ <;> cases s₂ <;> simp_all
-  exact preserved_trans
+  exact Preserved.trans
 
 lemma preservesEvm_of_preserved (s₀ : State) (s₁ : State) :
-  preserved s₀.evm s₁.evm → preservesEvm s₀ s₁ := by
+  Preserved s₀.evm s₁.evm → preservesEvm s₀ s₁ := by
   unfold preservesEvm
   cases s₀ <;> cases s₁ <;> simp
   simp [evm]
