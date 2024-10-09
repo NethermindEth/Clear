@@ -17,7 +17,10 @@ structure ERC20 where
   balances : BalanceMap
   allowances : AllowanceMap
 
-def acc (a : Option UInt256) : Prop :=
+set_option linter.setOption false
+set_option pp.coercions false
+
+def not_mem_private (a : Option UInt256) : Prop :=
   match a with
   | some el => el ∉ ERC20Private.toFinset
   | none => true
@@ -38,20 +41,21 @@ structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
     s.evm.keccak_map.lookup [ ↑spender , intermediate ] = some address →
     erc20.allowances.lookup ⟨owner, spender⟩ = some (s.evm.sload address)
 
-  -- mem : account ∉ erc20.balances
   storageDom :
     s.evm.storage.keys =
       { address | ∃ account,
         account ∈ erc20.balances ∧
-        some address = s.evm.keccak_map.lookup [ ↑account, ERC20Private.balances ] } ∪
+        some address = s.evm.keccak_map.lookup [ ↑account, ERC20Private.balances ] }.toFinset ∪
       { address | ∃ owner spender,
         ⟨owner, spender⟩ ∈ erc20.allowances ∧
         ∃ intermediate, s.evm.keccak_map.lookup [ ↑owner , ERC20Private.allowances ] = some intermediate ∧
-        s.evm.keccak_map.lookup [ ↑spender , intermediate ] = some address } ∪
+        s.evm.keccak_map.lookup [ ↑spender , intermediate ] = some address }.toFinset ∪
       ERC20Private.toFinset
 
   block_acc_range :
-    ∀ {account}, acc (s.evm.keccak_map.lookup [ ↑account, ERC20Private.balances ])
+    ∀ {var},
+    not_mem_private (s.evm.keccak_map.lookup [ ↑var, ERC20Private.balances ]) ∧
+    not_mem_private (s.evm.keccak_map.lookup [ ↑var, ERC20Private.allowances ])
 
   -- block_allowance_range :
   --   ∀ {owner}, s.evm.keccak_map.lookup [ ↑owner, ERC20Private.allowances ] ∉ ERC20Private.toFinset
@@ -59,6 +63,11 @@ structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
     -- equivalent statements
     -- s.evm.sload address ∈ erc20.balances.lookup account
     -- ⟨account, s.evm.sload address⟩ ∈ erc20.balances.entries
+
+lemma w {erc20} {s} {account} (is_erc20 : IsERC20 erc20 s) (not_mem: account ∉ erc20.balances) :
+  (s.evm.keccak_range.partition (λ x ↦ x ∈ s.evm.used_range)).2 ∩ s.evm.storage.keys.toList = ∅
+  := by
+  sorry
 
 lemma IsERC20_of_insert {erc20} {s : State} :
   ∀ {var val}, IsERC20 erc20 s → IsERC20 erc20 (s⟦var↦val⟧) := by
@@ -68,16 +77,17 @@ lemma IsERC20_of_insert {erc20} {s : State} :
   · exact is_erc.hasBalance
   · exact is_erc.hasAllowance
   · exact is_erc.storageDom
+  sorry
 
 lemma IsERC20_of_ok_forall_store {erc20} {evm} {s₀ s₁} :
   IsERC20 erc20 (Ok evm s₀) → IsERC20 erc20 (Ok evm s₁) := by
   intro is_erc
-  constructor <;> (rw [State.evm]; simp)
+  constructor <;> (try simp [State.evm])
   · exact is_erc.hasSupply
   · exact is_erc.hasBalance
   · exact is_erc.hasAllowance
-  · have := get_evm_of_ok ▸ is_erc.storageDom
-    exact this
+  · exact is_erc.storageDom
+  sorry
 
 lemma IsERC20_of_ok_of_Preserved {erc20} {store} {σ₀ σ₁} (h : Preserved σ₀ σ₁) : 
   IsERC20 erc20 (Ok σ₀ store) → IsERC20 erc20 (Ok σ₁ store) := by
@@ -85,10 +95,6 @@ lemma IsERC20_of_ok_of_Preserved {erc20} {store} {σ₀ σ₁} (h : Preserved σ
   
 lemma IsERC20_of_preservesEvm {erc20} {s₀ s₁} :
   preservesEvm s₀ s₁ → IsERC20 erc20 s₀ → IsERC20 erc20 s₁ := by
-  sorry
-
-lemma sload_of_IsERC20_outside {erc20} {s} (h : IsERC20 erc20 s) :
-  ∀ {addr}, addr ∉ s.evm.storage.keys → s.evm.sload addr = 0 := by
   sorry
 
 lemma t {erc20} {s₀ s₁} (is_erc20 : IsERC20 erc20 s₀) (h : preservesEvm s₀ s₁) :

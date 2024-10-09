@@ -515,17 +515,19 @@ lemma interval'_eq_interval {ms} {start last} (d : ℕ) :
     mkInterval ms start d := by
   sorry
 
+#eval List.partition (λ _ ↦ false) ([] : List UInt256)
+
 def keccak256 (σ : EVMState) (p n : UInt256) : Option (UInt256 × EVMState) :=
   let interval : List UInt256 := List.map (Nat.toUInt256 ∘ fromBytes!) (List.toChunks 32 (mkInterval' σ.machine_state.memory p n))
   match Finmap.lookup interval σ.keccak_map with
   | .some val => .some (val, σ)
   | .none     =>
-    match σ.keccak_range.partition (λ x => x ∈ σ.used_range) with
-    | (_,(r :: rs)) =>
+    match σ.keccak_range.filter (· ∉ σ.used_range) with
+    | r :: rs =>
       .some (r, {σ with keccak_map := σ.keccak_map.insert interval r,
                         keccak_range := rs,
                         used_range := {r} ∪ σ.used_range })
-    | (_, []) => .none
+    | [] => .none
 
 -- code copy
 
@@ -662,6 +664,15 @@ lemma sload_eq_of_preserved {σ₀ σ₁} {pos} (h : Preserved σ₀ σ₁) :
   rw [ h.account_map
      , h.execution_env
      ]
+
+lemma storage_eq_of_preserved {σ₀ σ₁} (h : Preserved σ₀ σ₁) :
+  σ₀.storage = σ₁.storage := by
+  unfold storage lookupAccount
+  rw [h.account_map, h.execution_env]
+
+lemma sload_of_not_mem_dom {evm : EVMState} :
+  ∀ {addr}, addr ∉ evm.storage.keys → evm.sload addr = 0 := by
+  sorry
 
 end
 
