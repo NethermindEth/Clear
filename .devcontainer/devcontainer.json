@@ -29,6 +29,11 @@
       ]
     },
     "codespaces": {
+      "repositories": {
+        "Coda-Coda/Nethermind-Clear": {
+          "permissions": "write-all"
+        }
+      }
     }
   }
 }
