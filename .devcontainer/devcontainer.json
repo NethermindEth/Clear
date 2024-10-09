@@ -1,0 +1,34 @@
+{
+  // See https://github.com/xtruder/nix-devcontainer. Used under the MIT licence, https://github.com/xtruder/nix-devcontainer/blob/main/LICENSE.
+  "name": "nethermind-clear-in-codespaces",
+  "dockerFile": "Dockerfile",
+  "context": "${localWorkspaceFolder}",
+  "build": {
+    "args": {
+      "USER_UID": "${localEnv:USER_UID}",
+      "USER_GID": "${localEnv:USER_GID}"
+    }
+  },
+
+  "runArgs": [
+    "--security-opt", "label=disable"
+  ],
+
+  "containerEnv": {
+  },
+
+  "overrideCommand": false,
+  "userEnvProbe": "loginShell",
+  "updateRemoteUserUID": false,
+  "forwardPorts": [],
+
+  "customizations": {
+   "vscode": {
+      "extensions": [
+        "leanprover.lean4"
+      ]
+    },
+    "codespaces": {
+    }
+  }
+}
