@@ -672,8 +672,22 @@ lemma storage_eq_of_preserved {σ₀ σ₁} (h : Preserved σ₀ σ₁) :
 
 lemma sload_of_not_mem_dom {evm : EVMState} :
   ∀ {addr}, addr ∉ evm.storage.keys → evm.sload addr = 0 := by
-  sorry
-
+  intros addr hAddrInStorage
+  unfold sload
+  cases h : evm.lookupAccount evm.execution_env.code_owner <;> simp
+  case some account =>
+    unfold lookupAccount at h
+    unfold Account.lookupStorage
+    cases h₂ : Finmap.lookup addr account.storage <;> simp
+    case some val =>
+      exfalso
+      apply hAddrInStorage
+      have : account.storage = evm.storage := by
+        unfold storage
+        unfold lookupAccount
+        rw [h]
+      rw [←this]
+      apply Finmap.mem_of_lookup_eq_some h₂
 end
 
 section Memory
