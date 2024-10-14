@@ -17,9 +17,6 @@ def A_fun_balanceOf (var : Identifier) (var_account : Literal) (s₀ s₉ : Stat
   IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
   s₉[var]!! = (erc20.balances.lookup account).getD 0
 
-set_option linter.setOption false
-set_option pp.coercions false
-
 lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   Spec (fun_balanceOf_concrete_of_code.1 var var_account) s₀ s₉ →
   Spec (A_fun_balanceOf var var_account) s₀ s₉ := by
@@ -51,11 +48,6 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   rw [ s_eq_ok, preservesEvm_of_insert, preservesEvm_of_insert ] at preservesEvm
   have Preserved := Preserved_of_preservesEvm_of_Ok preservesEvm
 
-  -- have : Address.ofUInt256 var_account ∈ erc20.balances := sorry
-  -- obtain ⟨address, hasAddress, hasBalance⟩ := is_erc20.hasBalance this
-  -- obtain ⟨preserves, is_ok, lookup⟩ := keccak hasAddress
-  -- obtain ⟨evmₛ, varstoreₛ, ok_state⟩ := State_of_isOk is_ok
-
   apply And.intro
   -- IsERC20 for the final state
   exact IsERC20_of_preservesEvm (by aesop) is_erc20
@@ -71,9 +63,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   by_cases mem : Address.ofUInt256 var_account ∈ erc20.balances
   -- there is such account in balances
   obtain ⟨address, has_address, balance⟩ := is_erc20.hasBalance mem
-  generalize account_def : Address.ofUInt256 var_account = account at *
 
-  simp only [State.evm] at keccak has_address
   have address_def : s["_2"]!! = address := by
     rw [s_eq_ok]
     rw [← Option.some_inj]
@@ -110,16 +100,17 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   split_ands
   -- address not in balances
   · intro account account_mem_balances
+    obtain ⟨address, has_address, balance⟩ := is_erc20.hasBalance account_mem_balances
     rw [ ← keccak
        , keccak_map_lookup_eq_of_Preserved_of_lookup
-           Preserved
-           (is_erc20.hasBalance account_mem_balances).2.1 ]
+           Preserved has_address ]
     by_contra h
     have : [↑↑account, ERC20Private.balances] ∈ evmₛ.keccak_map.keys := by
       rw [Finmap.mem_keys]
       apply Finmap.lookup_isSome.mp
-      have := get_evm_of_ok ▸ (s_erc20.hasBalance account_mem_balances).2.1
-      rw [this]
+      have := get_evm_of_ok ▸ has_address
+      rw [ ← keccak_map_lookup_eq_of_Preserved_of_lookup Preserved has_address
+         , this ]
       simp
     have keccak_inj := evmₛ.keccak_inj this (Eq.symm h)
 
@@ -137,7 +128,6 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
     obtain ⟨erc_address, erc_intermediate, owner_lookup, spender_lookup, eq⟩ :=
       is_erc20.hasAllowance mem_allowances
     rw [get_evm_of_ok] at owner_lookup spender_lookup
-    have owner_lookup_s := keccak_map_lookup_eq_of_Preserved_of_lookup Preserved owner_lookup
     have spender_lookup_s := keccak_map_lookup_eq_of_Preserved_of_lookup Preserved spender_lookup
     push_neg
     use erc_intermediate
