@@ -102,6 +102,14 @@ lemma size_le_UInt256_size : size ≤ UInt256.size := le_of_lt size_lt_UInt256_s
 lemma top_lt_UInt256_size : top < UInt256.size := by decide
 lemma top_le_UInt256_size : top ≤ UInt256.size := le_of_lt top_lt_UInt256_size
 
+lemma val_lt_UInt256_size : ∀ {u : Address}, u.val < UInt256.size := by
+  intro u
+  trans size
+  · exact u.2
+  · exact size_lt_UInt256_size
+
+lemma val_le_UInt256_size : ∀ {u : Address}, u.val ≤ UInt256.size := le_of_lt val_lt_UInt256_size
+
 lemma ofUInt256_lt_UInt256_size {u : UInt256} : ↑(ofUInt256 u) < UInt256.size := by
   unfold ofUInt256 Fin.ofNat
   simp; rw [← size_def]; simp
@@ -407,10 +415,18 @@ structure EVMState : Type where
   -- blocks
   blocks : List EVMBlock
   hash_collision : Bool
+  -- props
+  keccak_inj   : ∀ {a b},
+    (a ∈ keccak_map.keys) → keccak_map.lookup a = keccak_map.lookup b → a = b
+  keccak_used_range : (keccak_map.entries.toList.map Sigma.snd).toFinset ⊆ used_range
 deriving DecidableEq
 
 instance : Inhabited EVMState :=
-  ⟨ ∅ , default, default , ∅ , default, ∅ , default , False ⟩
+  ⟨ ∅ , default, default , ∅ , default, ∅ , default , False , (by aesop), (by
+  have : (∅ : Finmap (λ _ : List UInt256 ↦ UInt256)) = ⟨∅, Multiset.nodup_zero⟩ := by rfl
+  rw [this]
+  dsimp
+  simp [Multiset.empty_toList]) ⟩
 
 abbrev EVM := EVMState
 
@@ -515,8 +531,6 @@ lemma interval'_eq_interval {ms} {start last} (d : ℕ) :
     mkInterval ms start d := by
   sorry
 
-#eval List.partition (λ _ ↦ false) ([] : List UInt256)
-
 def keccak256 (σ : EVMState) (p n : UInt256) : Option (UInt256 × EVMState) :=
   let interval : List UInt256 := List.map (Nat.toUInt256 ∘ fromBytes!) (List.toChunks 32 (mkInterval' σ.machine_state.memory p n))
   match Finmap.lookup interval σ.keccak_map with
@@ -526,8 +540,25 @@ def keccak256 (σ : EVMState) (p n : UInt256) : Option (UInt256 × EVMState) :=
     | r :: rs =>
       .some (r, {σ with keccak_map := σ.keccak_map.insert interval r,
                         keccak_range := rs,
-                        used_range := {r} ∪ σ.used_range })
+                        used_range := {r} ∪ σ.used_range
+                        keccak_inj := sorry
+                        keccak_used_range := sorry })
     | [] => .none
+
+lemma keccak_map_lookup_injective_of_mem {σ : EVMState} {a b : List UInt256} (ha : a ∈ σ.keccak_map) :
+  σ.keccak_map.lookup a = σ.keccak_map.lookup b → a = b := by
+  sorry
+
+-- lemma keccak_map_lookup_injective_of_not_mem {σ : EVMState} {a b : List UInt256} (ha : a ∈ σ.keccak_map) (hb : b ∉ σ.keccak_map) :
+--   σ.keccak_map.lookup a = σ.keccak_map.lookup b → a ≠ b := by
+--   sorry
+
+lemma keccak_map_lookup_eq_of_Preserved_of_lookup {σ₀ σ₁} {addr} {b}
+  (p : Preserved σ₀ σ₁) (h : Finmap.lookup addr σ₀.keccak_map = some b) :
+  σ₀.keccak_map.lookup addr = σ₁.keccak_map.lookup addr := by
+    apply p.keccak_map.2
+    rw [Finmap.mem_iff]
+    use b
 
 -- code copy
 
@@ -621,7 +652,11 @@ def sstore (σ : EVMState) (spos sval : UInt256) : EVMState :=
   match σ.lookupAccount σ.execution_env.code_owner with
   | .some act =>
     let σ' := σ.updateAccount σ.execution_env.code_owner (act.updateStorage spos sval)
-    {σ' with used_range := {spos} ∪ σ'.used_range}
+    {σ' with used_range := {spos} ∪ σ'.used_range
+             keccak_used_range :=
+               by trans σ'.used_range
+                  · exact σ'.keccak_used_range
+                  · exact Finset.subset_union_right}
   | .none => σ
 
 def msize (σ : EVMState) : UInt256 :=
