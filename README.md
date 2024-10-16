@@ -13,6 +13,11 @@ There are two parts.
 ## The Lean framework
 Download and install Lean 4. One can follow https://lean-lang.org/lean4/doc/quickstart.html.
 
+To obtain precompiled files for the dependency Mathlib, run the following in the root directory (this is optional, it saves time): 
+```
+lake exe cache get
+```
+
 Then simply run the following in the root directory:
 ```
 lake build
