@@ -401,6 +401,18 @@ instance : Inhabited ExecutionEnv :=
 
 -- definition of the evm state
 
+@[simp]
+def keccak_prod : (Σ _ : List UInt256, UInt256) → List UInt256 × UInt256 :=
+  (Equiv.sigmaEquivProd (List UInt256) UInt256).toFun
+
+@[simp]
+def keccak_key : (Σ _ : List UInt256, UInt256) → List UInt256 :=
+  Prod.fst ∘ keccak_prod
+
+@[simp]
+def keccak_val : (Σ _ : List UInt256, UInt256) → UInt256 :=
+  Prod.snd ∘ keccak_prod
+
 structure EVMState : Type where
   -- account map
   account_map : Finmap (λ _ : Address => Account)
@@ -418,7 +430,7 @@ structure EVMState : Type where
   -- props
   keccak_inj   : ∀ {a b},
     (a ∈ keccak_map.keys) → keccak_map.lookup a = keccak_map.lookup b → a = b
-  keccak_used_range : (keccak_map.entries.toList.map Sigma.snd).toFinset ⊆ used_range
+  keccak_used_range : (keccak_map.entries.toList.map keccak_val).toFinset ⊆ used_range
 deriving DecidableEq
 
 instance : Inhabited EVMState :=
@@ -531,6 +543,13 @@ lemma interval'_eq_interval {ms} {start last} (d : ℕ) :
     mkInterval ms start d := by
   sorry
 
+lemma mem_sigma_proj {α} {β} {l : List (Σ _ : α, β)} :
+  ∀ {a : Σ _ : α, β}, a ∈ l → a.2 ∈ l.map (Prod.snd ∘ (Equiv.sigmaEquivProd α β).toFun) := by
+  intro ⟨a, b⟩ mem
+  simp only [ Equiv.toFun_as_coe, List.mem_map, Function.comp_apply
+            , Equiv.sigmaEquivProd_apply, Sigma.exists, exists_eq_right ]
+  use a, mem
+
 def keccak256 (σ : EVMState) (p n : UInt256) : Option (UInt256 × EVMState) :=
   let interval : List UInt256 := List.map (Nat.toUInt256 ∘ fromBytes!) (List.toChunks 32 (mkInterval' σ.machine_state.memory p n))
   match Finmap.lookup interval σ.keccak_map with
@@ -538,20 +557,36 @@ def keccak256 (σ : EVMState) (p n : UInt256) : Option (UInt256 × EVMState) :=
   | .none     =>
     match σ.keccak_range.filter (· ∉ σ.used_range) with
     | r :: rs =>
-      .some (r, {σ with keccak_map := σ.keccak_map.insert interval r,
-                        keccak_range := rs,
-                        used_range := {r} ∪ σ.used_range
-                        keccak_inj := sorry
-                        keccak_used_range := sorry })
+      .some (
+        r,
+        {σ with
+          keccak_map := σ.keccak_map.insert interval r,
+          keccak_range := rs,
+          used_range := {r} ∪ σ.used_range
+          keccak_inj := sorry
+          keccak_used_range := by
+            rw [Finset.subset_iff]
+            simp
+            intro val key mem
+            rw [ ← Finmap.lookup_eq_some_iff -- mem_lookup_iff
+               ] at mem
+            have key_mem_insert := Finmap.mem_of_lookup_eq_some mem
+            have prev := σ.keccak_used_range
+            by_cases h : key = interval
+            rw [h] at mem
+            left;
+            simp at mem
+            exact Eq.symm mem
+
+            right
+            apply Finset.mem_of_subset σ.keccak_used_range
+            simp [ mem_sigma_proj ]
+            use key
+            rw [ Finmap.lookup_insert_of_ne σ.keccak_map h, Finmap.lookup_eq_some_iff ] at mem
+            exact mem
+        }
+      )
     | [] => .none
-
-lemma keccak_map_lookup_injective_of_mem {σ : EVMState} {a b : List UInt256} (ha : a ∈ σ.keccak_map) :
-  σ.keccak_map.lookup a = σ.keccak_map.lookup b → a = b := by
-  sorry
-
--- lemma keccak_map_lookup_injective_of_not_mem {σ : EVMState} {a b : List UInt256} (ha : a ∈ σ.keccak_map) (hb : b ∉ σ.keccak_map) :
---   σ.keccak_map.lookup a = σ.keccak_map.lookup b → a ≠ b := by
---   sorry
 
 lemma keccak_map_lookup_eq_of_Preserved_of_lookup {σ₀ σ₁} {addr} {b}
   (p : Preserved σ₀ σ₁) (h : Finmap.lookup addr σ₀.keccak_map = some b) :
