@@ -74,128 +74,130 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
   rw [ preservesEvm_of_insert' ]
   exact preservesEvm_of_preserved _ _ hPreserved''
 
-  -- lookup balance
+  -- lookup allowance
   clr_varstore
   by_cases mem : ⟨Address.ofUInt256 var_owner, Address.ofUInt256 var_spender⟩ ∈ erc20.allowances
-  -- there is such ⟨owner, spender⟩ in allowances
-  obtain ⟨address, intermediate, has_intermediate, has_address, balance⟩ := is_erc20.hasAllowance mem
+  · -- there is such ⟨owner, spender⟩ in allowances
+    obtain ⟨address, intermediate, has_intermediate, has_address, allowance⟩ := is_erc20.hasAllowance mem
 
-  have intermediate_def : s["_2"]!! = intermediate := by
-    rw [s_eq_ok]
-    rw [← Option.some_inj]
-    trans
-    · have := Eq.symm (s_eq_ok ▸ keccak)
-      exact this
-    · exact (keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved has_intermediate
-        ▸ has_intermediate)
+    have intermediate_def : s["_2"]!! = intermediate := by
+      rw [s_eq_ok]
+      rw [← Option.some_inj]
+      trans
+      · have := Eq.symm (s_eq_ok ▸ keccak)
+        exact this
+      · exact (keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved has_intermediate
+          ▸ has_intermediate)
 
-  have address_def : s'["_3"]!! = address := by
-    rw [s_eq_ok']
-    rw [← Option.some_inj]
-    trans
-    · have := Eq.symm (s_eq_ok' ▸ keccak')
-      exact this
-    · rw [intermediate_def]
-      have : s["var_spender"]!! = var_spender := by sorry
-      rw [this]
-      exact (keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' has_address ▸ has_address)
+    have address_def : s'["_3"]!! = address := by
+      rw [s_eq_ok']
+      rw [← Option.some_inj]
+      trans
+      · have := Eq.symm (s_eq_ok' ▸ keccak')
+        exact this
+      · rw [intermediate_def]
+        have : s["var_spender"]!! = var_spender := by sorry
+        rw [this]
+        exact (keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' has_address ▸ has_address)
 
-  -- up to here
+    rw [address_def] at code ⊢
+    rw [ allowance
+      , Option.getD_some
+      , State.get_evm_of_ok
+      , ← sload_eq_of_preserved hPreserved''
+      ]
+  · -- there is *no* such account in allowances
+    -- so sload should return 0
+    rw [ Finmap.lookup_eq_none.mpr mem
+      , Option.getD_none
+      ]
 
-  rw [address_def] at code ⊢
-  rw [ balance
-     , Option.getD_some
-     , State.get_evm_of_ok
-     , ← sload_eq_of_preserved hPreserved''
-     ]
+    -- in order to do that it should be given storage address outside of
+    -- its domain
+    apply sload_of_not_mem_dom
+    have := State.get_evm_of_ok ▸ is_erc20.storageDom
+    rw [ ← storage_eq_of_preserved hPreserved''
+      , this
+      ]
+    clear this
+    simp only [ Finset.not_mem_union, Set.mem_toFinset, Set.mem_def, setOf, not_exists, not_and ]
+    have s_erc20 : IsERC20 erc20 (Ok evmₛ _) :=
+      IsERC20_of_ok_of_Preserved hPreserved is_erc20
+    have s_erc20' : IsERC20 erc20 (Ok evmₛ' _) :=
+      IsERC20_of_ok_of_Preserved hPreserved' s_erc20
 
-  -- there is *no* such account in balances
-  -- so sload should return 0
-  rw [ Finmap.lookup_eq_none.mpr mem
-     , Option.getD_none
-     ]
-
-  -- in order to do that it should be given storage address outside of
-  -- it's domain
-  apply sload_of_not_mem_dom
-  have := State.get_evm_of_ok ▸ is_erc20.storageDom
-  rw [ ← storage_eq_of_preserved hPreserved''
-     , this
-     ]
-  clear this
-  simp only [ Finset.not_mem_union, Set.mem_toFinset, Set.mem_def, setOf, not_exists, not_and ]
-  have s_erc20 : IsERC20 erc20 (Ok evmₛ _) :=
-    IsERC20_of_ok_of_Preserved hPreserved is_erc20
-
-  split_ands
-  -- address not in balances
-  · intro account account_mem_balances
-    obtain ⟨address, has_address, balance⟩ := is_erc20.hasBalance account_mem_balances
-    rw [ ← keccak'
-       , keccak_map_lookup_eq_of_Preserved_of_lookup
-           hPreserved has_address ]
-    by_contra h
-    have : [↑↑account, ERC20Private.balances] ∈ evmₛ.keccak_map.keys := by
-      rw [Finmap.mem_keys]
-      apply Finmap.lookup_isSome.mp
-      have := get_evm_of_ok ▸ has_address
-      rw [ ← keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved has_address
-         , this ]
-      simp
-    have keccak_inj := evmₛ.keccak_inj this (Eq.symm h)
-
-    rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
-    unfold Fin.ofNat'' at keccak_inj
-    simp at keccak_inj
-    rw [Nat.mod_eq_of_lt, Nat.mod_eq_of_lt, Fin.val_eq_val] at keccak_inj
-    rw [keccak_inj] at account_mem_balances
-    exact (mem account_mem_balances)
-    · exact Address.ofUInt256_lt_UInt256_size
-    · exact Address.val_lt_UInt256_size
-
-  -- address not in allowances
-  · intro owner spender mem_allowances
-    obtain ⟨erc_address, erc_intermediate, owner_lookup, spender_lookup, eq⟩ :=
-      is_erc20.hasAllowance mem_allowances
-    rw [get_evm_of_ok] at owner_lookup spender_lookup
-    have spender_lookup_s := keccak_map_lookup_eq_of_Preserved_of_lookup Preserved spender_lookup
-    push_neg
-    use erc_intermediate
-    rw [ ← keccak ]
-    by_contra h
-    rw [not_and'] at h
-    apply h at owner_lookup
-    exact owner_lookup
-
-    rw [spender_lookup_s]
-    by_contra h
-    have : [spender, erc_intermediate] ∈ evmₛ.keccak_map.keys := by
-      rw [Finmap.mem_keys]
-      apply Finmap.lookup_isSome.mp
-      have := Eq.trans (Eq.symm spender_lookup_s) spender_lookup
-      rw [this]
-      simp
-    have keccak_inj := evmₛ.keccak_inj this h
-    simp at keccak_inj
-    have intermediate_ne_balances : erc_intermediate ≠ ERC20Private.balances := by
-      obtain blocked_range := get_evm_of_ok ▸ is_erc20.block_acc_range.2
-      rw [owner_lookup] at blocked_range
-      unfold not_mem_private at blocked_range
-      simp at blocked_range
-      rw [← Finset.forall_mem_not_eq] at blocked_range
-      have bal_mem_private: ERC20Private.balances ∈ ERC20Private.toFinset := by
-        unfold PrivateAddresses.toFinset
+    split_ands
+    -- address not in balances
+    · intro account account_mem_balances
+      obtain ⟨address, has_address, balance⟩ := is_erc20.hasBalance account_mem_balances
+      rw [ ← keccak'
+        , keccak_map_lookup_eq_of_Preserved_of_lookup
+            hPreserved'' has_address ]
+      by_contra h
+      have : [↑↑account, ERC20Private.balances] ∈ evmₛ'.keccak_map.keys := by
+        rw [Finmap.mem_keys]
+        apply Finmap.lookup_isSome.mp
+        have := get_evm_of_ok ▸ has_address
+        rw [ ← keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' has_address
+          , this ]
         simp
-      specialize blocked_range ERC20Private.balances
-      exact blocked_range bal_mem_private
+      have keccak_inj := evmₛ'.keccak_inj this (Eq.symm h)
 
-    tauto
+      --Up to here-ish
 
-  -- address not in reserved space
-  · obtain blocked_range := get_evm_of_ok ▸ s_erc20.block_acc_range.1
-    rw [ keccak ] at blocked_range
-    apply not_mem_private_of_some at blocked_range
-    exact blocked_range
+      rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
+      unfold Fin.ofNat'' at keccak_inj
+      simp at keccak_inj
+      obtain ⟨keccak_inj₁, keccak_inj₂⟩ := keccak_inj
+      rw [Nat.mod_eq_of_lt, Nat.mod_eq_of_lt, Fin.val_eq_val] at keccak_inj₁
+      · rw [keccak_inj₁] at account_mem_balances
+        exact (mem account_mem_balances)
+      · exact Address.ofUInt256_lt_UInt256_size
+      · exact Address.val_lt_UInt256_size
+
+    -- address not in allowances
+    · intro owner spender mem_allowances
+      obtain ⟨erc_address, erc_intermediate, owner_lookup, spender_lookup, eq⟩ :=
+        is_erc20.hasAllowance mem_allowances
+      rw [get_evm_of_ok] at owner_lookup spender_lookup
+      have spender_lookup_s := keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved spender_lookup
+      push_neg
+      use erc_intermediate
+      rw [ ← keccak' ]
+      by_contra h
+      rw [not_and'] at h
+      apply h at owner_lookup
+      exact owner_lookup
+
+      rw [spender_lookup_s]
+      by_contra h
+      have : [spender, erc_intermediate] ∈ evmₛ.keccak_map.keys := by
+        rw [Finmap.mem_keys]
+        apply Finmap.lookup_isSome.mp
+        have := Eq.trans (Eq.symm spender_lookup_s) spender_lookup
+        rw [this]
+        simp
+      have keccak_inj := evmₛ.keccak_inj this h
+      simp at keccak_inj
+      have intermediate_ne_allowances : erc_intermediate ≠ ERC20Private.allowances := by
+        obtain blocked_range := get_evm_of_ok ▸ is_erc20.block_acc_range.2
+        rw [owner_lookup] at blocked_range
+        unfold not_mem_private at blocked_range
+        simp at blocked_range
+        rw [← Finset.forall_mem_not_eq] at blocked_range
+        have bal_mem_private: ERC20Private.allowances ∈ ERC20Private.toFinset := by
+          unfold PrivateAddresses.toFinset
+          simp
+        specialize blocked_range ERC20Private.allowances
+        exact blocked_range bal_mem_private
+
+      tauto
+
+    -- address not in reserved space
+    · obtain blocked_range := get_evm_of_ok ▸ s_erc20.block_acc_range.1
+      rw [ keccak ] at blocked_range
+      apply not_mem_private_of_some at blocked_range
+      exact blocked_range
 
 end
 
