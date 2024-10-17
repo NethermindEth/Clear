@@ -413,6 +413,9 @@ def keccak_key : (Σ _ : List UInt256, UInt256) → List UInt256 :=
 def keccak_val : (Σ _ : List UInt256, UInt256) → UInt256 :=
   Prod.snd ∘ keccak_prod
 
+lemma snd_eq_keccak_val {a : (Σ _ : List UInt256, UInt256)} : a.snd = keccak_val a := by
+  simp
+
 structure EVMState : Type where
   -- account map
   account_map : Finmap (λ _ : Address => Account)
@@ -552,10 +555,10 @@ lemma mem_sigma_proj {α} {β} {l : List (Σ _ : α, β)} :
 
 def keccak256 (σ : EVMState) (p n : UInt256) : Option (UInt256 × EVMState) :=
   let interval : List UInt256 := List.map (Nat.toUInt256 ∘ fromBytes!) (List.toChunks 32 (mkInterval' σ.machine_state.memory p n))
-  match Finmap.lookup interval σ.keccak_map with
+  match g : Finmap.lookup interval σ.keccak_map with
   | .some val => .some (val, σ)
   | .none     =>
-    match σ.keccak_range.filter (· ∉ σ.used_range) with
+    match h : σ.keccak_range.filter (· ∉ σ.used_range) with
     | r :: rs =>
       .some (
         r,
@@ -563,27 +566,79 @@ def keccak256 (σ : EVMState) (p n : UInt256) : Option (UInt256 × EVMState) :=
           keccak_map := σ.keccak_map.insert interval r,
           keccak_range := rs,
           used_range := {r} ∪ σ.used_range
-          keccak_inj := sorry
           keccak_used_range := by
-            rw [Finset.subset_iff]
+            intro r' r'_mem
+            have subset := Finset.subset_iff.mp σ.keccak_used_range
+            rw [ List.mem_toFinset, List.mem_map
+               , Finmap.insert_entries_of_neg (Finmap.lookup_eq_none.mp g)
+               ] at r'_mem
+            obtain ⟨a, ⟨a_mem, a_val_eq_r'⟩⟩ := r'_mem
+            rw [Multiset.mem_toList, Multiset.mem_cons] at a_mem
+            rcases a_mem with a_eq_interval_r | a_mem_prev
+            rw [a_eq_interval_r] at a_val_eq_r'
+            simp only [ keccak_val, keccak_prod
+                      , Equiv.toFun_as_coe, Function.comp_apply
+                      , Equiv.sigmaEquivProd_apply ] at a_val_eq_r'
+            rw [a_val_eq_r']
             simp
-            intro val key mem
-            rw [ ← Finmap.lookup_eq_some_iff -- mem_lookup_iff
-               ] at mem
-            have key_mem_insert := Finmap.mem_of_lookup_eq_some mem
-            have prev := σ.keccak_used_range
-            by_cases h : key = interval
-            rw [h] at mem
-            left;
-            simp at mem
-            exact Eq.symm mem
 
-            right
-            apply Finset.mem_of_subset σ.keccak_used_range
-            simp [ mem_sigma_proj ]
-            use key
-            rw [ Finmap.lookup_insert_of_ne σ.keccak_map h, Finmap.lookup_eq_some_iff ] at mem
-            exact mem
+            rw [← Multiset.mem_toList] at a_mem_prev
+            apply mem_sigma_proj at a_mem_prev
+            rw [← keccak_prod, ← keccak_val, ← List.mem_toFinset
+               , snd_eq_keccak_val, a_val_eq_r'
+               ] at a_mem_prev
+            have := subset a_mem_prev
+            simp only [Finset.mem_union, Finset.mem_singleton]
+            right; exact this
+
+          keccak_inj := by
+            intro a b mem h_lookup
+            rcases Finmap.mem_insert.mp mem with a_eq_interval | a_mem_prev
+
+            have b_lookup_eq_some_r := by
+              rw [a_eq_interval] at h_lookup
+              symm at h_lookup
+              simp at h_lookup
+              exact h_lookup
+            have b_mem : b ∈ Finmap.insert interval r σ.keccak_map :=
+              Finmap.mem_iff.mpr ⟨r, b_lookup_eq_some_r⟩
+            by_contra a_ne_b
+
+            rw [ ← a_eq_interval, Finmap.lookup_insert_of_ne _ (Ne.symm a_ne_b)
+               , Finmap.lookup_eq_some_iff, ← Multiset.mem_toList ] at b_lookup_eq_some_r
+            apply mem_sigma_proj at b_lookup_eq_some_r
+            rw [← keccak_prod, ← keccak_val, ← List.mem_toFinset] at b_lookup_eq_some_r
+            simp only [] at b_lookup_eq_some_r
+
+            have r_mem_used := σ.keccak_used_range b_lookup_eq_some_r
+            have : r ∈ List.filter (fun x => decide (x ∉ σ.used_range)) σ.keccak_range :=
+              by aesop
+            have this := List.mem_filter.mp this
+            have r_ne_mem_used : r ∉ σ.used_range := by aesop
+            exact r_ne_mem_used r_mem_used
+
+            have interval_ne_mem_prev := Finmap.lookup_eq_none.mp g
+            have a_ne_interval : a ≠ interval := by aesop
+            by_cases b_ne_interval : b ≠ interval
+            rw [ Finmap.lookup_insert_of_ne _ a_ne_interval
+               , Finmap.lookup_insert_of_ne _ b_ne_interval ] at h_lookup
+            exact σ.keccak_inj a_mem_prev h_lookup
+
+            have b_eq_interval : b = interval := by aesop
+            rw [b_eq_interval, Finmap.lookup_insert
+               , Finmap.lookup_insert_of_ne _ a_ne_interval ] at h_lookup
+
+            rw [ Finmap.lookup_eq_some_iff, ← Multiset.mem_toList ] at h_lookup
+            apply mem_sigma_proj at h_lookup
+            rw [← keccak_prod, ← keccak_val, ← List.mem_toFinset] at h_lookup
+            simp only [] at h_lookup
+
+            have r_mem_used := σ.keccak_used_range h_lookup
+            have : r ∈ List.filter (fun x => decide (x ∉ σ.used_range)) σ.keccak_range :=
+              by aesop
+            have this := List.mem_filter.mp this
+            have r_ne_mem_used : r ∉ σ.used_range := by aesop
+            contradiction
         }
       )
     | [] => .none
