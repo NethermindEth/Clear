@@ -139,7 +139,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
 
     rw [spender_lookup_s]
     by_contra h
-    have : [spender, erc_intermediate] ∈ evmₛ.keccak_map.keys := by
+    have : [↑↑spender, erc_intermediate] ∈ evmₛ.keccak_map.keys := by
       rw [Finmap.mem_keys]
       apply Finmap.lookup_isSome.mp
       have := Eq.trans (Eq.symm spender_lookup_s) spender_lookup
