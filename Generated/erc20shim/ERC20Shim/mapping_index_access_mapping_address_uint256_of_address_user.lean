@@ -18,8 +18,9 @@ set_option linter.setOption false
 set_option pp.coercions false
 
 def A_mapping_index_access_mapping_address_uint256_of_address (dataSlot : Identifier) (slot key : Literal) (s₀ s₉ : State) : Prop :=
-  preservesEvm s₀ s₉ ∧ s₉.isOk ∧
-  s₉.evm.keccak_map.lookup [ ↑(Address.ofUInt256 key), slot ] = some (s₉[dataSlot]!!)
+  preservesEvm s₀ s₉ ∧ s₉.isOk ∧ (∃ keccak,
+  s₉.evm.keccak_map.lookup [ ↑(Address.ofUInt256 key), slot ] = some keccak ∧
+  s₉.store = s₀⟦dataSlot ↦ keccak⟧.store)
 
 -- Helper reifications
 lemma shift_eq_size : Fin.shiftLeft (n := UInt256.size) 1 160 = Address.size := by
