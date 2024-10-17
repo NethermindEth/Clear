@@ -149,11 +149,17 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
       unfold Fin.ofNat'' at keccak_inj
       simp at keccak_inj
       obtain ⟨keccak_inj₁, keccak_inj₂⟩ := keccak_inj
-      rw [Nat.mod_eq_of_lt, Nat.mod_eq_of_lt, Fin.val_eq_val] at keccak_inj₁
-      · rw [keccak_inj₁] at account_mem_balances
-        exact (mem account_mem_balances)
-      · exact Address.ofUInt256_lt_UInt256_size
-      · exact Address.val_lt_UInt256_size
+
+      have : ERC20Private.balances ≠ s["_2"]!! := by
+        obtain blocked_range := get_evm_of_ok ▸ s_erc20.block_acc_range.2
+        rw [ keccak ] at blocked_range
+        apply not_mem_private_of_some at blocked_range
+        rw [@ne_comm]
+        unfold PrivateAddresses.toFinset at blocked_range
+        rw [Finset.mem_def] at blocked_range
+        simp at blocked_range
+        exact blocked_range.1
+      contradiction
 
     -- address not in allowances
     · intro owner spender mem_allowances
@@ -194,8 +200,8 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
       tauto
 
     -- address not in reserved space
-    · obtain blocked_range := get_evm_of_ok ▸ s_erc20.block_acc_range.1
-      rw [ keccak ] at blocked_range
+    · obtain blocked_range := get_evm_of_ok ▸ s_erc20'.block_acc_range.2
+      rw [ keccak' ] at blocked_range
       apply not_mem_private_of_some at blocked_range
       exact blocked_range
 
