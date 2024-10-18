@@ -33,8 +33,21 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
   unfold A_mapping_index_access_mapping_address_mapping_address_uint256_of_address at mapping
   unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping
   clr_spec at mapping
-  obtain ⟨preservesEvm, s_isOk, keccak⟩ := mapping
+  obtain ⟨preservesEvm, s_isOk, ⟨intermediate_keccak, keccak_using_intermediate, hStore⟩⟩ := mapping
   obtain ⟨evmₛ, varstoreₛ, s_eq_ok⟩ := State_of_isOk s_isOk
+  have keccak : Finmap.lookup [↑↑(Address.ofUInt256 var_owner), 1] s.evm.keccak_map = some (s["_2"]!!) := by
+    rw [s_eq_ok]
+    rw [s_eq_ok] at hStore
+    unfold store at hStore
+    simp at hStore
+    unfold State.insert at hStore
+    simp at hStore
+    conv_lhs => rw[←s_eq_ok]
+    rw [hStore]
+    unfold lookup!
+    simp
+    exact keccak_using_intermediate
+
   rw [ ← Variables.allowances_def
      , s_eq_ok, get_evm_of_ok, ← s_eq_ok
      ] at keccak
@@ -42,8 +55,22 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
   -- what we can get right now from mapping' function
   unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
   clr_spec at mapping'
-  obtain ⟨preservesEvm', s_isOk', keccak'⟩ := mapping'
+  obtain ⟨preservesEvm', s_isOk', ⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩⟩ := mapping'
   obtain ⟨evmₛ', varstoreₛ', s_eq_ok'⟩ := State_of_isOk s_isOk'
+  have keccak' : Finmap.lookup [↑↑(Address.ofUInt256 (s["var_spender"]!!)), s["_2"]!!] s'.evm.keccak_map = some (s'["_3"]!!) := by
+    rw [s_eq_ok]
+    rw [s_eq_ok] at hStore'
+    rw [s_eq_ok']
+    rw [s_eq_ok'] at hStore'
+    unfold store at hStore'
+    simp at hStore'
+    unfold State.insert at hStore'
+    simp at hStore'
+    conv_lhs => rw[←s_eq_ok]; rw[←s_eq_ok']
+    rw [hStore']
+    unfold lookup!
+    simp
+    exact keccak_using_intermediate'
   rw [ s_eq_ok', get_evm_of_ok, ← s_eq_ok'
      ] at keccak'
 
@@ -96,7 +123,19 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
       · have := Eq.symm (s_eq_ok' ▸ keccak')
         exact this
       · rw [intermediate_def]
-        have : s["var_spender"]!! = var_spender := by sorry
+        have : s["var_spender"]!! = var_spender := by
+          rw [s_eq_ok]
+          rw [s_eq_ok] at hStore
+          unfold store at hStore
+          unfold State.insert at hStore
+          simp at hStore
+          rw [hStore]
+          unfold lookup!
+          simp
+          rw [Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)
+            , Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)
+            , Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)]
+          simp
         rw [this]
         exact (keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' has_address ▸ has_address)
 
