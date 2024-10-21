@@ -18,19 +18,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v14
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v8
-      - name: Cache Lean toolchain
-        uses: actions/cache@v4.1.0
-        with:
-          path: ~/.elan/toolchains
-          key: ${{ runner.os }}-lean-toolchain-${{ hashFiles('lean-toolchain') }}
-      - name: Cache Lean packages
-        id: cache-lean-packages
-        uses: actions/cache@v4.1.0
-        with:
-          path: .lake/packages
-          key: ${{ runner.os }}-lean-packages-${{ hashFiles('lake-manifest.json') }}
-      - if: ${{ steps.cache-lean-packages.outputs.cache-hit != 'true' }}
-        name: Get Mathlib cache
+      - name: Get Mathlib cache
         run: nix-shell --run "lake exe cache get"
       - name: Build vc tool
         run: nix-shell --run "cd vc; stack --nix build"
