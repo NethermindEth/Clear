@@ -228,7 +228,12 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
       have := keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' spender_lookup'
       rw [this] at hSpender
 
-      have keccak_inj := evmₛ'.keccak_inj (by sorry) (Eq.symm hSpender)
+      have : [↑↑(Address.ofUInt256 (s["var_spender"]!!)), s["_2"]!!] ∈ evmₛ'.keccak_map.keys := by
+        clear * -keccak_using_intermediate' s_eq_ok'
+        rw [s_eq_ok'] at keccak_using_intermediate'
+        simp at keccak_using_intermediate'
+        exact Finmap.mem_of_lookup_eq_some keccak_using_intermediate'
+      have keccak_inj := evmₛ'.keccak_inj this (Eq.symm hSpender)
       rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
       unfold Fin.ofNat'' at keccak_inj
       simp at keccak_inj
@@ -236,7 +241,6 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
 
       obtain ⟨keccak_inj₁, keccak_inj₂⟩ := keccak_inj
 
-      have hMemOwner := Finmap.mem_of_lookup_eq_some keccak
 
       have hOwner : owner = Address.ofUInt256 var_owner := by
         have := keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved owner_lookup
@@ -245,7 +249,12 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         have owner_lookup'' := get_evm_of_ok ▸ owner_lookup
         rw [this] at owner_lookup''
 
-        have keccak_inj := evmₛ.keccak_inj (by sorry) (Eq.symm owner_lookup'')
+        have : [↑↑(Address.ofUInt256 var_owner), ERC20Private.allowances] ∈ evmₛ.keccak_map.keys := by
+          clear * -keccak_using_intermediate s_eq_ok
+          rw [s_eq_ok] at keccak_using_intermediate
+          simp at keccak_using_intermediate
+          exact Finmap.mem_of_lookup_eq_some keccak_using_intermediate
+        have keccak_inj := evmₛ.keccak_inj this (Eq.symm owner_lookup'')
         rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
         unfold Fin.ofNat'' at keccak_inj
         simp at keccak_inj
