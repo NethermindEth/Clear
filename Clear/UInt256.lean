@@ -54,7 +54,7 @@ def eq0 (a : UInt256) : Bool := a = 0
 def lnot (a : UInt256) : UInt256 := (UInt256.size - 1) - a
 
 def byteAt (a b : UInt256) : UInt256 :=
-  b >>> (31 - a) * 8 <<< 248
+  b >>> (.ofNat ((31 - a.val) * 8)) &&& 0xFF
 
 def sgn (a : UInt256) : UInt256 :=
   if a ≥ 2 ^ 255 then -1
@@ -76,14 +76,15 @@ def sdiv (a b : UInt256) : UInt256 :=
     else a / b
 
 def smod (a b : UInt256) : UInt256 :=
-  if a ≥ 2 ^ 255 then
-    if b ≥ 2 ^ 255 then
-      Fin.mod (abs a) (abs b)
-    else (-1) * Fin.mod (abs a) b
+  if b == 0 then 0
   else
-    if b ≥ 2 ^ 255 then
-      (-1) * Fin.mod a (abs b)
-    else Fin.mod a b
+    let sgnA := if 2 ^ 255 <= a then -1 else 1
+    let sgnB := if 2 ^ 255 <= b then -1 else 1
+    let mask : UInt256 := .ofNat (2 ^ 256 - 1 : ℕ)
+    let absA := if sgnA == 1 then a else - (.xor a mask + 1)
+    let absB := if sgnB == 1 then b else - (.xor b mask + 1)
+    sgnA * (absA % absB)
+
 
 def slt (a b : UInt256) : Bool :=
   if a ≥ 2 ^ 255 then

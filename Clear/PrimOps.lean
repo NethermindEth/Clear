@@ -12,14 +12,19 @@ abbrev fromBool := Bool.toUInt256
 
 def evmAddMod (a b c : UInt256) : UInt256 :=
   if c = 0 then 0 else
-  Fin.mod (a + b) c
+  -- "All intermediate calculations of this operation are **not** subject to the 2^256 modulo."
+  Fin.mod (a.val + b.val) c
 
 def evmMulMod (a b c : UInt256) : UInt256 :=
   if c = 0 then 0 else
-  Fin.mod (a * b) c
+  -- "All intermediate calculations of this operation are **not** subject to the 2^256 modulo."
+  Fin.mod (a.val * b.val) c
 
 def evmExp (a b : UInt256) : UInt256 :=
   a ^ b.val
+
+def evmMod (x y : UInt256) : UInt256 :=
+  if y == 0 then 0 else x % y
 
 set_option linter.unusedVariables false in
 def primCall (s : State) : PrimOp → List Literal → State × List Literal
@@ -28,7 +33,7 @@ def primCall (s : State) : PrimOp → List Literal → State × List Literal
   | .Mul, [a,b]               => (s, [a * b])
   | .Div, [a,b]               => (s, [a / b])
   | .Sdiv, [a,b]              => (s, [UInt256.sdiv a b])
-  | .Mod, [a,b]               => (s, [Fin.mod a b])
+  | .Mod, [a,b]               => (s, [evmMod a b])
   | .Smod, [a,b]              => (s, [UInt256.smod a b])
   | .Addmod, [a,b,c]          => (s, [evmAddMod a b c])
   | .Mulmod, [a,b,c]          => (s, [evmMulMod a b c])
@@ -109,7 +114,7 @@ lemma EVMSub'            : primCall s .Sub [a,b]                     = (s, [a - 
 lemma EVMMul'            : primCall s .Mul [a,b]                     = (s, [a * b]) := rfl
 lemma EVMDiv'            : primCall s .Div [a,b]                     = (s, [a / b]) := rfl
 lemma EVMSdiv'           : primCall s .Sdiv [a,b]                    = (s, [UInt256.sdiv a b]) := rfl
-lemma EVMMod'            : primCall s .Mod [a,b]                     = (s, [Fin.mod a b]) := rfl
+lemma EVMMod'            : primCall s .Mod [a,b]                     = (s, [evmMod a b]) := rfl
 lemma EVMSmod'           : primCall s .Smod [a,b]                    = (s, [UInt256.smod a b]) := rfl
 lemma EVMAddmod'         : primCall s .Addmod [a,b,c]                = (s, [evmAddMod a b c]) := rfl
 lemma EVMMulmod'         : primCall s .Mulmod [a,b,c]                = (s, [evmMulMod a b c]) := rfl
