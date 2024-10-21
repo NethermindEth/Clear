@@ -10,6 +10,8 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
+set_option maxHeartbeats 400000
+
 def A_fun_allowance (var : Identifier) (var_owner var_spender : Literal) (s₀ s₉ : State) : Prop :=
   ∀ {erc20}, IsERC20 erc20 s₀ →
   let owner := Address.ofUInt256 var_owner
@@ -182,67 +184,117 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         simp
       have keccak_inj := evmₛ'.keccak_inj this (Eq.symm h)
 
-      --Up to here-ish
-
       rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
       unfold Fin.ofNat'' at keccak_inj
       simp at keccak_inj
       obtain ⟨keccak_inj₁, keccak_inj₂⟩ := keccak_inj
 
       have : ERC20Private.balances ≠ s["_2"]!! := by
-        obtain blocked_range := get_evm_of_ok ▸ s_erc20.block_acc_range.2
+        obtain blocked_range := get_evm_of_ok ▸ s_erc20.block_acc_range.2.1
         rw [ keccak ] at blocked_range
         apply not_mem_private_of_some at blocked_range
         rw [@ne_comm]
         unfold PrivateAddresses.toFinset at blocked_range
         rw [Finset.mem_def] at blocked_range
-        simp at blocked_range
+        simp at blocked_range -- Fails with: set_option maxHeartbeats 200000
         exact blocked_range.1
       contradiction
 
     -- address not in allowances
-    · intro owner spender mem_allowances
-      obtain ⟨erc_address, erc_intermediate, owner_lookup, spender_lookup, eq⟩ :=
-        is_erc20.hasAllowance mem_allowances
-      rw [get_evm_of_ok] at owner_lookup spender_lookup
-      have spender_lookup_s := keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved spender_lookup
-      push_neg
-      use erc_intermediate
-      rw [ ← keccak' ]
-      by_contra h
-      rw [not_and'] at h
-      apply h at owner_lookup
-      exact owner_lookup
+    · intro owner spender owner_spender_mem_allowances
 
-      rw [spender_lookup_s]
+      obtain ⟨erc_address, erc_intermediate, owner_lookup, spender_lookup, eq⟩ :=
+        is_erc20.hasAllowance owner_spender_mem_allowances
+
+      rw [ ← keccak'
+       , keccak_map_lookup_eq_of_Preserved_of_lookup
+           hPreserved'' owner_lookup ]
       by_contra h
-      have : [spender, erc_intermediate] ∈ evmₛ.keccak_map.keys := by
+      have : [↑↑owner, ERC20Private.allowances] ∈ evmₛ.keccak_map.keys := by
         rw [Finmap.mem_keys]
         apply Finmap.lookup_isSome.mp
-        have := Eq.trans (Eq.symm spender_lookup_s) spender_lookup
-        rw [this]
+        have owner_lookup' := get_evm_of_ok ▸ owner_lookup
+        have spender_lookup' := get_evm_of_ok ▸ spender_lookup
+        rw [ ← keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved owner_lookup
+          , owner_lookup' ]
         simp
-      have keccak_inj := evmₛ.keccak_inj this h
-      simp at keccak_inj
-      have intermediate_ne_allowances : erc_intermediate ≠ ERC20Private.allowances := by
-        obtain blocked_range := get_evm_of_ok ▸ is_erc20.block_acc_range.2
-        rw [owner_lookup] at blocked_range
-        unfold not_mem_private at blocked_range
-        simp at blocked_range
-        rw [← Finset.forall_mem_not_eq] at blocked_range
-        have bal_mem_private: ERC20Private.allowances ∈ ERC20Private.toFinset := by
-          unfold PrivateAddresses.toFinset
-          simp
-        specialize blocked_range ERC20Private.allowances
-        exact blocked_range bal_mem_private
+      have owner_lookup' := get_evm_of_ok ▸ owner_lookup
+      have := keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' owner_lookup
+      rw [this] at owner_lookup'
+      have hSpender := h owner_lookup'
 
-      tauto
+
+      have spender_lookup' := get_evm_of_ok ▸ spender_lookup
+      have := keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' spender_lookup'
+      rw [this] at hSpender
+
+      have keccak_inj := evmₛ'.keccak_inj (by sorry) (Eq.symm hSpender)
+      rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
+      unfold Fin.ofNat'' at keccak_inj
+      simp at keccak_inj
+      rw [Nat.mod_eq_of_lt, Nat.mod_eq_of_lt, Fin.val_eq_val] at keccak_inj <;> [skip; exact Address.val_lt_UInt256_size; exact Address.val_lt_UInt256_size]
+
+      obtain ⟨keccak_inj₁, keccak_inj₂⟩ := keccak_inj
+
+      have hMemOwner := Finmap.mem_of_lookup_eq_some keccak
+
+      have hOwner : owner = Address.ofUInt256 var_owner := by
+        have := keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved owner_lookup
+        rw [←keccak_inj₂] at owner_lookup
+        rw [←keccak] at owner_lookup
+        have owner_lookup'' := get_evm_of_ok ▸ owner_lookup
+        rw [this] at owner_lookup''
+
+        have keccak_inj := evmₛ.keccak_inj (by sorry) (Eq.symm owner_lookup'')
+        rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
+        unfold Fin.ofNat'' at keccak_inj
+        simp at keccak_inj
+        rw [Nat.mod_eq_of_lt, Nat.mod_eq_of_lt, Fin.val_eq_val] at keccak_inj <;> [skip; exact Address.val_lt_UInt256_size; exact Address.val_lt_UInt256_size]
+        symm
+        exact keccak_inj
+
+      have hSpender : spender = Address.ofUInt256 var_spender := by
+        have : s["var_spender"]!! = var_spender := by
+          rw [s_eq_ok]
+          rw [s_eq_ok] at hStore
+          unfold store at hStore
+          unfold State.insert at hStore
+          simp at hStore
+          rw [hStore]
+          unfold lookup!
+          simp
+          rw [Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)
+            , Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)
+            , Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)]
+          simp
+        rw [this] at keccak_inj₁
+        symm
+        exact keccak_inj₁
+        done
+      rw [←hOwner, ←hSpender] at mem
+      contradiction
 
     -- address not in reserved space
-    · obtain blocked_range := get_evm_of_ok ▸ s_erc20'.block_acc_range.2
-      rw [ keccak' ] at blocked_range
-      apply not_mem_private_of_some at blocked_range
-      exact blocked_range
+    · obtain blocked_range := get_evm_of_ok ▸ (s_erc20'.block_acc_range.2.2)
+      have := keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved' keccak
+      rw [this] at keccak
+      rw [ keccak ] at blocked_range
+
+      have blocked_range' := blocked_range (↑↑(Address.ofUInt256 (s["var_spender"]!!))) (s["_2"]!!) (by rfl)
+      rw [←Finset.mem_map' Function.Embedding.some]
+
+      -- TODO make simpler:
+      have : Function.Embedding.some (s'["_3"]!!) = (some (s'["_3"]!!)) := by
+        simp
+      rw [this]
+      rw [←keccak']
+      --Up to here
+      unfold not_mem_private at blocked_range'
+      rw [keccak'] at blocked_range'
+      simp at blocked_range'
+      rw [keccak']
+      simp
+      exact blocked_range'
 
 end
 

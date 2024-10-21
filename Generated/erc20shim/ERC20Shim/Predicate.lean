@@ -61,7 +61,9 @@ structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
   block_acc_range :
     ∀ {var},
     not_mem_private (s.evm.keccak_map.lookup [ var, ERC20Private.balances ]) ∧
-    not_mem_private (s.evm.keccak_map.lookup [ var, ERC20Private.allowances ])
+    not_mem_private (s.evm.keccak_map.lookup [ var, ERC20Private.allowances ]) ∧
+    (∀ var₂ intermediate, s.evm.keccak_map.lookup [ var, ERC20Private.allowances ] = some intermediate
+                    → not_mem_private (s.evm.keccak_map.lookup [ var₂, intermediate ]))
 
   -- block_allowance_range :
   --   ∀ {owner}, s.evm.keccak_map.lookup [ ↑owner, ERC20Private.allowances ] ∉ ERC20Private.toFinset
