@@ -25,7 +25,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   rcases s₀ with ⟨evm, varstore⟩ | _ | _ <;> [simp only; aesop_spec; aesop_spec]
   apply spec_eq
   clr_funargs
-  intro hasFuel ⟨s, mapping, code⟩ erc20 is_erc20
+  rintro hasFuel ⟨s, mapping, code⟩ erc20 is_erc20
 
   clr_varstore
 
@@ -54,16 +54,9 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   rw [ s_eq_ok, preservesEvm_of_insert, preservesEvm_of_insert ] at preservesEvm
   have Preserved := Preserved_of_preservesEvm_of_Ok preservesEvm
 
-  apply And.intro
-  -- IsERC20 for the final state
-  exact IsERC20_of_preservesEvm (by aesop) is_erc20
+  refine' ⟨IsERC20_of_preservesEvm (by aesop) is_erc20, (by aesop), ?returns_correct_value⟩
 
   rw [← code]
-  apply And.intro
-  -- preservesEvm s₀ s₉
-  rw [ preservesEvm_of_insert' ]
-  exact preservesEvm_of_preserved _ _ Preserved
-
   -- lookup balance
   clr_varstore
   by_cases mem : Address.ofUInt256 var_account ∈ erc20.balances
