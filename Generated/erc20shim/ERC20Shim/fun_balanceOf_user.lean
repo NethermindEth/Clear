@@ -25,15 +25,21 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   rcases s₀ with ⟨evm, varstore⟩ | _ | _ <;> [simp only; aesop_spec; aesop_spec]
   apply spec_eq
   clr_funargs
-  intro hasFuel ⟨s, mapping, code⟩ erc20 is_erc20
+  rintro hasFuel ⟨s, mapping, code⟩ erc20 is_erc20
 
   clr_varstore
 
   -- what we can get right now from mapping function
   unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping
   clr_spec at mapping
-  obtain ⟨preservesEvm, s_isOk, keccak⟩ := mapping  
+  obtain ⟨preservesEvm, s_isOk, ⟨keccak_value, keccak_using_keccak_value, hStore⟩⟩ := mapping
   obtain ⟨evmₛ, varstoreₛ, s_eq_ok⟩ := State_of_isOk s_isOk
+
+  have keccak : Finmap.lookup [↑↑(Address.ofUInt256 var_account), 0] s.evm.keccak_map = some (s["_2"]!!) := by
+    unfold store State.insert at hStore
+    unfold lookup!
+    aesop
+
   rw [ ← Variables.balances_def
      , s_eq_ok, get_evm_of_ok, ← s_eq_ok
      ] at keccak
@@ -48,16 +54,9 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   rw [ s_eq_ok, preservesEvm_of_insert, preservesEvm_of_insert ] at preservesEvm
   have Preserved := Preserved_of_preservesEvm_of_Ok preservesEvm
 
-  apply And.intro
-  -- IsERC20 for the final state
-  exact IsERC20_of_preservesEvm (by aesop) is_erc20
+  refine' ⟨IsERC20_of_preservesEvm (by aesop) is_erc20, (by aesop), ?returns_correct_value⟩
 
   rw [← code]
-  apply And.intro
-  -- preservesEvm s₀ s₉
-  rw [ preservesEvm_of_insert' ]
-  exact preservesEvm_of_preserved _ _ Preserved
-
   -- lookup balance
   clr_varstore
   by_cases mem : Address.ofUInt256 var_account ∈ erc20.balances
@@ -139,7 +138,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
 
     rw [spender_lookup_s]
     by_contra h
-    have : [spender, erc_intermediate] ∈ evmₛ.keccak_map.keys := by
+    have : [↑↑spender, erc_intermediate] ∈ evmₛ.keccak_map.keys := by
       rw [Finmap.mem_keys]
       apply Finmap.lookup_isSome.mp
       have := Eq.trans (Eq.symm spender_lookup_s) spender_lookup
@@ -148,7 +147,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
     have keccak_inj := evmₛ.keccak_inj this h
     simp at keccak_inj
     have intermediate_ne_balances : erc_intermediate ≠ ERC20Private.balances := by
-      obtain blocked_range := get_evm_of_ok ▸ is_erc20.block_acc_range.2
+      obtain blocked_range := get_evm_of_ok ▸ is_erc20.block_acc_range.2.1
       rw [owner_lookup] at blocked_range
       unfold not_mem_private at blocked_range
       simp at blocked_range

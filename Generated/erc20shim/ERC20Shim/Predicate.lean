@@ -41,7 +41,7 @@ structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
     erc20.balances.lookup account = some (s.evm.sload address)
 
   hasAllowance :
-    ∀ {owner spender}, (⟨owner, spender⟩ ∈ erc20.allowances) →
+    ∀ {owner spender}, ((owner, spender) ∈ erc20.allowances) →
     ∃ (address  : UInt256) (intermediate : UInt256),
     s.evm.keccak_map.lookup [ ↑owner , ERC20Private.allowances ] = some intermediate ∧
     s.evm.keccak_map.lookup [ ↑spender , intermediate ] = some address ∧
@@ -53,7 +53,7 @@ structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
         account ∈ erc20.balances ∧
         some address = s.evm.keccak_map.lookup [ ↑account, ERC20Private.balances ] }.toFinset ∪
       { address | ∃ owner spender,
-        ⟨owner, spender⟩ ∈ erc20.allowances ∧
+        (owner, spender) ∈ erc20.allowances ∧
         ∀ {intermediate}, s.evm.keccak_map.lookup [ ↑owner , ERC20Private.allowances ] = some intermediate →
         s.evm.keccak_map.lookup [ ↑spender , intermediate ] = some address }.toFinset ∪
       ERC20Private.toFinset
@@ -61,7 +61,9 @@ structure IsERC20 (erc20 : ERC20) (s : State) : Prop where
   block_acc_range :
     ∀ {var},
     not_mem_private (s.evm.keccak_map.lookup [ var, ERC20Private.balances ]) ∧
-    not_mem_private (s.evm.keccak_map.lookup [ var, ERC20Private.allowances ])
+    not_mem_private (s.evm.keccak_map.lookup [ var, ERC20Private.allowances ]) ∧
+    (∀ var₂ intermediate, s.evm.keccak_map.lookup [ var, ERC20Private.allowances ] = some intermediate
+                    → not_mem_private (s.evm.keccak_map.lookup [ var₂, intermediate ]))
 
   -- block_allowance_range :
   --   ∀ {owner}, s.evm.keccak_map.lookup [ ↑owner, ERC20Private.allowances ] ∉ ERC20Private.toFinset
