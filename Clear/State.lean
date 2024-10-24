@@ -66,6 +66,8 @@ def isLeave : State → Prop
   | .Checkpoint (.Leave _ _) => True
   | _ => False
 
+def allGood (s : State) : Prop := s.isOk ∧ ¬ s.evm.hash_collision
+
 -- ============================================================================
 --  STATE TRANSFORMERS
 -- ============================================================================
