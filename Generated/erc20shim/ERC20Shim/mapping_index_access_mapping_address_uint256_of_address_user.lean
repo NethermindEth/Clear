@@ -70,7 +70,7 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
   split at code
   -- some
   case h_1 x h_lookup =>
-    right -- no hash collision
+    -- no hash collision
     split at h_lookup
     case h_1 val heq =>
       rw [Option.some_inj] at h_lookup
@@ -91,6 +91,13 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
       rw [← code]
       simp only [isOk_Ok, isOutOfFuel_insert', isOutOfFuel_Ok, not_false_eq_true, isOk_insert, evm_insert,
   get_evm_of_ok, true_and]
+      apply And.intro
+      swap;
+      rw [← prep_def]
+      unfold mstore updateMemory
+      simp only []
+      intro _; assumption
+      left
       split_ands
 
       rw [preservesEvm_of_insert']
@@ -121,7 +128,12 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
       simp only [← h_lookup, ← State.insert_of_ok] at code
       rw [← code]
 
-      split_ands
+      apply And.intro
+      swap;
+      -- hash collision preservation
+      sorry
+
+      left; split_ands
       rw [preservesEvm_of_insert']
       apply preservesEvm_of_preserved
       simp [get_evm_of_ok]
