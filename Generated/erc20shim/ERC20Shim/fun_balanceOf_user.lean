@@ -12,10 +12,12 @@ section
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
 def A_fun_balanceOf (var : Identifier) (var_account : Literal) (s₀ s₉ : State) : Prop :=
-  ∀ {erc20}, IsERC20 erc20 s₀ →
+  (∀ {erc20}, IsERC20 erc20 s₀ →
   let account := Address.ofUInt256 var_account
   IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
-  s₉[var]!! = (erc20.balances.lookup account).getD 0
+  s₉[var]!! = (erc20.balances.lookup account).getD 0 ∧
+  s₉.evm.hash_collision = false)
+  ∨ s₉.evm.hash_collision = true
 
 lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   Spec (fun_balanceOf_concrete_of_code.1 var var_account) s₀ s₉ →

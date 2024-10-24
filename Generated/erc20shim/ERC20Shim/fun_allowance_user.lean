@@ -13,11 +13,13 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 set_option maxHeartbeats 400000
 
 def A_fun_allowance (var : Identifier) (var_owner var_spender : Literal) (s₀ s₉ : State) : Prop :=
-  ∀ {erc20}, IsERC20 erc20 s₀ →
+  (∀ {erc20}, IsERC20 erc20 s₀ →
   let owner := Address.ofUInt256 var_owner
   let spender := Address.ofUInt256 var_spender
   IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
-  s₉[var]!! = (erc20.allowances.lookup ⟨owner, spender⟩).getD 0
+  s₉[var]!! = (erc20.allowances.lookup ⟨owner, spender⟩).getD 0 ∧
+  s₉.evm.hash_collision = false)
+  ∨ s₉.evm.hash_collision = true
 
 lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spender} :
   Spec (fun_allowance_concrete_of_code.1 var var_owner var_spender) s₀ s₉ →
