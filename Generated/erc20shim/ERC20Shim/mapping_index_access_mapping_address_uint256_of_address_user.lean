@@ -33,11 +33,6 @@ lemma EVMAddrSize' {s : State} : (s, [Fin.shiftLeft 1 160]) = (s, [Address.size.
   simp
   exact shift_eq_size
 
-set_option maxHeartbeats 200000
-set_option maxRecDepth 800
-set_option pp.deepTerms true
-set_option pp.proofs true
-
 lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s₀ s₉ : State} {dataSlot slot key} :
   Spec (mapping_index_access_mapping_address_uint256_of_address_concrete_of_code.1 dataSlot slot key) s₀ s₉ →
   Spec (A_mapping_index_access_mapping_address_uint256_of_address dataSlot slot key) s₀ s₉ := by
@@ -63,130 +58,93 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
     rw [← prep_def];
     exact Preserved.trans mstore_preserved mstore_preserved
 
-  unfold keccak256 at code
-  unfold_let at code
-
   split at code
-  -- some
-  case h_1 x h_lookup =>
-    -- no hash collision
-    split at h_lookup
-    case h_1 val heq =>
-      rw [Option.some_inj] at h_lookup
-      -- lookup existing
-      rw [ interval'_eq_interval 2 two_ne_zero (by norm_cast)
-         , ← prep_def
-         , mstore_mstore_of_ne, interval_of_mstore_eq_val_cons
-         , mstore_mstore_of_ne, zero_add, interval_of_mstore_eq_val_cons
-         , interval_of_0_eq_nil
-         ] at heq
-      -- make sense of the code
-      rw [← h_lookup] at code
-      simp only [Fin.isValue, multifill_cons, multifill_nil'] at code
-      unfold setEvm State.insert State.lookup! at code
-      simp only [Fin.isValue, Finmap.lookup_insert, get!_some, isOk_Ok] at code
-      rw [← State.insert_of_ok] at code
+  case h_1 _ res keccak_eq_some_res =>
+    simp only [multifill_cons, multifill_nil'] at code
+    unfold setEvm State.insert State.lookup! at code
+    simp only [Fin.isValue, Finmap.lookup_insert, get!_some, isOk_Ok] at code
+    rw [← State.insert_of_ok] at code
+    rw [← code]
 
-      rw [← code]
-      simp only [isOk_Ok, isOutOfFuel_insert', isOutOfFuel_Ok, not_false_eq_true, isOk_insert, evm_insert,
-  get_evm_of_ok, true_and]
-      apply And.intro
-      swap;
+    have res_collision := hash_collision_of_keccak256_eq_some keccak_eq_some_res
+    have prep_collision : state_prep.hash_collision = evm.hash_collision := by
       rw [← prep_def]
-      unfold mstore updateMemory
-      simp only []
-      intro _; assumption
-      left
-      split_ands
-
-      rw [preservesEvm_of_insert']
-      apply preservesEvm_of_preserved
-      simp [get_evm_of_ok]
-      exact Preserved_prep
-      use val, (prep_def ▸ heq)
-      simp only [insert_of_ok, store]
-
-    case h_2 val heq =>
-      split at h_lookup
-      swap; contradiction
-      rw [Option.some_inj] at h_lookup
+      exact Eq.trans hash_collision_of_mstore hash_collision_of_mstore
       
-      have : Finmap.lookup [account.val.cast, slot] state_prep.keccak_map = none := by
-        rw [ interval'_eq_interval 2 two_ne_zero (by norm_cast)
-           , ← prep_def
-           , mstore_mstore_of_ne, interval_of_mstore_eq_val_cons
-           , mstore_mstore_of_ne, zero_add, interval_of_mstore_eq_val_cons
-           , interval_of_0_eq_nil
-           ] at heq
-        exact (prep_def ▸ heq)
-      have int_ne_mem_map : [↑↑account, slot] ∉ state_prep.keccak_map := sorry
-
-      simp at code
-      unfold setEvm State.insert State.lookup! at code
-      simp at code
-      simp only [← h_lookup, ← State.insert_of_ok] at code
-      rw [← code]
-
-      apply And.intro
-      swap;
-      -- hash collision preservation
-      sorry
-
-      left; split_ands
-      rw [preservesEvm_of_insert']
-      apply preservesEvm_of_preserved
-      simp [get_evm_of_ok]
-      apply Preserved.trans Preserved_prep
+    have preserves_collision :
+      evm.hash_collision = true → Ok res.2 varstore⟦dataSlot↦res.1⟧.evm.hash_collision = true := by      
+      rw [State.insert_of_ok, get_evm_of_ok, res_collision, prep_collision]
+      intro h; exact h
     
-      -- obtain ⟨res, σ'⟩ := x
-      -- injection h_lookup with res_eq σ'_eq
-      exact Preserved_of_updated_keccak_map (σ := state_prep) rfl
-      done
-    done
+    apply And.intro
+    swap; exact preserves_collision
+    
+    by_cases h : evm.hash_collision
+    right
+    -- hash_collision from the previous state
+    exact preserves_collision h
+    
+    -- no hash collision from the previous state
+    left; split_ands
+    -- preservesEvm
+    rw [preservesEvm_of_insert']
+    apply preservesEvm_of_preserved
+    rw [get_evm_of_ok, get_evm_of_ok]
+    exact Preserved.trans Preserved_prep (Preserved_of_keccek256 keccak_eq_some_res)
 
-  case h_2 x h_lookup =>
-    split at h_lookup
-    done
+    -- state is ok
+    exact State.isOk_Ok
 
-  -- -- generalize interval_def : List.map (Nat.toUInt256 ∘ UInt256.fromBytes!)
-  -- --                 (List.toChunks 32
-  -- --                 (mkInterval' state_prep.machine_state.memory 0 64)) = interval at code
+    -- keccak
+    use res.1
+    split_ands
+    -- keccak lookup for last
+    rotate_left
+    -- varstore preservation
+    rw [State.insert_of_ok]
+    simp only [State.store]
+    
+    -- no hash collision
+    rw [State.insert_of_ok, get_evm_of_ok, res_collision, prep_collision]
+    rw [Bool.eq_false_eq_not_eq_true] at h; exact h
+    
+    -- keccak lookup
+    rw [State.insert_of_ok, get_evm_of_ok]
+    unfold keccak256 at keccak_eq_some_res
+    rw [ interval'_eq_interval 2 two_ne_zero (by norm_cast)
+       , ← prep_def
+       , mstore_mstore_of_ne, interval_of_mstore_eq_val_cons
+       , mstore_mstore_of_ne, zero_add, interval_of_mstore_eq_val_cons
+       , interval_of_0_eq_nil
+       ] at keccak_eq_some_res
+    unfold_let at keccak_eq_some_res
 
-  -- -- have interval_eq : interval = mkInterval state_prep.machine_state.memory 0 2 := by sorry
+    split at keccak_eq_some_res
+    case h_1 _ v h_lookup =>
+      rw [Option.some_inj] at keccak_eq_some_res
+      rw [← keccak_eq_some_res]
+      exact h_lookup
+    case h_2 _ h_lookup =>
+      split at keccak_eq_some_res
+      swap; contradiction
+      rw [Option.some_inj] at keccak_eq_some_res
+      rw [← keccak_eq_some_res]
+      simp only [];
+      rw [Finmap.lookup_insert]
 
-  -- -- have : List.map (Nat.toUInt256 ∘ UInt256.fromBytes!)
-  -- --                 (List.toChunks 32
-  -- --                 (mkInterval' state_prep.machine_state.memory 0 64)) =
-  -- --   mkInterval state_prep.machine_state.memory 0 2 := by sorry
-  -- split at code
-  -- next x h_lookup =>
-  --   split at h_lookup
-  --   done
+  case h_2 res keccak_eq_none =>
+    simp only [multifill_cons, multifill_nil'] at code
+    unfold setEvm State.insert State.lookup! at code
+    simp only [Fin.isValue, Finmap.lookup_insert, get!_some, isOk_Ok] at code
+    rw [← State.insert_of_ok] at code
+    
+    have final_destination : s₉.evm.hash_collision := by
+      rw [← code, State.insert_of_ok, get_evm_of_ok]
+      exact hash_collision_of_addHashCollision state_prep
 
-  -- simp_rw [ interval'_eq_interval 2 two_ne_zero (by sorry)
-  --    -- , mstore_mstore_of_ne, interval_of_mstore_eq_val_cons
-  --    -- , mstore_mstore_of_ne, zero_add, interval_of_mstore_eq_val_cons
-  --    -- , interval_of_0_eq_nil
-  --    ] at code
-
-  -- -- rw [ this ] at code
-  -- rw [ mstore_preserves_keccak_map, mstore_preserves_keccak_map
-  --    , hasAddress
-  --    ]
-  -- simp at prog
-  -- unfold setEvm State.insert State.lookup! at prog
-  -- simp at prog
-
-  -- rw [← prog]
-  -- unfold State.lookup!
-
-  -- apply And.intro
-  -- · apply preservesEvm_eq
-  --   simp
-  --   apply preserved_trans 
-  --   · exact mstore_preserves
-  --   · exact mstore_preserves
-  -- · simp
+    apply And.intro
+    right; exact final_destination
+    intro _; exact final_destination
 
   end
 
