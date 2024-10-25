@@ -329,7 +329,6 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
           aesop
         · unfold reviveJump at code
           simp at code
-          -- rw [←code]
 
           rename_i j
           unfold evm at hHashCollisionTrue
@@ -356,9 +355,6 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok' ] at code
         clr_varstore
         
-        
-        
-        -- obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
         · rw [←code]
           have : Ok evmₛ' varstore⟦var↦sload evmₛ' (s'["_3"]!!)⟧.evm.hash_collision
                 = evmₛ'.hash_collision := by simp
@@ -374,7 +370,6 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
           
         · unfold reviveJump at code
           simp at code
-          -- rw [←code]
           rename_i j
           rcases j
       · rename_i hHashCollisionTrue'
