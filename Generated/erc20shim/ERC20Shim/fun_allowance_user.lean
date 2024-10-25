@@ -338,60 +338,72 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
     rename_i hHashCollisionTrue
     right
 
-    unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
-    apply Spec_ok_unfold (by sorry) (by sorry) at mapping'
-    -- clr_spec at mapping'
-    
-    obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
+    by_cases s_isOk : s.isOk
+    · unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
+      clr_spec at mapping'
+      
+      obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
 
-    have :   hash_collision (Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm)
-        = evm.hash_collision := by
-        simp
-    rw [this] at hHashCollision₁
-    by_cases s_isOk' : s'.isOk
-    · obtain ⟨evmₛ', varstoreₛ', s_eq_ok'⟩ := State_of_isOk s_isOk'
-      -- simplify contract
-      unfold reviveJump at code
-      simp [s_eq_ok'] at code
-      rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok' ] at code
-      clr_varstore
-      
-      
-      
-      -- obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
-      · rw [←code]
-        have : Ok evmₛ' varstore⟦var↦sload evmₛ' (s'["_3"]!!)⟧.evm.hash_collision
-              = evmₛ'.hash_collision := by simp
-        rw [this]
-        aesop
-      
-
-    · rcases s' with ⟨evm, varstore⟩ | _ | _ <;> [skip; aesop_spec; skip]
-      · unfold reviveJump at code
-        simp at code
-        rw [←code]
-        aesop
-        
-      · unfold reviveJump at code
-        simp at code
-        -- rw [←code]
-        rename_i j
-        rcases j
-    · rename_i hHashCollisionTrue'
-      have : Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm.hash_collision
-             = evm.hash_collision := by simp
+      have :   hash_collision (Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm)
+          = evm.hash_collision := by
+          simp
       rw [this] at hHashCollision₁
-      rcases s' with ⟨evm, varstore⟩ | _ | _ <;> [skip; aesop_spec; skip]
-      · unfold reviveJump at code
-        simp at code
-        rw [←code]
-        aesop
+      by_cases s_isOk' : s'.isOk
+      · obtain ⟨evmₛ', varstoreₛ', s_eq_ok'⟩ := State_of_isOk s_isOk'
+        -- simplify contract
+        unfold reviveJump at code
+        simp [s_eq_ok'] at code
+        rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok' ] at code
+        clr_varstore
         
-      · unfold reviveJump at code
-        simp at code
-        unfold evm at hHashCollisionTrue'
-        simp at hHashCollisionTrue'
         
+        
+        -- obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
+        · rw [←code]
+          have : Ok evmₛ' varstore⟦var↦sload evmₛ' (s'["_3"]!!)⟧.evm.hash_collision
+                = evmₛ'.hash_collision := by simp
+          rw [this]
+          aesop
+        
+
+      · rcases s' with ⟨evm, varstore⟩ | _ | _ <;> [skip; aesop_spec; skip]
+        · unfold reviveJump at code
+          simp at code
+          rw [←code]
+          aesop
+          
+        · unfold reviveJump at code
+          simp at code
+          -- rw [←code]
+          rename_i j
+          rcases j
+      · rename_i hHashCollisionTrue'
+        have : Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm.hash_collision
+              = evm.hash_collision := by simp
+        rw [this] at hHashCollision₁
+        rcases s' with ⟨evm, varstore⟩ | _ | _ <;> [skip; aesop_spec; skip]
+        · unfold reviveJump at code
+          simp at code
+          rw [←code]
+          aesop
+          
+        · unfold reviveJump at code
+          simp at code
+          unfold evm at hHashCollisionTrue'
+          simp at hHashCollisionTrue'
+    · unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
+      unfold Spec at mapping'
+      rcases s with ⟨evm, varstore⟩ | _ | _ <;> [skip; skip; skip]
+      · aesop
+      · simp at mapping'
+        rcases s' with ⟨evm, varstore⟩ | _ | _ <;> aesop_spec
+      · simp at mapping'
+        rcases s' with ⟨evm, varstore⟩ | _ | _ <;> [skip;skip;skip]
+        · simp at mapping'
+        · simp at mapping'
+        · unfold evm at hHashCollisionTrue
+          simp at hHashCollisionTrue
+
 end
 
 end Generated.erc20shim.ERC20Shim
