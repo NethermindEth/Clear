@@ -437,7 +437,7 @@ structure EVMState : Type where
 deriving DecidableEq
 
 instance : Inhabited EVMState :=
-  ⟨ ∅ , default, default , ∅ , default, ∅ , default , False , (by aesop), (by
+  ⟨ ∅ , default, default , ∅ , default, ∅ , default , false , (by aesop), (by
   have : (∅ : Finmap (λ _ : List UInt256 ↦ UInt256)) = ⟨∅, Multiset.nodup_zero⟩ := by rfl
   rw [this]
   dsimp

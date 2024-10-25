@@ -10,7 +10,7 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
-set_option maxHeartbeats 400000
+set_option maxHeartbeats 1000000
 
 def A_fun_allowance (var : Identifier) (var_owner var_spender : Literal) (s₀ s₉ : State) : Prop :=
   (∀ {erc20}, IsERC20 erc20 s₀ →
@@ -310,7 +310,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
       right
       have :   hash_collision (Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm)
          = evm.hash_collision := by
-         sorry
+        simp
       rw [this] at hHashCollision₁
       by_cases s_isOk' : s'.isOk
       · obtain ⟨evmₛ', varstoreₛ', s_eq_ok'⟩ := State_of_isOk s_isOk'
@@ -330,71 +330,23 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         · unfold reviveJump at code
           simp at code
           -- rw [←code]
+
           rename_i j
-          rcases j -- Each of these 3 cases is similar
-          · rename_i evm'' varstore''
-            unfold revive at code
-
-            have : (revive.match_1 (fun x => State) (Jump.Continue evm'' varstore'') (fun evm store => Ok evm store)
-    (fun evm store => Ok evm store) fun evm store => Ok evm store) = Ok evm'' varstore'' := by
-                    sorry
-            rw [this] at code
-            simp at code
-
-            rw [←code]
-            -- #check lookup! "var" (Checkpoint (Jump.Continue evm'' varstore''))
-            have :   hash_collision (Ok evm'' (Finmap.insert var (lookup! "var" (Checkpoint (Jump.Continue evm'' varstore''))) varstore)).evm
-                  = evm''.hash_collision := by sorry
-            rw [this]
-            have : (Checkpoint (Jump.Continue evm'' varstore'')).evm.hash_collision
-                  = evm''.hash_collision := by sorry
-            aesop 
-          · rename_i evm'' varstore''
-            unfold revive at code
-
-            have : (revive.match_1 (fun x => State) (Jump.Continue evm'' varstore'') (fun evm store => Ok evm store)
-    (fun evm store => Ok evm store) fun evm store => Ok evm store) = Ok evm'' varstore'' := by
-                    sorry
-            rw [this] at code
-            simp at code
-
-            rw [←code]
-            -- #check lookup! "var" (Checkpoint (Jump.Continue evm'' varstore''))
-            have :   hash_collision (Ok evm'' (Finmap.insert var (lookup! "var" (Checkpoint (Jump.Break evm'' varstore''))) varstore)).evm
-                  = evm''.hash_collision := by sorry
-            rw [this]
-            have : (Checkpoint (Jump.Break evm'' varstore'')).evm.hash_collision
-                  = evm''.hash_collision := by sorry
-            aesop 
-          · rename_i evm'' varstore''
-            unfold revive at code
-
-            have : (revive.match_1 (fun x => State) (Jump.Continue evm'' varstore'') (fun evm store => Ok evm store)
-    (fun evm store => Ok evm store) fun evm store => Ok evm store) = Ok evm'' varstore'' := by
-                    sorry
-            rw [this] at code
-            simp at code
-
-            rw [←code]
-            -- #check lookup! "var" (Checkpoint (Jump.Continue evm'' varstore''))
-            have :   hash_collision (Ok evm'' (Finmap.insert var (lookup! "var" (Checkpoint (Jump.Leave evm'' varstore''))) varstore)).evm
-                  = evm''.hash_collision := by sorry
-            rw [this]
-            have : (Checkpoint (Jump.Leave evm'' varstore'')).evm.hash_collision
-                  = evm''.hash_collision := by sorry
-            aesop
+          unfold evm at hHashCollisionTrue
+          simp at hHashCollisionTrue
   · -- Hash collision from first keccak
     rename_i hHashCollisionTrue
     right
 
     unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
     apply Spec_ok_unfold (by sorry) (by sorry) at mapping'
+    -- clr_spec at mapping'
     
     obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
 
     have :   hash_collision (Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm)
         = evm.hash_collision := by
-        sorry
+        simp
     rw [this] at hHashCollision₁
     by_cases s_isOk' : s'.isOk
     · obtain ⟨evmₛ', varstoreₛ', s_eq_ok'⟩ := State_of_isOk s_isOk'
@@ -409,7 +361,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
       -- obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
       · rw [←code]
         have : Ok evmₛ' varstore⟦var↦sload evmₛ' (s'["_3"]!!)⟧.evm.hash_collision
-              = evmₛ'.hash_collision := by sorry
+              = evmₛ'.hash_collision := by simp
         rw [this]
         aesop
       
@@ -427,7 +379,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         rcases j
     · rename_i hHashCollisionTrue'
       have : Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm.hash_collision
-             = evm.hash_collision := by sorry
+             = evm.hash_collision := by simp
       rw [this] at hHashCollision₁
       rcases s' with ⟨evm, varstore⟩ | _ | _ <;> [skip; aesop_spec; skip]
       · unfold reviveJump at code
@@ -437,75 +389,9 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         
       · unfold reviveJump at code
         simp at code
-        -- rw [←code]
-        rename_i j
-        rcases j -- Each of these 3 cases is similar
-        · rename_i evm'' varstore''
-          
-          
-          
-          unfold revive at code
-
-          have : (revive.match_1 (fun x => State) (Jump.Continue evm'' varstore'') (fun evm store => Ok evm store)
-  (fun evm store => Ok evm store) fun evm store => Ok evm store) = Ok evm'' varstore'' := by
-                  sorry
-          rw [this] at code
-          simp at code
-
-          rw [←code]
-          -- #check lookup! "var" (Checkpoint (Jump.Continue evm'' varstore''))
-          have :   hash_collision (Ok evm'' (Finmap.insert var (lookup! "var" (Checkpoint (Jump.Continue evm'' varstore''))) varstore)).evm
-                = evm''.hash_collision := by sorry
-          rw [this]
-          have : (Checkpoint (Jump.Continue evm'' varstore'')).evm.hash_collision
-                = evm''.hash_collision := by sorry
-          
-          
-          aesop
-        · rename_i evm'' varstore''
-          
-          
-          
-          unfold revive at code
-
-          have : (revive.match_1 (fun x => State) (Jump.Continue evm'' varstore'') (fun evm store => Ok evm store)
-  (fun evm store => Ok evm store) fun evm store => Ok evm store) = Ok evm'' varstore'' := by
-                  sorry
-          rw [this] at code
-          simp at code
-
-          rw [←code]
-          -- #check lookup! "var" (Checkpoint (Jump.Continue evm'' varstore''))
-          have :   hash_collision (Ok evm'' (Finmap.insert var (lookup! "var" (Checkpoint (Jump.Break evm'' varstore''))) varstore)).evm
-                = evm''.hash_collision := by sorry
-          rw [this]
-          have : (Checkpoint (Jump.Break evm'' varstore'')).evm.hash_collision
-                = evm''.hash_collision := by sorry
-          
-          
-          aesop
-        · rename_i evm'' varstore''
-          
-          
-          
-          unfold revive at code
-
-          have : (revive.match_1 (fun x => State) (Jump.Leave evm'' varstore'') (fun evm store => Ok evm store)
-  (fun evm store => Ok evm store) fun evm store => Ok evm store) = Ok evm'' varstore'' := by
-                  sorry
-          rw [this] at code
-          simp at code
-
-          rw [←code]
-          -- #check lookup! "var" (Checkpoint (Jump.Continue evm'' varstore''))
-          have :   hash_collision (Ok evm'' (Finmap.insert var (lookup! "var" (Checkpoint (Jump.Leave evm'' varstore''))) varstore)).evm
-                = evm''.hash_collision := by sorry
-          rw [this]
-          have : (Checkpoint (Jump.Leave evm'' varstore'')).evm.hash_collision
-                = evm''.hash_collision := by sorry
-          
-          
-          aesop
+        unfold evm at hHashCollisionTrue'
+        simp at hHashCollisionTrue'
+        
 end
 
 end Generated.erc20shim.ERC20Shim
