@@ -20,8 +20,7 @@ set_option pp.coercions false
 def A_mapping_index_access_mapping_address_uint256_of_address (dataSlot : Identifier) (slot key : Literal) (s₀ s₉ : State) : Prop :=
   ((preservesEvm s₀ s₉ ∧ s₉.isOk ∧ (∃ keccak,
   s₉.evm.keccak_map.lookup [ ↑(Address.ofUInt256 key), slot ] = some keccak ∧
-  -- s₉.store = s₀⟦dataSlot ↦ keccak⟧.store ∧
-  s₉.store.lookup dataSlot = some keccak) ∧
+  s₉.store = s₀⟦dataSlot ↦ keccak⟧.store) ∧
   s₉.evm.hash_collision = false)
   ∨ s₉.evm.hash_collision = true)
   ∧ (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true)
