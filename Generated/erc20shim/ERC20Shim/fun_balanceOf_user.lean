@@ -124,7 +124,8 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
           rw [ ← keccak_map_lookup_eq_of_Preserved_of_lookup Preserved has_address
             , this ]
           simp
-        have keccak_inj := evmₛ.keccak_inj this (Eq.symm h)
+        have IsEVMₛ : evmₛ.isEVMState := by sorry
+        have keccak_inj := IsEVMₛ.1 this (Eq.symm h)
 
         rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
         unfold Fin.ofNat'' at keccak_inj
@@ -157,7 +158,8 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
           have := Eq.trans (Eq.symm spender_lookup_s) spender_lookup
           rw [this]
           simp
-        have keccak_inj := evmₛ.keccak_inj this h
+        have IsEVMₛ : evmₛ.isEVMState := by sorry
+        have keccak_inj := IsEVMₛ.1 this h
         simp at keccak_inj
         have intermediate_ne_balances : erc_intermediate ≠ ERC20Private.balances := by
           obtain blocked_range := get_evm_of_ok ▸ is_erc20.block_acc_range.2.1

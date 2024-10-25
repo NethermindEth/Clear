@@ -181,7 +181,8 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
             rw [ ← keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' has_address
               , this ]
             simp
-          have keccak_inj := evmₛ'.keccak_inj this (Eq.symm h)
+          have IsEVMₛ' : evmₛ'.isEVMState := by sorry
+          have keccak_inj := IsEVMₛ'.1 this (Eq.symm h)
 
           rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
           unfold Fin.ofNat'' at keccak_inj
@@ -232,7 +233,8 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
             rw [s_eq_ok'] at keccak_using_intermediate'
             simp at keccak_using_intermediate'
             exact Finmap.mem_of_lookup_eq_some keccak_using_intermediate'
-          have keccak_inj := evmₛ'.keccak_inj this (Eq.symm hSpender)
+          have IsEVMₛ' : evmₛ'.isEVMState := by sorry
+          have keccak_inj := IsEVMₛ'.1 this (Eq.symm hSpender)
           rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
           unfold Fin.ofNat'' at keccak_inj
           simp at keccak_inj
@@ -253,7 +255,8 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
               rw [s_eq_ok] at keccak_using_intermediate
               simp at keccak_using_intermediate
               exact Finmap.mem_of_lookup_eq_some keccak_using_intermediate
-            have keccak_inj := evmₛ.keccak_inj this (Eq.symm owner_lookup'')
+            have IsEVMₛ : evmₛ.isEVMState := by sorry
+            have keccak_inj := IsEVMₛ.1 this (Eq.symm owner_lookup'')
             rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
             unfold Fin.ofNat'' at keccak_inj
             simp at keccak_inj
