@@ -60,10 +60,7 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
 
   split at code
   case h_1 _ res keccak_eq_some_res =>
-    simp only [multifill_cons, multifill_nil'] at code
-    unfold setEvm State.insert State.lookup! at code
-    simp only [Fin.isValue, Finmap.lookup_insert, get!_some, isOk_Ok] at code
-    rw [← State.insert_of_ok] at code
+    clr_match at code
     rw [← code]
 
     have res_collision := hash_collision_of_keccak256_eq_some keccak_eq_some_res
@@ -133,11 +130,8 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
       rw [Finmap.lookup_insert]
 
   case h_2 res keccak_eq_none =>
-    simp only [multifill_cons, multifill_nil'] at code
-    unfold setEvm State.insert State.lookup! at code
-    simp only [Fin.isValue, Finmap.lookup_insert, get!_some, isOk_Ok] at code
-    rw [← State.insert_of_ok] at code
-    
+    clr_match at code
+
     have final_destination : s₉.evm.hash_collision := by
       rw [← code, State.insert_of_ok, get_evm_of_ok]
       exact hash_collision_of_addHashCollision state_prep
