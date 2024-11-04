@@ -17,7 +17,6 @@ structure ERC20 where
   balances : BalanceMap
   allowances : AllowanceMap
 
-set_option linter.setOption false
 set_option pp.coercions false
 
 def not_mem_private (a : Option UInt256) : Prop :=
@@ -100,7 +99,7 @@ lemma IsERC20_of_ok_forall_store {erc20} {evm} {s₀ s₁} :
 lemma IsERC20_of_ok_of_Preserved {erc20} {store} {σ₀ σ₁} (h : Preserved σ₀ σ₁) :
   IsERC20 erc20 (Ok σ₀ store) → IsERC20 erc20 (Ok σ₁ store) := by
   sorry
-  
+
 lemma IsERC20_of_preservesEvm {erc20} {s₀ s₁} :
   preservesEvm s₀ s₁ → IsERC20 erc20 s₀ → IsERC20 erc20 s₁ := by
   sorry

@@ -10,11 +10,10 @@ namespace Generated.erc20shim.ERC20Shim
 
 section
 
-open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities 
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities
 
 abbrev AddressMap := Finmap (λ _ : Address ↦ UInt256)
 
-set_option linter.setOption false
 set_option pp.coercions false
 
 def A_mapping_index_access_mapping_address_uint256_of_address (dataSlot : Identifier) (slot key : Literal) (s₀ s₉ : State) : Prop :=
@@ -41,7 +40,7 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
   apply spec_eq
   intro hasFuel
   clr_funargs
-  
+
   rw [ EVMSub', EVMShl', EVMAddrSize' ]; simp
   rw [ Address.and_size_eq_ofUInt256 ]
   rw [ multifill_cons, multifill_nil ]
@@ -67,20 +66,20 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
     have prep_collision : state_prep.hash_collision = evm.hash_collision := by
       rw [← prep_def]
       exact Eq.trans hash_collision_of_mstore hash_collision_of_mstore
-      
+
     have preserves_collision :
-      evm.hash_collision = true → Ok res.2 varstore⟦dataSlot↦res.1⟧.evm.hash_collision = true := by      
+      evm.hash_collision = true → Ok res.2 varstore⟦dataSlot↦res.1⟧.evm.hash_collision = true := by
       rw [State.insert_of_ok, get_evm_of_ok, res_collision, prep_collision]
       intro h; exact h
-    
+
     apply And.intro
     swap; exact preserves_collision
-    
+
     by_cases h : evm.hash_collision
     right
     -- hash_collision from the previous state
     exact preserves_collision h
-    
+
     -- no hash collision from the previous state
     left; split_ands
     -- preservesEvm
@@ -100,11 +99,11 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
     -- varstore preservation
     rw [State.insert_of_ok]
     simp only [State.store]
-    
+
     -- no hash collision
     rw [State.insert_of_ok, get_evm_of_ok, res_collision, prep_collision]
     rw [Bool.eq_false_eq_not_eq_true] at h; exact h
-    
+
     -- keccak lookup
     rw [State.insert_of_ok, get_evm_of_ok]
     unfold keccak256 at keccak_eq_some_res

@@ -6,7 +6,6 @@ import Clear.Instr
 import Clear.UInt256
 import Clear.Wheels
 
-set_option linter.setOption false
 set_option pp.coercions false
 
 set_option maxHeartbeats 700000
@@ -619,7 +618,7 @@ theorem filter_eq_cons_iff {α} {p : α → Bool} {l} {a} {as} :
 --   (h_int : interval ∉ σ.keccak_map)
 --   (h_filter : σ.keccak_range.filter (· ∉ σ.used_range) = r :: rs)
 --   -- (h_head : r ∉ σ.used_range)
---   -- (h_rest : rs ⊆ σ.keccak_range) -- .filter (· ∉ σ.used_range) 
+--   -- (h_rest : rs ⊆ σ.keccak_range) -- .filter (· ∉ σ.used_range)
 --   :
 --   EVMState :=
 --     have := filter_eq_cons_iff.mp h_filter
