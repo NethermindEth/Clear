@@ -46,7 +46,7 @@ instance : NeZero Address.size := ⟨by decide⟩
 
 namespace Address
 
-def top : ℕ := (⊤ : Address).val
+noncomputable def top : ℕ := (⊤ : Address).val
 
 lemma top_def : top = 2 ^ 160 - 1 := by
   unfold top
@@ -2088,7 +2088,7 @@ lemma lookupByte_at_offset_update :
     simp
   · rw [ Nat.cast_one ]
     simp
-  all_goals simp only [ Nat.cast_ofNat, memInsert, Fin.isValue, List.getElem_eq_get
+  all_goals simp only [ Nat.cast_ofNat, memInsert, Fin.isValue, List.getElem_eq_getElem?
                       , Function.uncurry_apply_pair, add_zero, ne_eq, add_right_eq_self
                       , Fin.reduceEq, not_false_eq_true, Finmap.lookup_insert_of_ne
                       , add_right_inj, Finmap.lookup_insert, get!_some

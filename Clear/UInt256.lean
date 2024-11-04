@@ -24,7 +24,7 @@ instance : NatCast UInt256 := ⟨Fin.ofNat⟩
 abbrev Nat.toUInt256 : ℕ → UInt256 := Fin.ofNat
 abbrev UInt8.toUInt256 (a : UInt8) : UInt256 := a.toNat.toUInt256
 
-def UInt256.top : ℕ := (⊤ : UInt256).val
+noncomputable def UInt256.top : ℕ := (⊤ : UInt256).val
 
 lemma UInt256.top_def : UInt256.top = 2 ^ 256 - 1 := by
   unfold top

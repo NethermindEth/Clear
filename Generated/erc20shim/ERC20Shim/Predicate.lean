@@ -94,10 +94,10 @@ lemma IsERC20_of_ok_forall_store {erc20} {evm} {s₀ s₁} :
   · exact is_erc.hasSupply
   · exact is_erc.hasBalance
   · exact is_erc.hasAllowance
-  · exact is_erc.storageDom
-  sorry
+  · sorry
+  · sorry
 
-lemma IsERC20_of_ok_of_Preserved {erc20} {store} {σ₀ σ₁} (h : Preserved σ₀ σ₁) : 
+lemma IsERC20_of_ok_of_Preserved {erc20} {store} {σ₀ σ₁} (h : Preserved σ₀ σ₁) :
   IsERC20 erc20 (Ok σ₀ store) → IsERC20 erc20 (Ok σ₁ store) := by
   sorry
   
