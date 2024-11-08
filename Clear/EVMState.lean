@@ -2270,6 +2270,12 @@ lemma mstore_preserves_keccak_map :
   unfold mstore
   unfold updateMemory
   simp
+  
+lemma mstore_preserves_used_range : 
+  (mstore evm addr val).used_range = evm.used_range := by
+  unfold mstore
+  unfold updateMemory
+  simp
 
 section Interval
 
