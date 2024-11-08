@@ -18,7 +18,7 @@ set_option linter.setOption false
 set_option pp.coercions false
 
 def A_mapping_index_access_mapping_address_uint256_of_address (dataSlot : Identifier) (slot key : Literal) (s₀ s₉ : State) : Prop :=
-  ((preservesEvm s₀ s₉ ∧ s₉.isOk ∧ (∃ keccak,
+  ((preservesEvm s₀ s₉ ∧ s₉.isOk ∧ (s₀.evm.isEVMState → s₉.evm.isEVMState) ∧ (∃ keccak,
   s₉.evm.keccak_map.lookup [ ↑(Address.ofUInt256 key), slot ] = some keccak ∧
   s₉.store = s₀⟦dataSlot ↦ keccak⟧.store) ∧
   s₉.evm.hash_collision = false)
@@ -91,7 +91,32 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
 
     -- state is ok
     exact State.isOk_Ok
-
+    -- s₉.evm.isEVMState
+    intro hIsEVMState
+    obtain ⟨res₁,res₂⟩ := res
+    simp
+    
+    have state_prep_isEVMState : isEVMState state_prep := by
+      rw [←prep_def]
+      
+      unfold isEVMState
+      split_ands
+      unfold isKeccakInjective
+      simp
+      intros a b h₁ h₂
+      rw [mstore_preserves_keccak_map, mstore_preserves_keccak_map] at h₂
+      unfold isEVMState at hIsEVMState
+      aesop
+      
+      unfold isKeccakUsedRange
+      simp  
+      rw [mstore_preserves_keccak_map, mstore_preserves_keccak_map,
+          mstore_preserves_used_range, mstore_preserves_used_range]
+      unfold isEVMState at hIsEVMState
+      aesop
+    
+    apply @isEVMState_of_keccak256 ⟨state_prep, state_prep_isEVMState⟩ _ _ _ _ keccak_eq_some_res
+    
     -- keccak
     use res.1
     split_ands
