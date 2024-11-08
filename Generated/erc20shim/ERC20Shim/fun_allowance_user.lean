@@ -13,7 +13,7 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 set_option maxHeartbeats 1000000
 
 def A_fun_allowance (var : Identifier) (var_owner var_spender : Literal) (s₀ s₉ : State) : Prop :=
-  (∀ {erc20}, IsERC20 erc20 s₀ →
+  (∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
   let owner := Address.ofUInt256 var_owner
   let spender := Address.ofUInt256 var_spender
   IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
@@ -40,7 +40,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
   
   
 
-  obtain ⟨⟨preservesEvm, s_isOk, ⟨⟨intermediate_keccak, keccak_using_intermediate, hStore⟩,hHashCollision⟩⟩, hHashCollision₁⟩ := mapping -- Adds a goal
+  obtain ⟨⟨preservesEvm, s_isOk, s_isEVMStatePreserved, ⟨⟨intermediate_keccak, keccak_using_intermediate, hStore⟩,hHashCollision⟩⟩, hHashCollision₁⟩ := mapping -- Adds a goal
   · -- No hash collision from first keccak
     
     obtain ⟨evmₛ, varstoreₛ, s_eq_ok⟩ := State_of_isOk s_isOk
@@ -56,10 +56,10 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
     unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
     clr_spec at mapping'
     
-    obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
+    obtain ⟨⟨preservesEvm', s_isOk', s_isEVMStatePreserved', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
     · -- No hash collision from second keccak
       left
-      intro erc20 is_erc20
+      intro erc20 is_erc20 s₀_isEVMState
       obtain ⟨evmₛ', varstoreₛ', s_eq_ok'⟩ := State_of_isOk s_isOk'
       have keccak' : Finmap.lookup [↑↑(Address.ofUInt256 (s["var_spender"]!!)), s["_2"]!!] s'.evm.keccak_map = some (s'["_3"]!!) := by
         rw [s_eq_ok]
@@ -181,7 +181,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
             rw [ ← keccak_map_lookup_eq_of_Preserved_of_lookup hPreserved'' has_address
               , this ]
             simp
-          have IsEVMₛ' : evmₛ'.isEVMState := by sorry
+          have IsEVMₛ' : evmₛ'.isEVMState := by aesop
           have keccak_inj := IsEVMₛ'.1 this (Eq.symm h)
 
           rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
@@ -233,7 +233,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
             rw [s_eq_ok'] at keccak_using_intermediate'
             simp at keccak_using_intermediate'
             exact Finmap.mem_of_lookup_eq_some keccak_using_intermediate'
-          have IsEVMₛ' : evmₛ'.isEVMState := by sorry
+          have IsEVMₛ' : evmₛ'.isEVMState := by aesop
           have keccak_inj := IsEVMₛ'.1 this (Eq.symm hSpender)
           rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
           unfold Fin.ofNat'' at keccak_inj
@@ -255,7 +255,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
               rw [s_eq_ok] at keccak_using_intermediate
               simp at keccak_using_intermediate
               exact Finmap.mem_of_lookup_eq_some keccak_using_intermediate
-            have IsEVMₛ : evmₛ.isEVMState := by sorry
+            have IsEVMₛ : evmₛ.isEVMState := by aesop
             have keccak_inj := IsEVMₛ.1 this (Eq.symm owner_lookup'')
             rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
             unfold Fin.ofNat'' at keccak_inj
@@ -344,7 +344,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
     · unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
       clr_spec at mapping'
       
-      obtain ⟨⟨preservesEvm', s_isOk', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
+      obtain ⟨⟨preservesEvm', s_isOk', s_isEVMStatePreserved', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
 
       have :   hash_collision (Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm)
           = evm.hash_collision := by

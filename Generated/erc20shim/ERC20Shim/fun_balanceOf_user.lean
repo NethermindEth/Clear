@@ -12,7 +12,7 @@ section
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
 def A_fun_balanceOf (var : Identifier) (var_account : Literal) (s₀ s₉ : State) : Prop :=
-  (∀ {erc20}, IsERC20 erc20 s₀ →
+  (∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
   let account := Address.ofUInt256 var_account
   IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
   s₉[var]!! = (erc20.balances.lookup account).getD 0 ∧
@@ -36,10 +36,10 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   clr_spec at mapping
 
   
-  obtain ⟨⟨preservesEvm, s_isOk, ⟨⟨keccak_value, keccak_using_keccak_value, hStore⟩,hHashCollision⟩⟩, hHashCollision₁⟩ := mapping -- Adds a goal
+  obtain ⟨⟨preservesEvm, s_isOk, s_isEVMStatePreserved, ⟨⟨keccak_value, keccak_using_keccak_value, hStore⟩,hHashCollision⟩⟩, hHashCollision₁⟩ := mapping -- Adds a goal
   · -- No hash collision from keccak
     left
-    intro erc20 is_erc20
+    intro erc20 is_erc20 s₀_isEVMState
 
     obtain ⟨evmₛ, varstoreₛ, s_eq_ok⟩ := State_of_isOk s_isOk
 
@@ -124,7 +124,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
           rw [ ← keccak_map_lookup_eq_of_Preserved_of_lookup Preserved has_address
             , this ]
           simp
-        have IsEVMₛ : evmₛ.isEVMState := by sorry
+        have IsEVMₛ : evmₛ.isEVMState := by aesop
         have keccak_inj := IsEVMₛ.1 this (Eq.symm h)
 
         rw [← Fin.ofNat''_eq_cast, ← Fin.ofNat''_eq_cast] at keccak_inj
@@ -158,7 +158,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
           have := Eq.trans (Eq.symm spender_lookup_s) spender_lookup
           rw [this]
           simp
-        have IsEVMₛ : evmₛ.isEVMState := by sorry
+        have IsEVMₛ : evmₛ.isEVMState := by aesop
         have keccak_inj := IsEVMₛ.1 this h
         simp at keccak_inj
         have intermediate_ne_balances : erc_intermediate ≠ ERC20Private.balances := by
