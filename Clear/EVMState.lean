@@ -844,7 +844,8 @@ lemma keccak_map_lookup_eq_of_Preserved_of_lookup {σ₀ σ₁} {addr} {b}
 lemma hash_collision_of_keccak256_eq_some {σ σ' : EVMState} {p n} {r}
   (h : keccak256 σ p n = some ⟨r, σ'⟩) :
   σ'.hash_collision = σ.hash_collision := by
-  sorry
+  unfold keccak256 at h
+  aesop
 
 -- code copy
 
@@ -998,7 +999,17 @@ lemma storage_eq_of_preserved {σ₀ σ₁} (h : Preserved σ₀ σ₁) :
 
 lemma sload_of_not_mem_dom {evm : EVMState} :
   ∀ {addr}, addr ∉ evm.storage.keys → evm.sload addr = 0 := by
-  sorry
+  intros addr h
+  unfold sload Account.lookupStorage
+  unfold storage at h
+  generalize act_def : evm.lookupAccount evm.execution_env.code_owner = mact
+  rw [act_def] at h
+  match mact with
+  | none => simp only
+  | some act =>
+    simp only at h ⊢
+    rw [Finmap.mem_keys, Iff.symm Finmap.lookup_eq_none] at h
+    rw [h]
 
 end
 
