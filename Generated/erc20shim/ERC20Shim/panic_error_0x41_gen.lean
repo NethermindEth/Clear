@@ -66,6 +66,7 @@ def panic_error_0x41_concrete_of_code
   generalize hs₉ : multifill' _ _ = s₉'
 
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; try rw [List.foldr_nil]
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   rw [EVMShl']
   try simp
