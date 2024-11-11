@@ -104,7 +104,7 @@ def switch_8164987986085659348_concrete_of_code : {
   rw [EVMAdd']
   try simp
   
-  unfold execSwitchCases
+  unfold execSwitchCases -- TODO - fix in the generator
   rw [cons]; simp only [LetCall', AssignCall']
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   -- EXPR 
