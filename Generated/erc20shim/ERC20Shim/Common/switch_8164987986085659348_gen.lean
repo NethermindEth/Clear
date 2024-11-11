@@ -19,22 +19,22 @@ def switch_8164987986085659348 := <s
     let _6 := iszero(_5)
     let _7 := shl(5, _6)
     ret := add(pos, _7)
-}
-case 1 {
-    let dataPos := array_dataslot_string_storage(value)
-    let i := 0
-    for { } lt(i, length) {
-        let _8 := 32
-        i := add(i, _8)
-    } {
-        let _9 := sload(dataPos)
-        let _10 := add(pos, i)
-        mstore(_10, _9)
-        let _11 := _1
-        dataPos := add(dataPos, _1)
-    }
-    ret := add(pos, i)
-}
+  }
+  case 1 {
+      let dataPos := array_dataslot_string_storage(value)
+      let i := 0
+      for { } lt(i, length) {
+          let _8 := 32
+          i := add(i, _8)
+      } {
+          let _9 := sload(dataPos)
+          let _10 := add(pos, i)
+          mstore(_10, _9)
+          let _11 := _1
+          dataPos := add(dataPos, _1)
+      }
+      ret := add(pos, i)
+  }
 default
 { }
 >
@@ -104,6 +104,7 @@ def switch_8164987986085659348_concrete_of_code : {
   rw [EVMAdd']
   try simp
   
+  unfold execSwitchCases
   rw [cons]; simp only [LetCall', AssignCall']
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   -- EXPR 

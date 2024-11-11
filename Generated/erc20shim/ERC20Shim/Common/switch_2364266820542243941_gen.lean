@@ -78,10 +78,13 @@ def switch_2364266820542243941_concrete_of_code : {
   -- AST-specific tactics
 
   unfold execSwitchCases
+  simp only [Fin.isValue]
+  try rw [List.foldr_cons]
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   -- simp [Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetCall', AssignCall']
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; 
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   -- EXPR 
   try simp
@@ -94,12 +97,14 @@ def switch_2364266820542243941_concrete_of_code : {
   revert h
   
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; 
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   rw [EVMSload']
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; 
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   rw [EVMLt']
   try simp
@@ -118,12 +123,14 @@ def switch_2364266820542243941_concrete_of_code : {
   subst xs
   
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; 
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   rw [EVMSub']
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetCall', AssignCall']
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; 
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   -- EXPR 
   try simp
@@ -136,6 +143,7 @@ def switch_2364266820542243941_concrete_of_code : {
   revert h
   
   rw [cons, ExprStmtCall']; try simp only
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; 
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   -- simp [Var']
   -- simp [Var']
@@ -155,12 +163,16 @@ def switch_2364266820542243941_concrete_of_code : {
   subst hdefault
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; try rw [List.foldr_nil]
+  simp only [Fin.isValue, execPrimCall, multifill', reverse', List.reverse_cons, List.reverse_nil,
+    List.nil_append, evalArgs, Var', evalTail_nil]
+  try rw [List.foldr_nil]
   rw [EVMSload']
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetCall', AssignCall']
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; 
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   -- EXPR 
   try simp
@@ -174,6 +186,7 @@ def switch_2364266820542243941_concrete_of_code : {
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtCall']; try simp only
+  try simp only [Fin.isValue]; try rw [List.foldr_cons]; 
   simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
   -- simp [Var']
   -- simp [Var']
