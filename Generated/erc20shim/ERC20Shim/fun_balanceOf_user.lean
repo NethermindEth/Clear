@@ -11,6 +11,15 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
+section PleaseMoveTheseWhereAppropriatte
+
+variable {jmp : Jump}
+
+@[simp]
+lemma hash_collision_evm_Checkpoint_eq_false : (Checkpoint jmp).evm.hash_collision = false := rfl
+
+end PleaseMoveTheseWhereAppropriatte
+
 def A_fun_balanceOf (var : Identifier) (var_account : Literal) (s₀ s₉ : State) : Prop :=
   (∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
   let account := Address.ofUInt256 var_account
@@ -187,17 +196,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
         = evm.hash_collision := by
       simp
     rw [this] at hHashCollision₁
-    rcases s with ⟨evm, varstore⟩ | _ | _ <;> [skip; aesop_spec; skip]
-    · unfold reviveJump at code
-      simp at code
-      rw [←code]
-      aesop
-    · unfold reviveJump at code
-      simp at code
-
-      rename_i j
-      unfold evm at hHashCollisionTrue
-      simp at hHashCollisionTrue
+    rcases s <;> aesop_spec
 
 end
 
