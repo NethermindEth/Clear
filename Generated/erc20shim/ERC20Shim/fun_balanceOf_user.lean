@@ -183,20 +183,15 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
           exact blocked_range bal_mem_private
 
         tauto
-
       -- address not in reserved space
-      · obtain blocked_range := get_evm_of_ok ▸ s_erc20.block_acc_range.1
-        rw [ keccak ] at blocked_range
-        apply not_mem_private_of_some at blocked_range
-        exact blocked_range
-  · -- Hash collision from keccak
-    rename_i hHashCollisionTrue
-    right
-    have :   Ok evm Inhabited.default⟦"var_account"↦var_account⟧⟦"_1"↦0⟧.evm.hash_collision
-        = evm.hash_collision := by
-      simp
-    rw [this] at hHashCollision₁
-    rcases s <;> aesop_spec
+      · -- NOTE: Technically can be a one liner with a bit more infrastructure for keccak.
+        -- QUESTION: I don't think it's worth revisiting post-haste; or is it?
+        have blocked_range := keccak ▸ get_evm_of_ok ▸ s_erc20.block_acc_range.1
+        exact not_mem_private_of_some blocked_range
+  · -- hash collision from keccak
+    rcases s <;> aesop_spec -- NOTE: `aesop_spec` _should_ do this without the `rcases` (viz. declaration of `State`)
+                            --       but it times out. We can play with heartbeats or priority of operations if need be.
+                            -- QUESTION: Should we?
 
 end
 
