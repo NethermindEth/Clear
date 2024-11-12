@@ -12,7 +12,11 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities ERC20Shim.Common Generated.ERC20simple ERC20Shim
 
-def A_checked_sub_uint256 (diff : Identifier) (x y : Literal) (s₀ s₉ : State) : Prop := sorry
+def A_checked_sub_uint256 (diff : Identifier) (x y : Literal) (s₀ s₉ : State) : Prop :=
+  s₉ = let computedDiff := x - y
+       if x < computedDiff
+       then s₀.diverge
+       else s₀⟦diff ↦ computedDiff⟧
 
 lemma checked_sub_uint256_abs_of_concrete {s₀ s₉ : State} {diff x y} :
   Spec (checked_sub_uint256_concrete_of_code.1 diff x y) s₀ s₉ →

@@ -12,7 +12,11 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities ERC20Shim.Common Generated.ERC20simple ERC20Shim
 
-def A_checked_add_uint256 (sum : Identifier) (x y : Literal) (s₀ s₉ : State) : Prop := sorry
+def A_checked_add_uint256 (sum : Identifier) (x y : Literal) (s₀ s₉ : State) : Prop :=
+  s₉ = let computedSum := x + y
+       if computedSum < x
+       then s₀.diverge
+       else s₀⟦sum ↦ computedSum⟧
 
 lemma checked_add_uint256_abs_of_concrete {s₀ s₉ : State} {sum x y} :
   Spec (checked_add_uint256_concrete_of_code.1 sum x y) s₀ s₉ →
