@@ -62,7 +62,7 @@ def for_84821961910748561_post_concrete_of_code
   revert h
 
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMSub']
   try simp
   
@@ -113,7 +113,7 @@ def for_84821961910748561_body_concrete_of_code
   subst xs
   
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMAdd']
   try simp
   
