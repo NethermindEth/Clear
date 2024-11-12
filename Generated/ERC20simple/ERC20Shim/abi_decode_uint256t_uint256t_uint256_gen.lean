@@ -143,6 +143,7 @@ def abi_decode_uint256t_uint256t_uint256_concrete_of_code
   try revert h'
   revert h
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

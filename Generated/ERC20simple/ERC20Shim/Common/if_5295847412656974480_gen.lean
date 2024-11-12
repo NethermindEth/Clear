@@ -72,7 +72,6 @@ def if_5295847412656974480_concrete_of_code : {
   try rw [nil]
   try simp [Bool.toUInt256, UInt256.size]
   intros h
-  clr_varstore h,
   exact h
 
 

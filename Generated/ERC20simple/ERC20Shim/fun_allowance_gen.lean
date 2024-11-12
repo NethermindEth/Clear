@@ -108,6 +108,10 @@ def fun_allowance_concrete_of_code
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
+  repeat (
+    first | (rw [State.lookup_insert' ?XX]; case XX => ((try simp [primCall]); aesop_spec)) |
+            rw [State.lookup_insert_of_ne (by decide)]
+  )
   -- finish offsetting
   subst hs₉
   intros hbody

@@ -75,6 +75,7 @@ def array_dataslot_string_storage_concrete_of_code
   rw [EVMKeccak256']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

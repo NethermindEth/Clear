@@ -100,6 +100,7 @@ def copy_array_from_storage_to_memory_string_concrete_of_code
   try revert h'
   revert h
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

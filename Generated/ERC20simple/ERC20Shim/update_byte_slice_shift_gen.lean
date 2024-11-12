@@ -60,6 +60,7 @@ def update_byte_slice_shift_concrete_of_code
 
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

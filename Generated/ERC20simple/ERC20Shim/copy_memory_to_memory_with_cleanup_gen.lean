@@ -96,6 +96,7 @@ def copy_memory_to_memory_with_cleanup_concrete_of_code
   rw [EVMMstore']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

@@ -93,6 +93,7 @@ def panic_error_0x41_concrete_of_code
   rw [EVMRevert']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

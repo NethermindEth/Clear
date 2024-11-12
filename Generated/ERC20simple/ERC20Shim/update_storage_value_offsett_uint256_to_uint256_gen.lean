@@ -85,6 +85,7 @@ def update_storage_value_offsett_uint256_to_uint256_concrete_of_code
   rw [EVMSstore']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

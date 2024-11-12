@@ -73,7 +73,6 @@ open Lean Elab Tactic in
 elab "clr_varstore_target" : tactic =>
   do evalTactic <| ← `(tactic| (
       repeat (
-        first | rw [State.lookup_insert (by assumption)] |
-                rw [State.lookup_insert' (by aesop_spec)] |
-                rw [State.lookup_insert_of_ne (by decide)]
-      )))
+    first | (rw [State.lookup_insert' ?XX]; case XX => ((try simp [primCall]); aesop_spec)) |
+            rw [State.lookup_insert_of_ne (by decide)]
+  )))

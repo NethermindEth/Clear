@@ -74,7 +74,10 @@ def abi_encode_address_concrete_of_code
   -- EXPR 
   rw [EVMMstore']
   try simp
-  
+  repeat (
+    first | rw [State.lookup_insert' (by (try simp [primCall]); aesop_spec)] |
+            rw [State.lookup_insert_of_ne (by decide)]
+  )
   -- finish offsetting
   subst hs₉
   intros hbody

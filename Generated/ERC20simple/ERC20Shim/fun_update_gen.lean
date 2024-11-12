@@ -261,6 +261,7 @@ def fun_update_concrete_of_code
   rw [EVMLog3']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

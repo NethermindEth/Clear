@@ -66,6 +66,7 @@ def fun_totalSupply_concrete_of_code
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

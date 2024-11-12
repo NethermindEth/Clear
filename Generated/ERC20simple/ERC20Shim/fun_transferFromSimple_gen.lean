@@ -58,7 +58,7 @@ def fun_transferFromSimple : FunctionDefinition := <f
 
 set_option maxRecDepth 4000
 set_option maxHeartbeats 300000
-set_option maxHeartbeats 1000000
+
 def fun_transferFromSimple_concrete_of_code
 : {
     C :
@@ -119,9 +119,6 @@ def fun_transferFromSimple_concrete_of_code
   subst xs
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
-  next a b =>
-  skip
-  -- clr_varstore b,
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
@@ -135,29 +132,15 @@ def fun_transferFromSimple_concrete_of_code
   intros h
   try intros h'
   refine' Exists.intro s (And.intro (checked_sub_uint256_abs_of_code hs) ?_)
-  swap -- ; clear hs
+  swap; clear hs
   try revert h'
   revert h
   
-  -- clr_varstore_target
-  -- clr_varstore
-  subst hs₁
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
-  -- clr_funargs at b
-  -- clr_varstore b,
-                                
-  -- clr_varstore
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
-  -- clr_varstore
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
-  -- clr_varstore
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
-  -- clr_varstore
-
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
-  -- clr_varstore_target
-
-  -- clr_varstore
   rw [cons]; simp only [LetCall', AssignCall']
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
@@ -174,12 +157,12 @@ def fun_transferFromSimple_concrete_of_code
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
-  clr_varstore_target
-  
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody
   subst hbody
+  subst hs₁
   rw [← hok]
   repeat {rw [lookup_insert' (by aesop)]}
   repeat {rw [lookup_insert_of_ne (by decide)]}
