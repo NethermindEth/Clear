@@ -15,6 +15,7 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 
 def A_fun_transferFromSimple (var var_1 var_2 : Identifier) (var_from var_to var_value : Literal) (s₀ s₉ : State) : Prop := sorry
 
+set_option maxHeartbeats 400000 in
 lemma fun_transferFromSimple_abs_of_concrete {s₀ s₉ : State} {var var_1 var_2 var_from var_to var_value} :
   Spec (fun_transferFromSimple_concrete_of_code.1 var var_1 var_2 var_from var_to var_value) s₀ s₉ →
   Spec (A_fun_transferFromSimple var var_1 var_2 var_from var_to var_value) s₀ s₉ := by
@@ -23,7 +24,34 @@ lemma fun_transferFromSimple_abs_of_concrete {s₀ s₉ : State} {var var_1 var_
   apply spec_eq
   rintro h ⟨h₁, ⟨ss, h₂⟩⟩
   clr_funargs at ss
+  clr_varstore ss,
+  rcases h₂ with ⟨w₂, ⟨hw₂, hw₃⟩⟩
+  -- clr_spec at ss
+  -- clr_spec at hw₂
+  apply Spec_ok_unfold at hw₂
+  apply Spec_ok_unfold at ss
+  unfold A_if_5295847412656974480 at ss
+  clr_varstore ss,
+  by_cases eq : (decide (var_from < var_value)).toUInt256 = 0
+  simp [eq] at ss
+  have hss : State.isOk h₁ := by aesop
+  clr_varstore hw₂,
+  clr_varstore hw₃,
 
+  -- rw [←ss] at hw₂
+  -- clr_varstore ss,
+
+  
+  
+  -- clr_varstore hw₂,
+  -- apply Spec_ok_unfold at hw₂
+
+  -- -- clr_varstore
+  -- clr_spec at ss
+  -- clr_varstore
+  -- rcases h₂ with ⟨h₃, ⟨h₄, h₅⟩⟩
+  -- clr_spec at h₅
+  
   sorry
 
 end
