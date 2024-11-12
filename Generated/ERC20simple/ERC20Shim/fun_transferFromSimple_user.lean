@@ -19,11 +19,11 @@ lemma fun_transferFromSimple_abs_of_concrete {s₀ s₉ : State} {var var_1 var_
   Spec (fun_transferFromSimple_concrete_of_code.1 var var_1 var_2 var_from var_to var_value) s₀ s₉ →
   Spec (A_fun_transferFromSimple var var_1 var_2 var_from var_to var_value) s₀ s₉ := by
   unfold fun_transferFromSimple_concrete_of_code A_fun_transferFromSimple
-  clr_varstore
-  clr_funargs
+  rcases s₀ with ⟨evm, varstore⟩ | _ | _ <;> [simp only; aesop_spec; aesop_spec]
   apply spec_eq
-  intros h
-  
+  rintro h ⟨h₁, ⟨ss, h₂⟩⟩
+  clr_funargs at ss
+
   sorry
 
 end
