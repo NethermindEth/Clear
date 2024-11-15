@@ -25,8 +25,15 @@ inductive State where
   | Checkpoint : Jump → State
 deriving DecidableEq
 
-instance : Inhabited State where
-  default := .Ok default default
+section EXPERIMENTAL
+
+inductive Error where | SomeError
+
+inductive State' where
+  | ok    (evmEVM : EVM) (store : VarStore)
+  | error (err : Error)
+
+end EXPERIMENTAL
 
 namespace State
 
