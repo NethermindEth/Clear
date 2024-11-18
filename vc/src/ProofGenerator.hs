@@ -17,12 +17,12 @@ tacticsOfExpr (Var {}) = "-- simp [Var']"
 tacticsOfExpr (Lit {}) = "-- simp [Lit']"
 
 tacticsOfCond :: String
-tacticsOfCond = "try simp only [Fin.isValue]; try rw [List.foldr_cons]; simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; try rewrite [List.foldr_nil]"
+tacticsOfCond = "(try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))"
 
 assignCall :: String -> String
 assignCall name = unlines [
     "rw [cons]; simp only [LetCall', AssignCall']",
-    "try simp only [Fin.isValue]; try rw [List.foldr_cons]; simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; try rewrite [List.foldr_nil]",
+    "(try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))",
     "-- EXPR \6",
     "try simp",
     "generalize hs : execCall _ _ _ _ = s; try rw [← hs₁, hok] at hs",
@@ -84,7 +84,7 @@ tacticsOfStmt' _ (LetInit _ (Call f _)) =
     if f `elem` yulPrimOps
     then unlines [
           "rw [cons]; simp only [LetPrimCall', AssignPrimCall']",
-          "try simp only [Fin.isValue]; try rw [List.foldr_cons]; simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; try rewrite [List.foldr_nil]",
+          "(try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))",
           rwPrimop f,
           "try simp"]
     else assignCall f
@@ -93,7 +93,7 @@ tacticsOfStmt' _ (Assignment _ (Call f _)) =
   if f `elem` yulPrimOps
   then unlines [
          "rw [cons]; simp only [LetPrimCall', AssignPrimCall']",
-         "try simp only [Fin.isValue]; try rw [List.foldr_cons]; simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; try rewrite [List.foldr_nil]",
+         "(try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))",
          rwPrimop f,
          "try simp"]
   else assignCall f
@@ -103,13 +103,13 @@ tacticsOfStmt' _ (ExpressionStmt (Call f args)) =
   if f `elem` yulPrimOps
   then unlines [
     "rw [cons, ExprStmtPrimCall']; try simp only",
-    "try simp only [Fin.isValue]; try rw [List.foldr_cons]; simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; try rewrite [List.foldr_nil]",
+    "(try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))",
     "-- EXPR \4",
     rwPrimop f,
     "try simp"]
   else let preamble = unlines [
              "rw [cons, ExprStmtCall']; try simp only",
-             "try simp only [Fin.isValue]; try rw [List.foldr_cons]; simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; try rewrite [List.foldr_nil]"]
+             "(try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))"]
            postamble = unlines [
              "try simp",
              "",
@@ -131,9 +131,9 @@ tacticsOfStmt' abs node@(Switch c legs dflt) =
     "unfold execSwitchCases",
     tacticsOfCond,
     tacticsOfExpr c,
-    concatMap ((tacticsOfStmt' abs . Block) . snd) legs,
+    concatMap ((("(try (unfold execSwitchCases))\n" ++) . tacticsOfStmt' abs . Block) . snd) legs,
     "generalize hdefault : exec _ _ _ = sdef",
-    "unfold execSwitchCases",
+    "(try (unfold execSwitchCases))",
     "subst hdefault",
     tacticsOfStmt' abs (Block dflt)]
 tacticsOfStmt' abs node@(For {}) =
