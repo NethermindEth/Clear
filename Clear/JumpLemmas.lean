@@ -214,7 +214,7 @@ lemma execPrimCall_Jump
 /--
   Evaluating arguments preserves jumps given inductive
   hypotheses that `exec` does so and `eval` does so.
--/
+-/ 
 @[aesop unsafe 10% apply]
 lemma mapAccumr_Jump_ih
   (h : isJump c s)
@@ -249,23 +249,18 @@ lemma evalTail_Jump_ih
   (ih : ∀ {s : State}, isJump c s → sizeOf args < sizeOf expr → isJump c (evalArgs fuel args s).1) :
   isJump c (evalTail fuel args inputs).1 := by unfold evalTail; aesop
 
-section
-unseal evalArgs
-
 lemma evalArgs_Jump_ih
   (h : isJump c s)
   (hsize : sizeOf args < sizeOf expr)
   (eval_ih : ∀ {s} {expr'}, isJump c s → sizeOf expr' < sizeOf expr → isJump c (eval fuel expr' s).1) :
   isJump c (evalArgs fuel args s).1 := by
   induction args generalizing s with
-    | nil => exact h
+    | nil => unfold evalArgs; exact h
     | cons x xs ih =>
       unfold evalArgs
       simp at hsize
       apply @evalTail_Jump_ih expr xs fuel _ _ (eval_ih h ?_) (by linarith) (by assumption)
       linarith
-
-end
 
 /--
   The `call` helper function for user-defined function calls preserves jumps.
@@ -313,7 +308,7 @@ lemma execPrimCall_evalArgs_Jump_ih
   isJump c (primCall (evalArgs fuel args s).1 prim (evalArgs fuel args s).2.reverse).1 := by
   apply execPrimCall_Jump (evalArgs_Jump_ih _ _ _) <;> aesop
 
-/--
+/-- 
   An `eval` preserves infinite loops.
 -/
 @[aesop unsafe 10% apply]
@@ -471,9 +466,6 @@ lemma If_Jump_ih
 lemma For_Jump (h : isJump c s) :
   isJump c (exec fuel (Stmt.For cond post body) s) := by rw [For']; aesop
 
-section
-unseal exec
-
 /--
   An `exec` preserves infinite loops.
 -/
@@ -509,11 +501,9 @@ lemma exec_Jump (h : isJump c s) : isJump c (exec fuel stmt s)
     · apply Switch_Jump (stmt := Switch cond cases' default') h (by simp_arith) _ (by aesop)
       rcases cases' <;> [aesop; (aesop (config := { warnOnNonterminal := false}); linarith)]
     · exact If_Jump_ih (stmt := If cond body) h (by simp_arith) (by rcases cond <;> aesop)
-    · exact isJump_setContinue h
-    · exact isJump_setBreak h
-    · exact isJump_setLeave h
-
-end
+    · unfold exec; exact isJump_setContinue h
+    · unfold exec; exact isJump_setBreak h
+    · unfold exec; exact isJump_setLeave h
 
 end
 
