@@ -28,7 +28,7 @@ lemma fun_totalSupply_abs_of_concrete {s₀ s₉ : State} {var_ } :
   simp at code
   rw [ ← State.insert_of_ok,  ← State.insert_of_ok ] at code
   rw [ ← State.insert_of_ok ]
-  clr_varstore
+  clr_varstore,
 
   have := is_erc20.hasSupply
   simp at this

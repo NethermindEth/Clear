@@ -36,7 +36,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   apply spec_eq
   clr_funargs
   rintro hasFuel ⟨s, mapping, code⟩
-  clr_varstore
+  clr_varstore,
 
   -- what we can get right now from mapping function
   unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping
@@ -65,7 +65,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   unfold reviveJump at code
   simp [s_eq_ok] at code
   rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok ] at code
-  clr_varstore
+  clr_varstore,
 
   -- get underlying Preserved from preservesEvm
   rw [ s_eq_ok, preservesEvm_of_insert, preservesEvm_of_insert ] at preservesEvm
@@ -75,7 +75,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
 
   rw [← code]
   -- lookup balance
-  clr_varstore
+  clr_varstore,
   by_cases mem : Address.ofUInt256 var_account ∈ erc20.balances
   · -- there is such account in balances
     split_ands <;> [skip; aesop]

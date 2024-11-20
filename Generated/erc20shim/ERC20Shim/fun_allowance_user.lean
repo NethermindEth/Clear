@@ -31,7 +31,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
   clr_funargs
   rintro hasFuel ⟨s, mapping, ⟨s', mapping', code⟩⟩
 
-  clr_varstore
+  clr_varstore,
 
   -- what we can get right now from mapping function
   unfold A_mapping_index_access_mapping_address_mapping_address_uint256_of_address
@@ -82,7 +82,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
       unfold reviveJump at code
       simp [s_eq_ok, s_eq_ok'] at code
       rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok' ] at code
-      clr_varstore
+      clr_varstore,
 
       -- get underlying Preserved from preservesEvm
       rw [ s_eq_ok, preservesEvm_of_insert, preservesEvm_of_insert ] at preservesEvm
@@ -98,7 +98,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
       refine' ⟨IsERC20_of_preservesEvm (by aesop) is_erc20, (by aesop), ?returns_correct_value⟩
       rw [← code]
       -- lookup allowance
-      clr_varstore
+      clr_varstore,
       by_cases mem : ⟨Address.ofUInt256 var_owner, Address.ofUInt256 var_spender⟩ ∈ erc20.allowances
       · -- there is such ⟨owner, spender⟩ in allowances
         split_ands <;> [skip; aesop]
@@ -321,7 +321,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         unfold reviveJump at code
         simp [s_eq_ok, s_eq_ok'] at code
         rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok' ] at code
-        clr_varstore
+        clr_varstore,
 
         rw [←code]
         aesop
@@ -356,7 +356,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         unfold reviveJump at code
         simp [s_eq_ok'] at code
         rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok' ] at code
-        clr_varstore
+        clr_varstore,
         
         · rw [←code]
           have : Ok evmₛ' varstore⟦var↦sload evmₛ' (s'["_3"]!!)⟧.evm.hash_collision

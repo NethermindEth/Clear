@@ -47,7 +47,7 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
   rw [ multifill_cons, multifill_nil ]
   simp
 
-  clr_varstore
+  clr_varstore,
 
   generalize acconut_def : Address.ofUInt256 key = account
   intro code
