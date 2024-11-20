@@ -65,20 +65,20 @@ def mapping_index_access_mapping_address_uint256_of_address_concrete_of_code
   generalize hs₉ : multifill' _ _ = s₉'
 
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMAnd']
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   rw [EVMMstore']
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   rw [EVMMstore']
   try simp
@@ -86,7 +86,7 @@ def mapping_index_access_mapping_address_uint256_of_address_concrete_of_code
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMKeccak256']
   try simp
   

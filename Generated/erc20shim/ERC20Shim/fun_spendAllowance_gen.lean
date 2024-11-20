@@ -1,7 +1,7 @@
 import Clear.ReasoningPrinciple
 
 import Generated.erc20shim.ERC20Shim.fun_allowance
-import Generated.erc20shim.ERC20Shim.Common.if_5327145078839977110
+import Generated.erc20shim.ERC20Shim.Common.if_8475192588736690919
 import Generated.erc20shim.ERC20Shim.abi_encode_address_uint256_uint256
 import Generated.erc20shim.ERC20Shim.fun__approve
 
@@ -18,31 +18,30 @@ def fun_spendAllowance : FunctionDefinition := <f
 {
     let var_currentAllowance := fun_allowance(var_owner, var_spender)
     let _1 := not(0)
-    let _2 := eq(var_currentAllowance, _1)
-    let _3 := iszero(_2)
-    if _3 
+    let _2 := lt(var_currentAllowance, _1)
+    if _2 
     {
-        let _4 := lt(var_currentAllowance, var_value)
-        if _4 
+        let _3 := lt(var_currentAllowance, var_value)
+        if _3 
         {
             let expr := var_spender
             let expr_1 := var_currentAllowance
             let expr_2 := var_value
-            let _5 := 64
-            let _6 := mload(_5)
-            let _7 := shl(225, 2110234841)
-            mstore(_6, _7)
-            let _8 := 4
-            let _9 := add(_6, _8)
-            let _10 := abi_encode_address_uint256_uint256(_9, var_spender, var_currentAllowance, var_value)
-            let _11 := sub(_10, _6)
-            revert(_6, _11)
+            let _4 := 64
+            let _5 := mload(_4)
+            let _6 := shl(225, 2110234841)
+            mstore(_5, _6)
+            let _7 := 4
+            let _8 := add(_5, _7)
+            let _9 := abi_encode_address_uint256_uint256(_8, var_spender, var_currentAllowance, var_value)
+            let _10 := sub(_9, _5)
+            revert(_5, _10)
         }
         let expr_3 := var_owner
         let expr_4 := var_spender
-        let _12 := 0
-        let _13 := sub(var_currentAllowance, var_value)
-        fun__approve(var_owner, var_spender, _13, _12)
+        let _11 := 0
+        let _12 := sub(var_currentAllowance, var_value)
+        fun__approve(var_owner, var_spender, _12, _11)
     }
 }
     
@@ -89,7 +88,7 @@ def fun_spendAllowance_concrete_of_code
   generalize hs₉ : multifill' _ _ = s₉'
 
   rw [cons]; simp only [LetCall', AssignCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   try simp
   generalize hs : execCall _ _ _ _ = s; try rw [← hs₁, hok] at hs
@@ -101,24 +100,19 @@ def fun_spendAllowance_concrete_of_code
   revert h
   
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMNot']
   try simp
   
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
-  rw [EVMEq']
-  try simp
-  
-  rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
-  rw [EVMIszero']
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
+  rw [EVMLt']
   try simp
   
   -- abstraction offsetting
   rw [cons]
   generalize hxs : Block _ = xs
-  abstract if_5327145078839977110_abs_of_code if_5327145078839977110 with ss hs
+  abstract if_8475192588736690919_abs_of_code if_8475192588736690919 with ss hs
   try rw [← hs₁, hok] at hs
   intros h
   try intros h'

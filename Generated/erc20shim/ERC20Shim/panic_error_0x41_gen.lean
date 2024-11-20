@@ -66,13 +66,13 @@ def panic_error_0x41_concrete_of_code
   generalize hs₉ : multifill' _ _ = s₉'
 
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMShl']
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   rw [EVMMstore']
   try simp
@@ -80,7 +80,7 @@ def panic_error_0x41_concrete_of_code
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   rw [EVMMstore']
   try simp
@@ -88,7 +88,7 @@ def panic_error_0x41_concrete_of_code
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   rw [EVMRevert']
   try simp

@@ -64,7 +64,7 @@ def fun_transferFrom_concrete_of_code
   generalize hs₉ : multifill' _ _ = s₉'
 
   rw [cons]; simp only [LetCall', AssignCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   try simp
   generalize hs : execCall _ _ _ _ = s; try rw [← hs₁, hok] at hs
@@ -76,7 +76,7 @@ def fun_transferFrom_concrete_of_code
   revert h
   
   rw [cons, ExprStmtCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- simp [Var']
   -- simp [Var']
   -- simp [Var']
@@ -91,7 +91,7 @@ def fun_transferFrom_concrete_of_code
   revert h
   
   rw [cons, ExprStmtCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- simp [Var']
   -- simp [Var']
   -- simp [Var']

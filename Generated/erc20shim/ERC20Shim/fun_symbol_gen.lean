@@ -61,7 +61,7 @@ def fun_symbol_concrete_of_code
 
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetCall', AssignCall']
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   try simp
   generalize hs : execCall _ _ _ _ = s; try rw [← hs₁, hok] at hs

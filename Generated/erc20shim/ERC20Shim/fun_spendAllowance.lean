@@ -1,7 +1,7 @@
 import Clear.ReasoningPrinciple
 
 import Generated.erc20shim.ERC20Shim.fun_allowance
-import Generated.erc20shim.ERC20Shim.Common.if_5327145078839977110
+import Generated.erc20shim.ERC20Shim.Common.if_8475192588736690919
 import Generated.erc20shim.ERC20Shim.abi_encode_address_uint256_uint256
 import Generated.erc20shim.ERC20Shim.fun__approve
 

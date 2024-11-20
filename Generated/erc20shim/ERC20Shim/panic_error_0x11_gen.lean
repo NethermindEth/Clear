@@ -30,7 +30,10 @@ set_option maxHeartbeats 300000
 
 def panic_error_0x11_concrete_of_code
 : {
-    C : State → State → Prop // ∀ {s₀ s₉ : State} {  fuel},
+    C :
+      
+      State → State → Prop
+    // ∀ {s₀ s₉ : State} {  fuel},
          execCall fuel panic_error_0x11 [] (s₀, []) = s₉ →
          Spec (C  ) s₀ s₉
   } := by
@@ -63,31 +66,30 @@ def panic_error_0x11_concrete_of_code
   generalize hs₉ : multifill' _ _ = s₉'
 
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
-  simp only [Fin.isValue]
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMShl']
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
-  -- EXPR
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
+  -- EXPR 
   rw [EVMMstore']
   try simp
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
-  -- EXPR
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
+  -- EXPR 
   rw [EVMMstore']
   try simp
-
+  
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
-  simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]
-  -- EXPR
+  (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
+  -- EXPR 
   rw [EVMRevert']
   try simp
   
@@ -113,6 +115,7 @@ def panic_error_0x11_concrete_of_code
   rw [hok]
   intros h
   exact h
+
 
 end
 
