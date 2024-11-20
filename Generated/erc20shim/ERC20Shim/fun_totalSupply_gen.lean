@@ -64,6 +64,7 @@ def fun_totalSupply_concrete_of_code
   rw [EVMSload']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

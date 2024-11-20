@@ -67,6 +67,7 @@ def revert_error_42b3090547df1d2001c96683413b8cf91c1b902ef5e3cb8d9f6f304cf7446f7
   rw [EVMRevert']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

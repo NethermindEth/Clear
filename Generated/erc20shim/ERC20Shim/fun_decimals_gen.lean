@@ -56,6 +56,7 @@ def fun_decimals_concrete_of_code
   generalize hs₉ : multifill' _ _ = s₉'
 
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

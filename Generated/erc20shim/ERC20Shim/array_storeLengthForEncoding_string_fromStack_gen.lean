@@ -71,6 +71,7 @@ def array_storeLengthForEncoding_string_fromStack_concrete_of_code
   rw [EVMAdd']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

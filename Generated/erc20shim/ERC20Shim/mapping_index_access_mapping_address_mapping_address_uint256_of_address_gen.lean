@@ -90,6 +90,7 @@ def mapping_index_access_mapping_address_mapping_address_uint256_of_address_conc
   rw [EVMKeccak256']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

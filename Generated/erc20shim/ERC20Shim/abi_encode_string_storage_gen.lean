@@ -139,6 +139,7 @@ def abi_encode_string_storage_concrete_of_code
   revert h
   subst xs
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

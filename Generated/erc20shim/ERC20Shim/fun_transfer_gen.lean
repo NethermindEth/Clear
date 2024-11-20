@@ -89,6 +89,7 @@ def fun_transfer_concrete_of_code
   revert h
   
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody

@@ -75,6 +75,7 @@ def abi_encode_address_concrete_of_code
   rw [EVMMstore']
   try simp
   
+  try clr_varstore_target
   -- finish offsetting
   subst hs₉
   intros hbody
