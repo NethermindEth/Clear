@@ -54,6 +54,7 @@ rwPrimop primop = if primop == "delegatecall" then "-- delegate call" else "rw [
 
 finish :: String
 finish = unlines [
+    "try clr_varstore_target",
     "-- finish offsetting",
     "subst hs₉",
     "intros hbody",
