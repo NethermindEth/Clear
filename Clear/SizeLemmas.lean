@@ -42,7 +42,7 @@ lemma List.reverse_size : sizeOf (args.reverse) = sizeOf args := by
 
 /--
   Expressions have positive size.
--/ 
+-/
 @[simp]
 lemma Expr.zero_lt_sizeOf : 0 < sizeOf expr := by
   rcases expr <;> simp_arith
@@ -119,6 +119,20 @@ lemma Stmt.sizeOf_head_lt_sizeOf : sizeOf stmt < sizeOf (Block (stmt :: stmts)) 
 -/
 @[simp]
 lemma Stmt.sizeOf_head_lt_sizeOf_tail : sizeOf (Block stmts) < sizeOf (Block (stmt :: stmts)) := by simp
+
+/--
+  The size of a left fold is smaller than the size
+-/
+@[simp]
+lemma Stmt.sizeOf_switch (cases : List (Literal × List Stmt)) (cond : Expr) (case : Literal) (dflt : List Stmt) :
+  sizeOf (List.foldl (fun s x => if x.1 = case then x.2 else s) dflt cases) + 1 ≤ sizeOf cond + sizeOf cases + sizeOf dflt := by
+  induction cases generalizing dflt with
+  | nil => simp_arith
+  | cons head tail ih =>
+    let (caseᵢ, stmtsᵢ) := head; simp
+    split_ifs;
+    specialize ih stmtsᵢ; linarith
+    specialize ih dflt; linarith
 
 end
 

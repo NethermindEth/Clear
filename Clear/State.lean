@@ -25,13 +25,30 @@ inductive State where
   | Checkpoint : Jump → State
 deriving DecidableEq
 
+instance : Inhabited State where
+  default := .Ok default default
+
 section EXPERIMENTAL
 
-inductive Error where | SomeError
+def EState := EVM × VarStore
 
-inductive State' where
-  | ok    (evmEVM : EVM) (store : VarStore)
-  | error (err : Error)
+instance : Inhabited EState where
+  default := (default, default)
+
+def eSetStore (σ : EState) (store : VarStore) : EState :=
+  (σ.1, store)
+
+def eInsert (σ : EState) (var : Identifier) (val : Literal) : EState :=
+  (σ.1, σ.2.insert var val)
+
+def eLookup! (σ : EState) (var : Identifier) : Literal :=
+  (σ.2.lookup var).get!
+
+def eMultiFill (σ : EState) (vars : List Identifier) (vals : List Literal) : EState :=
+  (List.zip vars vals).foldr (λ (var, val) σ ↦ eInsert σ var val) σ
+
+def eInitCall (σ : EState) (params : List Identifier) (args : List Literal) :=
+  eMultiFill (eSetStore σ default) params args
 
 end EXPERIMENTAL
 
