@@ -237,11 +237,36 @@ mutual
         eEvaleL fuel σ args
         (fun σ vals => eCalle fuel f σ vals)
     | _ => .EvMalformed
-    termination_by fuel + sizeOf e
+    termination_by (fuel + sizeOf e, 0)
     decreasing_by
-      all_goals
-      simp_wf
-      try simp_arith
+      all_goals (
+        simp_wf
+        try simp_arith
+      )
+      apply Prod.Lex.left
+      simp_arith
+      apply Prod.Lex.left
+      simp_arith
+
+
+
+  -- def eEvalL (fuel : ℕ) (σ : EState) (es : List Expr) : EState × List Literal × EvalOutcome :=
+  --   match es with
+  --   | [] => (σ, [], .EvO default default)
+  --   | e :: es₁ =>
+  --     let oe := eEval fuel σ e
+  --     match oe with
+  --     | .EvO σ₁ v =>
+  --       let (σf, vs, oes) := eEvalL fuel σ₁ es₁
+  --       match oes with
+  --       | .EvO _ _ => (σf, v :: vs, .EvO default default)
+  --       | _ => (σ₁, v :: vs, oes)
+  --     | _ => (σ, [], oe)
+  --   termination_by fuel + sizeOf es
+  --   decreasing_by
+  --     all_goals
+  --     simp_wf
+  --     try simp_arith
 
   def eEvalL (fuel : ℕ) (σ : EState) (es : List Expr) : EState × List Literal × EvalOutcome :=
     match es with
@@ -255,21 +280,30 @@ mutual
         | .EvO _ _ => (σf, v :: vs, .EvO default default)
         | _ => (σ₁, v :: vs, oes)
       | _ => (σ, [], oe)
-    termination_by fuel + sizeOf es
+    termination_by (fuel + sizeOf es, 0)
     decreasing_by
       all_goals
       simp_wf
       try simp_arith
+      apply Prod.Lex.left
+      simp_arith
 
   def eEvaleL (fuel : ℕ) (σ : EState) (es : List Expr) (f : EState → List Literal → EvalOutcome) : EvalOutcome :=
-    match fuel with
-    | 0 => .EvOutOfFuel
-    | fuel + 1 =>
-      let (σ, vs, o) := eEvalL fuel σ es
-      match o with
-      | .EvO _ _ => f σ vs
-      | _ => o
-    termination_by fuel + sizeOf es
+    let (σ, vs, o) := eEvalL fuel σ es
+    match o with
+    | .EvO _ _ => f σ vs
+    | _ => o
+  termination_by (fuel + sizeOf es, 1)
+
+  -- def eEvaleL (fuel : ℕ) (σ : EState) (es : List Expr) (f : EState → List Literal → EvalOutcome) : EvalOutcome :=
+  --   match fuel with
+  --   | 0 => .EvOutOfFuel
+  --   | fuel + 1 =>
+  --     let (σ, vs, o) := eEvalL fuel σ es
+  --     match o with
+  --     | .EvO _ _ => f σ vs
+  --     | _ => o
+  --   termination_by fuel + sizeOf es
 
   def eEvalx (fuel : ℕ) (σ : EState) (e : Expr) (f : EState → Literal → ExecOutcome) : ExecOutcome :=
     match fuel with
@@ -279,7 +313,7 @@ mutual
       | .EvO σ v => f σ v
       | .EvOutOfFuel => .ExOutOfFuel
       | .EvMalformed => .ExMalformed
-    termination_by fuel + sizeOf e
+    termination_by (fuel + sizeOf e, 0)
 
   def eEvalxL (fuel : ℕ) (σ : EState) (es : List Expr) (f : EState → List Literal → ExecOutcome) : ExecOutcome :=
     match fuel with
@@ -290,7 +324,7 @@ mutual
       | .EvO _ _ => f σ vs
       | .EvOutOfFuel => .ExOutOfFuel
       | .EvMalformed => .ExMalformed
-    termination_by fuel + sizeOf es
+    termination_by (fuel + sizeOf es, 0)
 
   def eCalle
     (fuel : Nat)
@@ -307,9 +341,12 @@ mutual
           .EvO σ₃ (List.head! rets)
       | .ExOutOfFuel => .EvOutOfFuel
       | _ => .EvMalformed
-    termination_by fuel + sizeOf f
+    termination_by (fuel + sizeOf f, 0)
     decreasing_by
       all_goals simp_wf
+      simp_arith
+      simp_wf
+      apply Prod.Lex.left
       simp_arith
       apply FunctionDefinition.sizeOf_body_succ_lt_sizeOf
 
@@ -329,9 +366,11 @@ mutual
           .ExO (eMultiFill σ₃ vars rets)
       | .ExOutOfFuel => .ExOutOfFuel
       | _ => .ExMalformed
-    termination_by fuel + sizeOf f
+    termination_by (fuel + sizeOf f, 0)
     decreasing_by
       all_goals simp_wf
+      simp_arith
+      apply Prod.Lex.left
       simp_arith
       apply FunctionDefinition.sizeOf_body_succ_lt_sizeOf
 
@@ -410,11 +449,13 @@ mutual
                   | _ => ob)
 
       | _ => .ExMalformed
-      termination_by fuel + sizeOf s
+      termination_by (fuel + sizeOf s, 0)
       decreasing_by
-        all_goals
-        simp_wf
-        try simp_arith
+        all_goals (simp_wf; try simp_arith)
+        all_goals (apply Prod.Lex.left; simp_arith)
+        sorry -- TODO(Something's off but it doesn't seem related to the original problem.)
+        
+        
 
 end
 
