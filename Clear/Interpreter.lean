@@ -453,9 +453,7 @@ mutual
       decreasing_by
         all_goals (simp_wf; try simp_arith)
         all_goals (apply Prod.Lex.left; simp_arith)
-        sorry -- TODO(Something's off but it doesn't seem related to the original problem.)
-        
-        
+        rcases cond <;> simp_arith        
 
 end
 
