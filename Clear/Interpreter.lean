@@ -236,7 +236,10 @@ mutual
     | .Call f args =>
         eEvaleL fuel σ args
         (fun σ vals => eCalle fuel f σ vals)
-    | _ => .EvMalformed
+    | _ => .EvMalformed -- IMPORTANT: For a closed sum, use explicit constructs on the left hand side
+                        --            even if it costs some typing. Here it woudl be `| PrimCall .. => .EvMalformed`.
+                        --            It is _not_ free when reasoning about the function that being in the last branch
+                        --            means that one had not initially taken the other branches. 
     termination_by (fuel + sizeOf e, 0)
     decreasing_by
       all_goals (
@@ -250,14 +253,15 @@ mutual
 
   def eEvalL (fuel : ℕ) (σ : EState) (es : List Expr) : EState × List Literal × EvalOutcome :=
     match es with
-    | [] => (σ, [], .EvO default default)
+    | [] => (σ, [], .EvO default default) -- Would it make sense for `Default.inhabited EvalOutcome` to be the `.EvO default default`
+                                          -- or is it too scary to put a 'valid' outcome as the default value?
     | e :: es₁ =>
       let oe := eEval fuel σ e
       match oe with
       | .EvO σ₁ v =>
         let (σf, vs, oes) := eEvalL fuel σ₁ es₁
         match oes with
-        | .EvO _ _ => (σf, v :: vs, .EvO default default)
+        | .EvO .. => (σf, v :: vs, .EvO default default)
         | _ => (σ₁, v :: vs, oes)
       | _ => (σ, [], oe)
     termination_by (fuel + sizeOf es, 0)
@@ -302,7 +306,7 @@ mutual
       | .ExO σ₂ | .ExL σ₂ =>
           let rets : List Literal := List.map (eLookup! σ₂) f.rets
           let σ₃ := eSetStore σ₂ store
-          .EvO σ₃ (List.head! rets)
+          .EvO σ₃ (List.head! rets) -- rets.head! in the theme of <the meeting>
       | .ExOutOfFuel => .EvOutOfFuel
       | _ => .EvMalformed
     termination_by (fuel + sizeOf f, 0)
