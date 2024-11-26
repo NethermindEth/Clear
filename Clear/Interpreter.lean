@@ -237,11 +237,16 @@ mutual
         eEvaleL fuel σ args
         (fun σ vals => eCalle fuel f σ vals)
     | _ => .EvMalformed
-    termination_by fuel + sizeOf e
+    termination_by (fuel + sizeOf e, 0)
     decreasing_by
-      all_goals
-      simp_wf
-      try simp_arith
+      all_goals (
+        simp_wf
+        try simp_arith
+      )
+      apply Prod.Lex.left
+      simp_arith
+      apply Prod.Lex.left
+      simp_arith
 
   def eEvalL (fuel : ℕ) (σ : EState) (es : List Expr) : EState × List Literal × EvalOutcome :=
     match es with
@@ -255,42 +260,35 @@ mutual
         | .EvO _ _ => (σf, v :: vs, .EvO default default)
         | _ => (σ₁, v :: vs, oes)
       | _ => (σ, [], oe)
-    termination_by fuel + sizeOf es
+    termination_by (fuel + sizeOf es, 0)
     decreasing_by
       all_goals
       simp_wf
       try simp_arith
+      apply Prod.Lex.left
+      simp_arith
 
   def eEvaleL (fuel : ℕ) (σ : EState) (es : List Expr) (f : EState → List Literal → EvalOutcome) : EvalOutcome :=
-    match fuel with
-    | 0 => .EvOutOfFuel
-    | fuel + 1 =>
-      let (σ, vs, o) := eEvalL fuel σ es
-      match o with
-      | .EvO _ _ => f σ vs
-      | _ => o
-    termination_by fuel + sizeOf es
+    let (σ, vs, o) := eEvalL fuel σ es
+    match o with
+    | .EvO _ _ => f σ vs
+    | _ => o
+    termination_by (fuel + sizeOf es, 1)
 
   def eEvalx (fuel : ℕ) (σ : EState) (e : Expr) (f : EState → Literal → ExecOutcome) : ExecOutcome :=
-    match fuel with
-    | 0 => .ExOutOfFuel
-    | fuel + 1 =>
-      match eEval fuel σ e with
-      | .EvO σ v => f σ v
-      | .EvOutOfFuel => .ExOutOfFuel
-      | .EvMalformed => .ExMalformed
-    termination_by fuel + sizeOf e
+    match eEval fuel σ e with
+    | .EvO σ v => f σ v
+    | .EvOutOfFuel => .ExOutOfFuel
+    | .EvMalformed => .ExMalformed
+    termination_by (fuel + sizeOf e, 1)
 
   def eEvalxL (fuel : ℕ) (σ : EState) (es : List Expr) (f : EState → List Literal → ExecOutcome) : ExecOutcome :=
-    match fuel with
-    | 0 => .ExOutOfFuel
-    | fuel + 1 =>
-      let (σ, vs, o) := eEvalL fuel σ es
-      match o with
-      | .EvO _ _ => f σ vs
-      | .EvOutOfFuel => .ExOutOfFuel
-      | .EvMalformed => .ExMalformed
-    termination_by fuel + sizeOf es
+    let (σ, vs, o) := eEvalL fuel σ es
+    match o with
+    | .EvO _ _ => f σ vs
+    | .EvOutOfFuel => .ExOutOfFuel
+    | .EvMalformed => .ExMalformed
+    termination_by (fuel + sizeOf es, 1)
 
   def eCalle
     (fuel : Nat)
@@ -307,9 +305,11 @@ mutual
           .EvO σ₃ (List.head! rets)
       | .ExOutOfFuel => .EvOutOfFuel
       | _ => .EvMalformed
-    termination_by fuel + sizeOf f
+    termination_by (fuel + sizeOf f, 0)
     decreasing_by
       all_goals simp_wf
+      simp_arith
+      apply Prod.Lex.left
       simp_arith
       apply FunctionDefinition.sizeOf_body_succ_lt_sizeOf
 
@@ -329,9 +329,11 @@ mutual
           .ExO (eMultiFill σ₃ vars rets)
       | .ExOutOfFuel => .ExOutOfFuel
       | _ => .ExMalformed
-    termination_by fuel + sizeOf f
+    termination_by (fuel + sizeOf f, 0)
     decreasing_by
       all_goals simp_wf
+      simp_arith
+      apply Prod.Lex.left
       simp_arith
       apply FunctionDefinition.sizeOf_body_succ_lt_sizeOf
 
@@ -410,11 +412,11 @@ mutual
                   | _ => ob)
 
       | _ => .ExMalformed
-      termination_by fuel + sizeOf s
-      decreasing_by
-        all_goals
-        simp_wf
-        try simp_arith
+    termination_by (fuel + sizeOf s, 0)
+    decreasing_by
+      all_goals (simp_wf; try simp_arith)
+      all_goals (apply Prod.Lex.left; simp_arith)
+      rcases cond <;> simp_arith
 
 end
 
