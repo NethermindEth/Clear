@@ -215,103 +215,140 @@ notation "🌸" => eval
 section EXPERIMENTAL
 
 inductive EvalOutcome where
-  | EvO : EState -> Literal -> EvalOutcome
-  | EvOutOfFuel : EvalOutcome
-  | EvMalformed : EvalOutcome
+  | O (σ : EState) (v : Literal)
+  | OutOfFuel
+  | Malformed
+
+inductive EvalLOutcome where
+  | O (σ : EState) (l : List Literal)
+  | OutOfFuel
+  | Malformed
 
 inductive ExecOutcome where
-  | ExO : EState -> ExecOutcome
-  | ExB : EState -> ExecOutcome
-  | ExC : EState -> ExecOutcome
-  | ExL : EState -> ExecOutcome
-  | ExOutOfFuel : ExecOutcome
-  | ExMalformed : ExecOutcome
+  | O (σ : EState)
+  | B (σ : EState)
+  | C (σ : EState)
+  | L (σ : EState)
+  | OutOfFuel
+  | Malformed
+
+namespace EvalOutcome
+
+def mapD { T : Type } (o : EvalOutcome) (defOOF : T) (defM : T) (f : EState -> Literal -> T) : T :=
+  match o with
+  | .O σ v => f σ v
+  | .OutOfFuel => defOOF
+  | .Malformed => defM
+
+def map := mapD (defOOF := EvalOutcome.OutOfFuel) (defM := .Malformed)
+def mapExecOutcome := mapD (defOOF := ExecOutcome.OutOfFuel) (defM := .Malformed)
+def mapEvalLOutcome := mapD (defOOF := EvalLOutcome.OutOfFuel) (defM := .Malformed)
+
+end EvalOutcome
+
+namespace EvalLOutcome
+
+def mapD { T : Type } (o : EvalLOutcome) (defOOF : T) (defM : T) (f : EState -> List Literal -> T) : T :=
+  match o with
+  | .O σ vs => f σ vs
+  | .OutOfFuel => defOOF
+  | .Malformed => defM
+
+def map := mapD (defOOF := EvalLOutcome.OutOfFuel) (defM := .Malformed)
+def mapEvalOutcome := mapD (defOOF := EvalOutcome.OutOfFuel) (defM := .Malformed)
+def mapExecOutcome := mapD (defOOF := ExecOutcome.OutOfFuel) (defM := .Malformed)
+
+end EvalLOutcome
+
+def lookup (σ : EState) (var : Identifier) : EvalOutcome :=
+  ((σ.eLookup var).map (EvalOutcome.O σ ·)).getD .Malformed
+
+def lookupL (σ : EState) (vars : List Identifier) : EvalLOutcome :=
+    match vars with
+    | [] => .O σ []
+    | var :: vars =>
+      (lookup σ var).mapEvalLOutcome
+      (λ σ v => (lookupL σ vars).map (λ σ vs => .O σ (v :: vs)))
 
 mutual
 
   def eEval (fuel : ℕ) (σ : EState) (e : Expr) : EvalOutcome :=
     match e with
-    | .Lit v  => .EvO σ v
-    | .Var id => .EvO σ (eLookup! σ id)
+    | .Lit v  => .O σ v
+    | .Var id => lookup σ id
     | .Call f args =>
-        eEvaleL fuel σ args
-        (fun σ vals => eCalle fuel f σ vals)
-    | _ => .EvMalformed
+        -- expression function calls must return precisely one value
+        if (f.rets.length = 1) then
+          -- Yul semantics evaluates arguments right-to-left
+          (eEvalL fuel σ args.reverse).mapEvalOutcome
+          (eCalle fuel f · ·.reverse)
+        else
+          .Malformed
+    -- Not implemented
+    | _ => .Malformed
     termination_by (fuel + sizeOf e, 0)
     decreasing_by
-      all_goals (
-        simp_wf
-        try simp_arith
-      )
-      apply Prod.Lex.left
-      simp_arith
+      all_goals
+      simp_wf
       apply Prod.Lex.left
       simp_arith
 
-  def eEvalL (fuel : ℕ) (σ : EState) (es : List Expr) : EState × List Literal × EvalOutcome :=
+  def eEvalL (fuel : ℕ) (σ : EState) (es : List Expr) : EvalLOutcome :=
     match es with
-    | [] => (σ, [], .EvO default default)
-    | e :: es₁ =>
-      let oe := eEval fuel σ e
-      match oe with
-      | .EvO σ₁ v =>
-        let (σf, vs, oes) := eEvalL fuel σ₁ es₁
-        match oes with
-        | .EvO _ _ => (σf, v :: vs, .EvO default default)
-        | _ => (σ₁, v :: vs, oes)
-      | _ => (σ, [], oe)
+    | [] => .O σ []
+    | e :: es =>
+      (eEval fuel σ e).mapEvalLOutcome
+      (λ σ v => (eEvalL fuel σ es).map (λ σ vs => .O σ (v :: vs)))
     termination_by (fuel + sizeOf es, 0)
     decreasing_by
       all_goals
       simp_wf
-      try simp_arith
       apply Prod.Lex.left
       simp_arith
 
-  def eEvaleL (fuel : ℕ) (σ : EState) (es : List Expr) (f : EState → List Literal → EvalOutcome) : EvalOutcome :=
-    let (σ, vs, o) := eEvalL fuel σ es
-    match o with
-    | .EvO _ _ => f σ vs
-    | _ => o
-    termination_by (fuel + sizeOf es, 1)
-
-  def eEvalx (fuel : ℕ) (σ : EState) (e : Expr) (f : EState → Literal → ExecOutcome) : ExecOutcome :=
-    match eEval fuel σ e with
-    | .EvO σ v => f σ v
-    | .EvOutOfFuel => .ExOutOfFuel
-    | .EvMalformed => .ExMalformed
-    termination_by (fuel + sizeOf e, 1)
-
-  def eEvalxL (fuel : ℕ) (σ : EState) (es : List Expr) (f : EState → List Literal → ExecOutcome) : ExecOutcome :=
-    let (σ, vs, o) := eEvalL fuel σ es
-    match o with
-    | .EvO _ _ => f σ vs
-    | .EvOutOfFuel => .ExOutOfFuel
-    | .EvMalformed => .ExMalformed
-    termination_by (fuel + sizeOf es, 1)
-
-  def eCalle
+  def eCall
+    { T : Type }
     (fuel : Nat)
-    (f : FunctionDefinition)
+    (funDef : FunctionDefinition)
     (σ : EState)
-    (args : List Literal) : EvalOutcome :=
-      let store := σ.2
-      let σ₁ := eInitCall σ f.params args
-      let ob := eExec fuel σ₁ (.Block f.body)
+    (args : List Literal)
+    (defOOF : T)
+    (defM : T)
+    (f : EState -> T) : T :=
+      let σ₁ := σ.eInitCall funDef.params args
+      let ob := eExec fuel σ₁ (.Block funDef.body)
       match ob with
-      | .ExO σ₂ | .ExL σ₂ =>
-          let rets : List Literal := List.map (eLookup! σ₂) f.rets
-          let σ₃ := eSetStore σ₂ store
-          .EvO σ₃ (List.head! rets)
-      | .ExOutOfFuel => .EvOutOfFuel
-      | _ => .EvMalformed
-    termination_by (fuel + sizeOf f, 0)
+      -- Ok and Leave outcomes are ok for function calls
+      | .O σ₂ | .L σ₂ => f σ₂
+      | .OutOfFuel => defOOF
+      -- Break, Continue, and Malformed outcomes are malformed
+      | .B .. | .C .. | .Malformed => defM
+    termination_by (fuel + sizeOf funDef, 0)
     decreasing_by
       all_goals simp_wf
       simp_arith
       apply Prod.Lex.left
       simp_arith
       apply FunctionDefinition.sizeOf_body_succ_lt_sizeOf
+
+  def eCalle
+    (fuel : Nat)
+    (f : FunctionDefinition)
+    (σ : EState)
+    (args : List Literal) : EvalOutcome :=
+      let store := σ.store
+      eCall fuel f σ args .OutOfFuel .Malformed
+      (λ σ₁ =>
+        -- expression function calls must return precisely one value
+        match f.rets with
+        | [] => .Malformed
+        | [ ret ] =>
+          (lookup σ₁ ret).map
+          (λ σ₂ v =>
+            let σ₃ := σ₂.eSetStore store
+            .O σ₃ v)
+        | _ :: _ => .Malformed)
+    termination_by (fuel + sizeOf f, 1)
 
   def eCallx
     (fuel : Nat)
@@ -319,99 +356,96 @@ mutual
     (σ : EState)
     (vars : List Identifier)
     (args : List Literal) : ExecOutcome :=
-      let store := σ.2
-      let σ₁ := eInitCall σ f.params args
-      let ob := eExec fuel σ₁ (.Block f.body)
-      match ob with
-      | .ExO σ₂ | .ExL σ₂ =>
-          let rets : List Literal := List.map (eLookup! σ₂) f.rets
-          let σ₃ := eSetStore σ₂ store
-          .ExO (eMultiFill σ₃ vars rets)
-      | .ExOutOfFuel => .ExOutOfFuel
-      | _ => .ExMalformed
-    termination_by (fuel + sizeOf f, 0)
-    decreasing_by
-      all_goals simp_wf
-      simp_arith
-      apply Prod.Lex.left
-      simp_arith
-      apply FunctionDefinition.sizeOf_body_succ_lt_sizeOf
+      let store := σ.store
+      eCall fuel f σ args .OutOfFuel .Malformed
+      (λ σ₁ =>
+        (lookupL σ₁ f.rets).mapExecOutcome
+        (λ σ₂ rets =>
+          let σ₃ := σ₂.eSetStore store
+          .O <| σ₃.eMultiFill vars rets))
+    termination_by (fuel + sizeOf f, 1)
 
   def eExec (fuel : ℕ) (σ : EState) (s : Stmt) : ExecOutcome :=
     match s with
       -- break, continue, and leave simply set the appropriate outcome type
-      | .Break => .ExB σ
-      | .Continue => .ExC σ
-      | .Leave => .ExL σ
+      | .Break => .B σ
+      | .Continue => .C σ
+      | .Leave => .L σ
 
-      | .Block [] => .ExO σ
+      | .Block [] => .O σ
       | .Block (s :: stmts) =>
           let os := eExec fuel σ s
           -- sequence shortcuts everything except ok
           match os with
-          | .ExO σ => eExec fuel σ (.Block stmts)
-          | _ => os
+          | .O σ => eExec fuel σ (.Block stmts)
+          | .B .. | .C .. | .L .. | .OutOfFuel | .Malformed => os
 
       | .Let vars =>
-        .ExO (List.foldl (λ σ var ↦ eInsert σ var 0) σ vars)
+        .O <| vars.foldl (init := σ) (EState.eInsert · · 0)
 
       | .LetEq var e
       | .Assign var e =>
-        eEvalx fuel σ e
-        (fun σ v => .ExO (eInsert σ var v))
+        (eEval fuel σ e).mapExecOutcome
+        (λ σ v => .O (EState.eInsert σ var v))
 
       | .If cond body =>
-        eEvalx fuel σ cond
-        (fun σ v => if v ≠ 0 then eExec fuel σ (.Block body) else .ExO σ)
+        (eEval fuel σ cond).mapExecOutcome
+        (λ σ v => if v ≠ 0 then eExec fuel σ (.Block body) else .O σ)
 
       | .Switch cond cases dflt =>
-        eEvalx fuel σ cond
-        (fun σ case =>
-          let stmts : List Stmt :=
-            List.foldl (λ s (caseᵢ, stmtsᵢ) ↦ if caseᵢ = case then stmtsᵢ else s) dflt cases
+        (eEval fuel σ cond).mapExecOutcome
+        (λ σ case =>
+          let stmts := cases.foldl (init := dflt)
+                       (λ s (caseᵢ, stmtsᵢ) ↦ if caseᵢ = case then stmtsᵢ else s)
           eExec fuel σ (.Block stmts))
 
       | .LetCall    vars f args
       | .AssignCall vars f args =>
-        eEvalxL fuel σ args
-        (fun σ vals => eCallx fuel f σ vars vals)
+        if vars.length = f.rets.length then
+          (eEvalL fuel σ args.reverse).mapExecOutcome
+          (λ σ vals => eCallx fuel f σ vars vals.reverse)
+        else
+          .Malformed
 
       | .ExprStmtCall f args =>
-        eEvalxL fuel σ args
-        (fun σ vals => eCallx fuel f σ [] vals)
+        if f.rets.length = 0 then
+          (eEvalL fuel σ args.reverse).mapExecOutcome
+          (λ σ vals => eCallx fuel f σ [] vals.reverse)
+        else
+          .Malformed
 
       | .For cond post body =>
         match fuel with
           -- out of fuel
-          | 0 => .ExOutOfFuel
+          | 0 => .OutOfFuel
           -- there still is fuel
           | fuel + 1 =>
-            eEvalx fuel σ cond
-            (fun σ v =>
+            (eEval fuel σ cond).mapExecOutcome
+            (λ σ v =>
               if v = 0
                 -- loop condition false, exit loop
-                then .ExO σ
+                then .O σ
                 else
                   -- loop condition true, execute body
                   let ob := eExec fuel σ (.Block body)
                   match ob with
                   -- ok and continue proceed to the next iteration
-                  | .ExO σ | .ExC σ =>
+                  | .O σ | .C σ =>
                     -- execute post
                     let op := eExec fuel σ (.Block post)
                     match op with
                     -- execute next iteration
-                    | .ExO σ => eExec fuel σ (.For cond post body)
+                    | .O σ => eExec fuel σ (.For cond post body)
                     -- out of fuel propagates
-                    | .ExOutOfFuel => .ExOutOfFuel
+                    | .OutOfFuel => .OutOfFuel
                     -- everything else (break, continue, leave, malformed) is malformed
-                    | _ => .ExMalformed
+                    | .B .. | .C .. | .L .. | .Malformed => .Malformed
                   -- break changes to ok and shortcuts
-                  | .ExB σ => .ExO σ
+                  | .B σ => .O σ
                   -- everything else shortcuts
-                  | _ => ob)
-
-      | _ => .ExMalformed
+                  | .L .. | .OutOfFuel | .Malformed => ob)
+      -- Not implemented
+      | _ => .Malformed
     termination_by (fuel + sizeOf s, 0)
     decreasing_by
       all_goals (simp_wf; try simp_arith)

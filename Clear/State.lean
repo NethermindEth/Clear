@@ -30,25 +30,29 @@ instance : Inhabited State where
 
 section EXPERIMENTAL
 
-def EState := EVM × VarStore
+structure EState where
+  evm: EVM
+  store: VarStore
+deriving Inhabited
 
-instance : Inhabited EState where
-  default := (default, default)
+namespace EState
 
 def eSetStore (σ : EState) (store : VarStore) : EState :=
-  (σ.1, store)
+  ⟨σ.evm, store⟩
 
 def eInsert (σ : EState) (var : Identifier) (val : Literal) : EState :=
-  (σ.1, σ.2.insert var val)
+  ⟨σ.evm, σ.store.insert var val⟩
 
-def eLookup! (σ : EState) (var : Identifier) : Literal :=
-  (σ.2.lookup var).get!
+def eLookup (σ : EState) (var : Identifier) : Option Literal :=
+  σ.store.lookup var
 
 def eMultiFill (σ : EState) (vars : List Identifier) (vals : List Literal) : EState :=
-  (List.zip vars vals).foldr (λ (var, val) σ ↦ eInsert σ var val) σ
+  (List.zip vars vals).foldl (init := σ) (λ σ (var, val) ↦ σ.eInsert var val)
 
 def eInitCall (σ : EState) (params : List Identifier) (args : List Literal) :=
-  eMultiFill (eSetStore σ default) params args
+  eMultiFill (σ.eSetStore default) params args
+
+end EState
 
 end EXPERIMENTAL
 
