@@ -24,15 +24,17 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
       match s₀ with
       | Ok evm _ => 
         let balances := 
-          Finmap.insert
-            to_addr
-            (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
-            (
+          if from_addr = to_addr then erc20.balances
+            else
               Finmap.insert
-                from_addr
-                (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
-                erc20.balances
-            )
+                to_addr
+                (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
+                (
+                  Finmap.insert
+                    from_addr
+                    (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
+                    erc20.balances
+                )
         let allowances :=
           Finmap.insert
             (from_addr, evm.execution_env.sender)
