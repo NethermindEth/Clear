@@ -37,8 +37,8 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
                 )
         let allowances :=
           Finmap.insert
-            (from_addr, evm.execution_env.sender)
-              (((erc20.allowances.lookup (from_addr, evm.execution_env.sender)).getD 0) - transfer_value)
+            (from_addr, evm.execution_env.source)
+              (((erc20.allowances.lookup (from_addr, evm.execution_env.source)).getD 0) - transfer_value)
             erc20.allowances
         IsERC20 ({ erc20 with balances, allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧
         s₉[var]!! = 1 ∧
