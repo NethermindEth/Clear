@@ -47,7 +47,7 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
     ∨
     -- Case: transferFrom fails
     (
-      IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
+      IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.evm.hash_collision = false ∧
       s₉[var]!! = 0
     )
     -- Case: Hash collision

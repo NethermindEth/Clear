@@ -35,7 +35,7 @@ def A_fun_spendAllowance  (var_owner var_spender var_value : Literal) (s₀ s₉
     ∨
     -- Case: spendAllowance fails
     (
-      IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
+      IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.evm.hash_collision = false ∧
       currentAllowance < transfer_value
     )
     -- Case: Hash collision
