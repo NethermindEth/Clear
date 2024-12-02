@@ -14,7 +14,38 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities ERC20Shim.Common Generated.erc20shim ERC20Shim
 
-def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) : Prop := sorry
+def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) : Prop :=
+  let from_addr := Address.ofUInt256 var_from
+  let to_addr := Address.ofUInt256 var_to
+  let transfer_value : UInt256 := var_value -- in wei
+  (
+    ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
+    -- Case: _transfer succeeds
+    (
+      let balances :=
+        if from_addr = to_addr then erc20.balances
+          else
+            Finmap.insert
+              to_addr
+              (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
+              (
+                Finmap.insert
+                  from_addr
+                  (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
+                  erc20.balances
+              )
+      IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧
+      s₉.evm.hash_collision = false
+    )
+    ∨
+    -- Case: _transfer fails
+    (
+      IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
+      (from_addr = 0 ∨ to_addr = 0)
+    )
+    -- Case: Hash collision
+    ∨ s₉.evm.hash_collision = true
+  )
 
 lemma fun__transfer_abs_of_concrete {s₀ s₉ : State} { var_from var_to var_value} :
   Spec (fun__transfer_concrete_of_code.1  var_from var_to var_value) s₀ s₉ →
