@@ -13,7 +13,7 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
-def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) (s₀ s₉ : State) : Prop := 
+def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) (s₀ s₉ : State) : Prop :=
   let from_addr := Address.ofUInt256 var_from
   let to_addr := Address.ofUInt256 var_to
   let transfer_value : UInt256 := var_value -- in wei
@@ -21,40 +21,37 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
     ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
     -- Case: transferFrom succeeds
     (
-      match s₀ with
-      | Ok evm _ => 
-        let balances := 
-          if from_addr = to_addr then erc20.balances
-            else
-              Finmap.insert
-                to_addr
-                (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
-                (
-                  Finmap.insert
-                    from_addr
-                    (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
-                    erc20.balances
-                )
-        let allowances :=
-          Finmap.insert
-            (from_addr, evm.execution_env.source)
-              (((erc20.allowances.lookup (from_addr, evm.execution_env.source)).getD 0) - transfer_value)
-            erc20.allowances
-        IsERC20 ({ erc20 with balances, allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧
-        s₉[var]!! = 1 ∧
-        s₉.evm.hash_collision = false
-      | _ => IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ -- OutOfFuel or Checkpoint
+      let balances :=
+        if from_addr = to_addr then erc20.balances
+          else
+            Finmap.insert
+              to_addr
+              (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
+              (
+                Finmap.insert
+                  from_addr
+                  (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
+                  erc20.balances
+              )
+      let allowances :=
+        Finmap.insert
+          (from_addr, s₀.evm.execution_env.source)
+          (((erc20.allowances.lookup (from_addr, s₀.evm.execution_env.source)).getD 0) - transfer_value)
+          erc20.allowances
+      IsERC20 ({ erc20 with balances, allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧
+      s₉[var]!! = 1 ∧
+      s₉.evm.hash_collision = false
     )
     ∨
     -- Case: transferFrom fails
     (
       IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧
       s₉[var]!! = 0
-    ) 
+    )
     -- Case: Hash collision
-    ∨ s₉.evm.hash_collision = true 
+    ∨ s₉.evm.hash_collision = true
   )
-  
+
 
 lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to var_value} :
   Spec (fun_transferFrom_concrete_of_code.1 var var_from var_to var_value) s₀ s₉ →
