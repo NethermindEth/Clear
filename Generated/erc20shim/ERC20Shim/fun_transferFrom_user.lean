@@ -34,9 +34,11 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
                   erc20.balances
               )
       let allowances :=
+        let currentAllowance := (erc20.allowances.lookup (from_addr, s₀.evm.execution_env.source)).getD 0
+        if currentAllowance = UInt256.top then erc20.allowances else
         Finmap.insert
           (from_addr, s₀.evm.execution_env.source)
-          (((erc20.allowances.lookup (from_addr, s₀.evm.execution_env.source)).getD 0) - transfer_value)
+          (currentAllowance - transfer_value)
           erc20.allowances
       IsERC20 ({ erc20 with balances, allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧
       s₉[var]!! = 1 ∧
