@@ -42,8 +42,44 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
 lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to var_value} :
   Spec (fun_transferFrom_concrete_of_code.1 var var_from var_to var_value) s₀ s₉ →
   Spec (A_fun_transferFrom var var_from var_to var_value) s₀ s₉ := by
+
   unfold fun_transferFrom_concrete_of_code A_fun_transferFrom
-  sorry
+
+  rcases s₀ with ⟨evm₀, varstore₀⟩ | _ | _ <;> [simp only; aesop_spec; aesop_spec]
+  apply spec_eq
+  clr_funargs
+  
+  rintro hasFuel ⟨s₁, hMsgSender, ⟨s₂, hSpendAllowance, ⟨s₃, h_transfer, code⟩⟩⟩
+  -- clr_varstore, -- does nothing
+
+  unfold A_fun_msgSender at hMsgSender
+  unfold A_fun_spendAllowance at hSpendAllowance
+  unfold A_fun__transfer at h_transfer
+  
+  -- clr_spec times out
+  apply Spec_ok_unfold (by sorry) (by sorry) at hMsgSender
+  apply Spec_ok_unfold (by sorry) (by sorry) at hSpendAllowance
+  apply Spec_ok_unfold (by sorry) (by sorry) at h_transfer
+  
+  simp only [State.insert, isOk_insert, isOk_Ok, evm_insert, get_evm_of_ok] at hMsgSender
+  simp only [Fin.isValue, Fin.natCast_eq_last, UInt256.size, Nat.reducePow, and_imp] at hSpendAllowance
+  simp only [Fin.isValue, and_imp] at h_transfer
+  
+  intro erc20 is_erc20 s₀_isEVMState
+  
+  rcases hMsgSender with ⟨⟨preservesEvm₁,s₁_isOk, s₁_isEVMStatePreserved, hMsgSenderVar, hNoHashCollision₁⟩| hHasHashCollision₁, hPreservesCollision₁⟩ <;> [skip;sorry]
+  
+  rcases (@hSpendAllowance erc20 (by sorry) (by sorry)) with ⟨ ⟨s₂_isERC20, preservesEvm₂, hNoHashCollision₂⟩ | ⟨s₂_isERC20, preservesEvm₂, hNoHashCollision₂, hCurrentAllowance_lt_transfer_value⟩ | hHasHashCollision₂, hPreservesCollision₂⟩  <;> [skip;sorry;sorry]
+  
+  rcases (@h_transfer erc20 (by sorry) (by sorry)) with ⟨ ⟨s₃_isERC20, preservesEvm₃, hNoHashCollision₃⟩ | ⟨s₃_isERC20, preservesEvm₃, hNoHashCollision₃, hInvolvesBurnAddress⟩ | hHasHashCollision₃ , hPreservesCollision₃⟩ <;> [skip;sorry;sorry]
+  
+  left
+  split_ands
+  
+  · sorry
+  · sorry
+  · sorry
+  · sorry
 
 end
 
