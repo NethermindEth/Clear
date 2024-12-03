@@ -2249,12 +2249,13 @@ lemma mstore_mstore :
   exact update_update
 
 lemma mstore_mstore_of_ne :
+  (h : ∀ {a}, a ∈ offsets_at addr' → a ∉ offsets_at addr) →
   mstore (mstore evm addr val) addr' val' =
     mstore (mstore evm addr' val') addr val := by
+  intros h
   unfold mstore updateMemory
   simp
-  refine update_update_of_ne ?_
-  sorry
+  exact update_update_of_ne h
 
 lemma lookup_mstore :
   (mstore evm p val).machine_state.memory.lookupWord p = val := by

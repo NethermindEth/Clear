@@ -135,8 +135,8 @@ lemma mapping_index_access_mapping_address_uint256_of_address_abs_of_concrete {s
     unfold keccak256 at keccak_eq_some_res
     rw [ interval'_eq_interval 2 two_ne_zero (by norm_cast)
        , ← prep_def
-       , mstore_mstore_of_ne, interval_of_mstore_eq_val_cons
-       , mstore_mstore_of_ne, zero_add, interval_of_mstore_eq_val_cons
+       , mstore_mstore_of_ne (by sorry), interval_of_mstore_eq_val_cons
+       , mstore_mstore_of_ne (by sorry), zero_add, interval_of_mstore_eq_val_cons
        , interval_of_0_eq_nil
        ] at keccak_eq_some_res
     unfold_let at keccak_eq_some_res
