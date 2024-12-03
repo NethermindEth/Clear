@@ -69,9 +69,9 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
   
   rcases hMsgSender with ⟨⟨preservesEvm₁,s₁_isOk, s₁_isEVMStatePreserved, hMsgSenderVar, hNoHashCollision₁⟩| hHasHashCollision₁, hPreservesCollision₁⟩ <;> [skip;sorry]
   
-  rcases (@hSpendAllowance erc20 (by sorry) (by sorry)) with ⟨ ⟨s₂_isERC20, preservesEvm₂, hNoHashCollision₂⟩ | ⟨s₂_isERC20, preservesEvm₂, hNoHashCollision₂, hCurrentAllowance_lt_transfer_value⟩ | hHasHashCollision₂, hPreservesCollision₂⟩  <;> [skip;sorry;sorry]
+  rcases (@hSpendAllowance erc20 (by sorry) (by sorry)) with ⟨ ⟨s₂_isERC20, preservesEvm₂, s₂_isOk, hNoHashCollision₂⟩ | ⟨s₂_isERC20, preservesEvm₂, hNoHashCollision₂, hCurrentAllowance_lt_transfer_value⟩ | hHasHashCollision₂, hPreservesCollision₂⟩  <;> [skip;sorry;sorry]
   
-  rcases (@h_transfer erc20 (by sorry) (by sorry)) with ⟨ ⟨s₃_isERC20, preservesEvm₃, hNoHashCollision₃⟩ | ⟨s₃_isERC20, preservesEvm₃, hNoHashCollision₃, hInvolvesBurnAddress⟩ | hHasHashCollision₃ , hPreservesCollision₃⟩ <;> [skip;sorry;sorry]
+  rcases (@h_transfer erc20 (by sorry) (by sorry)) with ⟨ ⟨s₃_isERC20, preservesEvm₃, s₃_isOk, hNoHashCollision₃⟩ | ⟨s₃_isERC20, preservesEvm₃, hNoHashCollision₃, hInvolvesBurnAddress⟩ | hHasHashCollision₃ , hPreservesCollision₃⟩ <;> [skip;sorry;sorry]
   
   left
   split_ands

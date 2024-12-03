@@ -25,7 +25,7 @@ def A_fun_spendAllowance  (var_owner var_spender var_value : Literal) (s₀ s₉
     -- Case: spendAllowance succeeds
     ((
         let allowances := update_allowances erc20 owner_addr spender_addr transfer_value
-        IsERC20 ({ erc20 with allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧
+        IsERC20 ({ erc20 with allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.isOk ∧
         s₉.evm.hash_collision = false
     )
     ∨
