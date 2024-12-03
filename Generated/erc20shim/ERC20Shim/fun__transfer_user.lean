@@ -23,7 +23,7 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
   (
     ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
     -- Case: _transfer succeeds
-    (
+    ((
       let balances := update_balances erc20 from_addr to_addr transfer_value
       IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧
       s₉.evm.hash_collision = false
@@ -35,7 +35,8 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
       (from_addr = 0 ∨ to_addr = 0)
     )
     -- Case: Hash collision
-    ∨ s₉.evm.hash_collision = true
+    ∨ s₉.evm.hash_collision = true)
+    ∧ (s₀.evm.hash_collision = true → s₉.evm.hash_collision) 
   )
 
 lemma fun__transfer_abs_of_concrete {s₀ s₉ : State} { var_from var_to var_value} :
