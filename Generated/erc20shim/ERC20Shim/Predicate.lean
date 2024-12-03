@@ -97,10 +97,10 @@ lemma IsERC20_of_ok_forall_store {erc20} {evm} {s₀ s₁} :
   · exact is_erc.storageDom
   sorry
 
-lemma IsERC20_of_ok_of_Preserved {erc20} {store} {σ₀ σ₁} (h : Preserved σ₀ σ₁) : 
+lemma IsERC20_of_ok_of_Preserved {erc20} {store} {σ₀ σ₁} (h : Preserved σ₀ σ₁) :
   IsERC20 erc20 (Ok σ₀ store) → IsERC20 erc20 (Ok σ₁ store) := by
   sorry
-  
+
 lemma IsERC20_of_preservesEvm {erc20} {s₀ s₁} :
   preservesEvm s₀ s₁ → IsERC20 erc20 s₀ → IsERC20 erc20 s₁ := by
   sorry
@@ -109,5 +109,26 @@ lemma t {erc20} {s₀ s₁} (is_erc20 : IsERC20 erc20 s₀) (h : preservesEvm s�
   ∀ {addr}, addr ∉ s₀.evm.keccak_range ∧ addr ∈ s₁.evm.keccak_range →
   addr ∉ s₀.evm.storage.keys := by
   sorry
+
+def update_balances (erc20 : ERC20) from_addr to_addr transfer_value :=
+  if from_addr = to_addr then erc20.balances
+  else
+    Finmap.insert
+      to_addr
+      (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
+      (
+        Finmap.insert
+          from_addr
+          (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
+          erc20.balances
+      )
+
+def update_allowances (erc20 : ERC20) owner_addr spender_addr transfer_value :=
+  let currentAllowance := (erc20.allowances.lookup (owner_addr, spender_addr)).getD 0
+  if currentAllowance = UInt256.top then erc20.allowances else
+  Finmap.insert
+    (owner_addr, spender_addr)
+    (currentAllowance - transfer_value)
+    erc20.allowances
 
 end Generated.erc20shim.ERC20Shim

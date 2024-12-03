@@ -6,6 +6,7 @@ import Generated.erc20shim.ERC20Shim.fun__transfer
 
 import Generated.erc20shim.ERC20Shim.fun_transferFrom_gen
 
+import Generated.erc20shim.ERC20Shim.Predicate
 
 namespace Generated.erc20shim.ERC20Shim
 
@@ -21,25 +22,8 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
     ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
     -- Case: transferFrom succeeds
     (
-      let balances :=
-        if from_addr = to_addr then erc20.balances
-          else
-            Finmap.insert
-              to_addr
-              (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
-              (
-                Finmap.insert
-                  from_addr
-                  (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
-                  erc20.balances
-              )
-      let allowances :=
-        let currentAllowance := (erc20.allowances.lookup (from_addr, s₀.evm.execution_env.source)).getD 0
-        if currentAllowance = UInt256.top then erc20.allowances else
-        Finmap.insert
-          (from_addr, s₀.evm.execution_env.source)
-          (currentAllowance - transfer_value)
-          erc20.allowances
+      let balances := update_balances erc20 from_addr to_addr transfer_value
+      let allowances := update_allowances erc20 from_addr s₀.evm.execution_env.source transfer_value
       IsERC20 ({ erc20 with balances, allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧
       s₉[var]!! = 1 ∧
       s₉.evm.hash_collision = false

@@ -7,6 +7,8 @@ import Generated.erc20shim.ERC20Shim.fun_update
 
 import Generated.erc20shim.ERC20Shim.fun__transfer_gen
 
+import Generated.erc20shim.ERC20Shim.Predicate
+
 
 namespace Generated.erc20shim.ERC20Shim
 
@@ -22,18 +24,7 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
     ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
     -- Case: _transfer succeeds
     (
-      let balances :=
-        if from_addr = to_addr then erc20.balances
-          else
-            Finmap.insert
-              to_addr
-              (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
-              (
-                Finmap.insert
-                  from_addr
-                  (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
-                  erc20.balances
-              )
+      let balances := update_balances erc20 from_addr to_addr transfer_value
       IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧
       s₉.evm.hash_collision = false
     )

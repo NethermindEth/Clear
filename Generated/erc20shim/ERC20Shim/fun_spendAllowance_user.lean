@@ -7,6 +7,7 @@ import Generated.erc20shim.ERC20Shim.fun__approve
 
 import Generated.erc20shim.ERC20Shim.fun_spendAllowance_gen
 
+import Generated.erc20shim.ERC20Shim.Predicate
 
 namespace Generated.erc20shim.ERC20Shim
 
@@ -23,12 +24,7 @@ def A_fun_spendAllowance  (var_owner var_spender var_value : Literal) (s₀ s₉
     let currentAllowance := (erc20.allowances.lookup (owner_addr, spender_addr)).getD 0
     -- Case: spendAllowance succeeds
     (
-        let allowances :=
-          if currentAllowance = UInt256.top then erc20.allowances else
-            Finmap.insert
-              (owner_addr, spender_addr)
-              (currentAllowance - transfer_value)
-              erc20.allowances
+        let allowances := update_allowances erc20 owner_addr spender_addr transfer_value
         IsERC20 ({ erc20 with allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧
         s₉.evm.hash_collision = false
     )
