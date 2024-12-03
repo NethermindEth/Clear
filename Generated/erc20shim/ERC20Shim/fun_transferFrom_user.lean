@@ -24,7 +24,7 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
     (
       let balances := update_balances erc20 from_addr to_addr transfer_value
       let allowances := update_allowances erc20 from_addr s₀.evm.execution_env.source transfer_value
-      IsERC20 ({ erc20 with balances, allowances }) s₉ ∧
+      IsERC20 ({ erc20 with balances, allowances }) s₉ ∧ 
       s₉[var]!! = 1 ∧
       s₉.evm.hash_collision = false
     )
@@ -76,9 +76,36 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
   left
   split_ands
   
-  · sorry
-  · sorry
-  · sorry
+  · -- IsERC20
+    rcases s₃ with ⟨evm₃, varstore₃⟩ | _ | _ <;> [skip; aesop; aesop]
+    simp only [Fin.isValue, isOk_Ok, revive_of_ok] at code
+    rw [←code]
+    simp
+    apply IsERC20.mk
+    · simp
+      have := s₃_isERC20.hasSupply
+      rw [←this]
+      simp
+    · simp
+      intros acc acc_in_bal
+      have := @IsERC20.hasBalance _ _ s₃_isERC20 acc (by sorry)
+      obtain ⟨addr, ⟨hAddr₁, hAddr₂⟩⟩ := this
+      exists addr
+      split_ands
+      · sorry
+      · simp only [get_evm_of_ok] at hAddr₂
+        rw [←hAddr₂]
+        have hFrom : var_from = s₂["var_from"]!! := by sorry
+        have hTo : var_to = s₂["var_to"]!! := by sorry
+        have hValue : var_value = s₂["var_value"]!! := by sorry
+        rw [←hFrom, ←hTo, ←hValue]      
+    · sorry
+    · sorry
+    · sorry
+  · -- transferFrom returns true (success)
+    sorry
+  · -- No hash collision
+    sorry
 
 end
 
