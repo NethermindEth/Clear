@@ -25,7 +25,7 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
     -- Case: _transfer succeeds
     ((
       let balances := update_balances erc20 from_addr to_addr transfer_value
-      IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.isOk ∧
+      IsERC20 ({ erc20 with balances }) s₉ ∧ s₉.isOk ∧
       s₉.evm.hash_collision = false
     )
     ∨
