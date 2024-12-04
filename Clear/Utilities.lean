@@ -29,6 +29,25 @@ lemma spec_eq {P P' : State → State  → Prop} {s₀ s₉ : State} :
     simp only
     exact h
 
+@[aesop safe apply (rule_sets := [Clear.aesop_spec])]
+lemma collision_spec_eq {P P' : State → State  → Prop} {s₀ s₉ : State} :
+  (¬ s₉.evm.hash_collision → Spec P s₀ s₉ → Spec P' s₀ s₉) → CollidingSpec P s₀ s₉ → CollidingSpec P' s₀ s₉ := by
+  unfold CollidingSpec
+  intro S'_of_S
+  split
+  simp
+  intro Spec_of_c c
+  exact S'_of_S c (Spec_of_c c) 
+
+@[aesop safe apply (rule_sets := [Clear.aesop_spec])]
+lemma collision_spec_eq' {P P' : State → State  → Prop} {s₀ s₉ : State} :
+  (¬ s₉.evm.hash_collision → ¬❓ s₉ → P s₀ s₉ →  P' s₀ s₉) → CollidingSpec P s₀ s₉ → CollidingSpec P' s₀ s₉ := by
+  intro P'_of_P
+  apply collision_spec_eq
+  intro c
+  apply spec_eq
+  exact P'_of_P c
+
 @[simp]
 lemma checkpt_insert_elim {var} {val} {j} : (.Checkpoint j)⟦var ↦ val⟧ = .Checkpoint j := by
   simp only [State.insert]
