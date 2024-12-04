@@ -633,6 +633,43 @@ lemma lookup_initcall_5 (ha : ve ≠ va) (hb : ve ≠ vb) (hc : ve ≠ vc) (hd :
   rw [lookup_insert']
   aesop
 
+@[simp]
+lemma get_evm_of_ok : (Ok evm store).evm = evm
+:= by
+  unfold evm
+  simp
+
+lemma get_evm_of_isOk (h : isOk s) : ∃ evm, s.evm = evm
+:= by
+  let ⟨evm, store, h'⟩ := State_of_isOk h
+  exists evm
+  rw [h']
+  simp
+
+@[simp]
+lemma evm_get_set_of_ok : ((Ok evm store).setEvm evm').evm = evm'
+:= by
+  unfold setEvm evm
+  simp
+
+@[simp]
+lemma evm_get_set_of_isOk (h : isOk s) : (s.setEvm evm').evm = evm'
+:= by
+  unfold setEvm evm
+  rcases s <;> simp <;> try contradiction
+
+@[simp]
+lemma setEvm_insert_comm : s⟦var ↦ val⟧.setEvm evm' = (s.setEvm evm')⟦var ↦ val⟧
+:= by
+  rcases s <;> [(try simp only); aesop_spec; aesop_spec]
+  rfl
+
+-- @[simp]
+lemma insert_setEvm_insert : (s.setEvm evm')⟦var ↦ val⟧ = s⟦var ↦ val⟧.setEvm evm'
+:= by
+  rcases s <;> [(try simp only); aesop_spec; aesop_spec]
+  rfl
+
 end
 
 end State
