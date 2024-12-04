@@ -110,25 +110,20 @@ lemma t {erc20} {s₀ s₁} (is_erc20 : IsERC20 erc20 s₀) (h : preservesEvm s�
   addr ∉ s₀.evm.storage.keys := by
   sorry
 
+notation m "⟦" k "↦ₘ" v "⟧" => Finmap.insert k v m
+      
 def update_balances (erc20 : ERC20) from_addr to_addr transfer_value :=
-  if from_addr = to_addr then erc20.balances
-  else
-    Finmap.insert
-      to_addr
-      (((erc20.balances.lookup to_addr).getD 0) + transfer_value)
-      (
-        Finmap.insert
-          from_addr
-          (((erc20.balances.lookup from_addr).getD 0) - transfer_value)
-          erc20.balances
-      )
+  let from_balance := ((erc20.balances.lookup from_addr).getD 0)
+  let to_balance := ((erc20.balances.lookup to_addr).getD 0)
+  if from_addr = to_addr then erc20.balances else
+    erc20.balances
+      ⟦ from_addr ↦ₘ (from_balance - transfer_value) ⟧
+      ⟦ to_addr ↦ₘ (to_balance + transfer_value) ⟧
 
 def update_allowances (erc20 : ERC20) owner_addr spender_addr transfer_value :=
   let currentAllowance := (erc20.allowances.lookup (owner_addr, spender_addr)).getD 0
   if currentAllowance = UInt256.top then erc20.allowances else
-  Finmap.insert
-    (owner_addr, spender_addr)
-    (currentAllowance - transfer_value)
     erc20.allowances
+      ⟦(owner_addr, spender_addr) ↦ₘ (currentAllowance - transfer_value)⟧
 
 end Generated.erc20shim.ERC20Shim
