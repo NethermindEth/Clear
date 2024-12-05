@@ -14,7 +14,7 @@ contract ERC20Shim is ERC20 {
 ```
 4. Install `solc-select` to be able to select specific `solc` versions. See: https://github.com/crytic/solc-select or https://search.nixos.org/packages?channel=unstable&show=solc-select
 5. Run `solc-select install 0.8.21`
-6. From the `contracts` directory, run:
+6. From the root directory of the openzeppelin-contracts repo, run:
 ```
 SOLC_VERSION=0.8.21 solc --optimize --ir-optimized --yul-optimizations 'ho[esj]x[esVur]' contracts/mocks/token/erc20shim.sol > contracts/erc20shim.yul
 ```
