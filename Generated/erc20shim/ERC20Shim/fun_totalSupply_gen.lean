@@ -9,11 +9,11 @@ section
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities 
 
 def fun_totalSupply : FunctionDefinition := <f
-    function fun_totalSupply() -> var_
+    function fun_totalSupply() -> var
     
 {
     let _1 := 2
-    var_ := sload(_1)
+    var := sload(_1)
 }
     
 >
@@ -26,12 +26,12 @@ def fun_totalSupply_concrete_of_code
     C :
       _ → 
       State → State → Prop
-    // ∀ {s₀ s₉ : State} {var_  fuel},
-         execCall fuel fun_totalSupply [var_] (s₀, []) = s₉ →
-         Spec (C var_ ) s₀ s₉
+    // ∀ {s₀ s₉ : State} {var  fuel},
+         execCall fuel fun_totalSupply [var] (s₀, []) = s₉ →
+         Spec (C var ) s₀ s₉
   } := by
   constructor
-  intros s₀ s₉ var_  fuel
+  intros s₀ s₉ var  fuel
   unfold fun_totalSupply
 
   unfold Spec

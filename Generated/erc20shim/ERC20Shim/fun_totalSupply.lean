@@ -12,9 +12,9 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities 
 
-lemma fun_totalSupply_abs_of_code {s₀ s₉ : State} {var_ } {fuel : Nat} :
-  execCall fuel fun_totalSupply [var_] (s₀, []) = s₉ →
-  Spec (A_fun_totalSupply var_ ) s₀ s₉
+lemma fun_totalSupply_abs_of_code {s₀ s₉ : State} {var } {fuel : Nat} :
+  execCall fuel fun_totalSupply [var] (s₀, []) = s₉ →
+  Spec (A_fun_totalSupply var ) s₀ s₉
 := λ h ↦ fun_totalSupply_abs_of_concrete (fun_totalSupply_concrete_of_code.2 h)
 
 end

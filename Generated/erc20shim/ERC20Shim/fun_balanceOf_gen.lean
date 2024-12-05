@@ -10,12 +10,12 @@ section
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
 def fun_balanceOf : FunctionDefinition := <f
-    function fun_balanceOf(var_account) -> var
+    function fun_balanceOf(var_account) -> var_
     
 {
     let _1 := 0
     let _2 := mapping_index_access_mapping_address_uint256_of_address(_1, var_account)
-    var := sload(_2)
+    var_ := sload(_2)
 }
     
 >
@@ -28,12 +28,12 @@ def fun_balanceOf_concrete_of_code
     C :
       _ → _ → 
       State → State → Prop
-    // ∀ {s₀ s₉ : State} {var var_account fuel},
-         execCall fuel fun_balanceOf [var] (s₀, [var_account]) = s₉ →
-         Spec (C var var_account) s₀ s₉
+    // ∀ {s₀ s₉ : State} {var_ var_account fuel},
+         execCall fuel fun_balanceOf [var_] (s₀, [var_account]) = s₉ →
+         Spec (C var_ var_account) s₀ s₉
   } := by
   constructor
-  intros s₀ s₉ var var_account fuel
+  intros s₀ s₉ var_ var_account fuel
   unfold fun_balanceOf
 
   unfold Spec

@@ -1,7 +1,7 @@
 import Clear.ReasoningPrinciple
 
 import Generated.erc20shim.ERC20Shim.fun_msgSender
-import Generated.erc20shim.ERC20Shim.fun_approve_420
+import Generated.erc20shim.ERC20Shim.fun_approve_426
 
 import Generated.erc20shim.ERC20Shim.fun_approve_gen
 

@@ -9,37 +9,37 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
-def if_3856757177752523473 := <s
-  if _3 
+def if_2130076443351184838 := <s
+  if _4 
 {
     let expr := var_spender
     let expr_1 := var_currentAllowance
     let expr_2 := var_value
-    let _4 := 64
-    let _5 := mload(_4)
-    let _6 := shl(225, 2110234841)
-    mstore(_5, _6)
-    let _7 := 4
-    let _8 := add(_5, _7)
-    let _9 := abi_encode_address_uint256_uint256(_8, var_spender, var_currentAllowance, var_value)
-    let _10 := sub(_9, _5)
-    revert(_5, _10)
+    let _5 := 64
+    let _6 := mload(_5)
+    let _7 := shl(225, 2110234841)
+    mstore(_6, _7)
+    let _8 := 4
+    let _9 := add(_6, _8)
+    let _10 := abi_encode_address_uint256_uint256(_9, var_spender, var_currentAllowance, var_value)
+    let _11 := sub(_10, _6)
+    revert(_6, _11)
 }
 >
 
 set_option maxRecDepth 5000
 set_option maxHeartbeats 400000
 
-def if_3856757177752523473_concrete_of_code : {
+def if_2130076443351184838_concrete_of_code : {
     C : State → State → Prop
     // ∀ {s₀ s₉ fuel}
-    , exec fuel if_3856757177752523473 s₀ = s₉
+    , exec fuel if_2130076443351184838 s₀ = s₉
     → Spec C s₀ s₉
   } := by
   constructor
   intros s₀ s₉ fuel
 
-  unfold Spec if_3856757177752523473
+  unfold Spec if_2130076443351184838
   rcases s₀ with ⟨evm₀, store₀⟩ | _ | c <;> dsimp only
   rotate_left 1
   · generalize If _ _ = f; aesop

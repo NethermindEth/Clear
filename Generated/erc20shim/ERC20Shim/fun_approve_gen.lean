@@ -1,7 +1,7 @@
 import Clear.ReasoningPrinciple
 
 import Generated.erc20shim.ERC20Shim.fun_msgSender
-import Generated.erc20shim.ERC20Shim.fun_approve_420
+import Generated.erc20shim.ERC20Shim.fun_approve_426
 
 
 namespace Generated.erc20shim.ERC20Shim
@@ -15,7 +15,7 @@ def fun_approve : FunctionDefinition := <f
     
 {
     let _1 := fun_msgSender()
-    fun_approve_420(_1, var_spender, var_value)
+    fun_approve_426(_1, var_spender, var_value)
     var := 1
 }
     
@@ -83,7 +83,7 @@ def fun_approve_concrete_of_code
   generalize hs : execCall _ _ _ _ = s; try rw [← hs₁, hok] at hs
   intros h
   try intros h'
-  refine' Exists.intro s (And.intro (fun_approve_420_abs_of_code hs) ?_)
+  refine' Exists.intro s (And.intro (fun_approve_426_abs_of_code hs) ?_)
   swap; clear hs
   try revert h'
   revert h
