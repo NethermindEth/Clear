@@ -55,7 +55,7 @@ lemma AOk_for_727972558926940900 : ∀ s₀ s₂ s₄ s₅, isOk s₀ → isOk s
   · clr_spec at h₇
     split_ands <;> [skip; aesop_spec; tauto]
     by_cases eq : s₀["k"]!! = 0 <;> simp [eq] at h₅ <;> [simp [h₅] at h₂; skip]
-    rw [h₆] at h₇; rw [h₇.1, h₅]; clr_varstore
+    rw [h₆] at h₇; rw [h₇.1, h₅]; clr_varstore,
     have : ↑(s₀["k"]!! - 1) + 1 < UInt256.size := by simp_arith [fin_eq_lem eq]; zify; omega
     rw [mul_assoc, UInt256.UInt256_pow_succ this]; ring
   · have h : isOk (s₂⟦"k"↦(s₂["k"]!!) - 1⟧) := by aesop
