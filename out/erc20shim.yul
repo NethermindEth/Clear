@@ -5,11 +5,11 @@ Optimized IR:
 Optimized IR:
 
 Optimized IR:
-/// @use-src 0:"contracts/interfaces/draft-IERC6093.sol", 1:"contracts/mocks/token/ERC20Shim.sol", 2:"contracts/token/ERC20/ERC20.sol", 3:"contracts/token/ERC20/IERC20.sol", 4:"contracts/token/ERC20/extensions/IERC20Metadata.sol", 5:"contracts/utils/Context.sol"
-object "ERC20Shim_14" {
+/// @use-src 0:"contracts/interfaces/draft-IERC6093.sol", 1:"contracts/mocks/token/erc20shim.sol", 2:"contracts/token/ERC20/ERC20.sol", 3:"contracts/token/ERC20/IERC20.sol", 4:"contracts/token/ERC20/extensions/IERC20Metadata.sol", 5:"contracts/utils/Context.sol"
+object "ERC20Shim_20" {
     code {
         {
-            /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
             let _1 := memoryguard(0x80)
             let _2 := 64
             mstore(_2, _1)
@@ -21,8 +21,8 @@ object "ERC20Shim_14" {
             constructor_ERC20Shim()
             let _4 := _2
             let _5 := mload(_2)
-            let _6 := datasize("ERC20Shim_14_deployed")
-            let _7 := dataoffset("ERC20Shim_14_deployed")
+            let _6 := datasize("ERC20Shim_20_deployed")
+            let _7 := dataoffset("ERC20Shim_20_deployed")
             codecopy(_5, _7, _6)
             let _8 := _6
             return(_5, _6)
@@ -110,15 +110,22 @@ object "ERC20Shim_14" {
             let _3 := add(memPtr, _2)
             store_literal_in_memory_654a20c509642b4486f3c0baf150dce7367ca9e5f6186c81edaf3f66a3f7c7a3(_3)
         }
-        /// @ast-id 13 @src 1:116:159  "constructor() ERC20(\"ERC20Shim\", \"E20S\") {}"
+        /// @ast-id 19 @src 1:116:195  "constructor() ERC20(\"ERC20Shim\", \"E20S\") {..."
         function constructor_ERC20Shim()
         {
             /// @src 1:136:147  "\"ERC20Shim\""
-            let _mpos := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ copy_literal_to_memory_73d84741e39ae21500f019e1bd49b1509c4dad0285f14920732b98003dc4a297()
+            let _mpos := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ copy_literal_to_memory_73d84741e39ae21500f019e1bd49b1509c4dad0285f14920732b98003dc4a297()
             let _1 := copy_literal_to_memory_654a20c509642b4486f3c0baf150dce7367ca9e5f6186c81edaf3f66a3f7c7a3()
-            /// @src 1:116:159  "constructor() ERC20(\"ERC20Shim\", \"E20S\") {}"
-            constructor_ERC20(_mpos, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _1)
+            /// @src 1:116:195  "constructor() ERC20(\"ERC20Shim\", \"E20S\") {..."
+            constructor_ERC20(_mpos, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+            /// @src 1:183:187  "1000"
+            let _2 := 0x03e8
+            /// @src 1:171:181  "msg.sender"
+            let _3 := caller()
+            /// @src 1:165:188  "_mint(msg.sender, 1000)"
+            fun_mint(/** @src 1:171:181  "msg.sender" */ _3, /** @src 1:183:187  "1000" */ _2)
         }
+        /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
         function panic_error_0x22()
         {
             let _1 := shl(224, 0x4e487b71)
@@ -292,22 +299,256 @@ object "ERC20Shim_14" {
         {
             copy_byte_array_to_storage_from_string_to_string(slot, value)
         }
-        /// @ast-id 66 @src 2:1601:1714  "constructor(string memory name_, string memory symbol_) {..."
+        /// @ast-id 72 @src 2:1896:2009  "constructor(string memory name_, string memory symbol_) {..."
         function constructor_ERC20(var_name_mpos, var_symbol_mpos)
         {
-            /// @src 2:1667:1680  "_name = name_"
+            /// @src 2:1962:1975  "_name = name_"
             let _1 := 0x03
-            update_storage_value_offsett_string_to_string(_1, /** @src 2:1675:1680  "name_" */ var_name_mpos)
-            /// @src 2:1690:1707  "_symbol = symbol_"
+            update_storage_value_offsett_string_to_string(_1, /** @src 2:1970:1975  "name_" */ var_name_mpos)
+            /// @src 2:1985:2002  "_symbol = symbol_"
             let _2 := 0x04
-            update_storage_value_offsett_string_to_string(_2, /** @src 2:1700:1707  "symbol_" */ var_symbol_mpos)
+            update_storage_value_offsett_string_to_string(_2, /** @src 2:1995:2002  "symbol_" */ var_symbol_mpos)
+        }
+        /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+        function abi_encode_address(value, pos)
+        {
+            let _1 := sub(shl(160, 1), 1)
+            let _2 := and(value, _1)
+            mstore(pos, _2)
+        }
+        function abi_encode_tuple_address(headStart, value0) -> tail
+        {
+            let _1 := 32
+            tail := add(headStart, _1)
+            abi_encode_address(value0, headStart)
+        }
+        /// @ast-id 375 @src 2:7721:7929  "function _mint(address account, uint256 value) internal {..."
+        function fun_mint(var_account, var_value)
+        {
+            /// @src 2:7791:7798  "account"
+            let expr := var_account
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+            let _1 := sub(shl(160, 1), 1)
+            let _2 := and(/** @src 2:7791:7812  "account == address(0)" */ var_account, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+            /// @src 2:7791:7812  "account == address(0)"
+            let _3 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _2)
+            /// @src 2:7787:7878  "if (account == address(0)) {..."
+            if /** @src 2:7791:7812  "account == address(0)" */ _3
+            /// @src 2:7787:7878  "if (account == address(0)) {..."
+            {
+                /// @src 2:7856:7866  "address(0)"
+                let expr_1 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ 0
+                let _4 := 64
+                /// @src 2:7835:7867  "ERC20InvalidReceiver(address(0))"
+                let _5 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_4)
+                /// @src 2:7835:7867  "ERC20InvalidReceiver(address(0))"
+                let _6 := shl(224, 0xec442f05)
+                mstore(_5, _6)
+                let _7 := 4
+                let _8 := add(_5, _7)
+                let _9 := abi_encode_tuple_address(_8, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ expr_1)
+                /// @src 2:7835:7867  "ERC20InvalidReceiver(address(0))"
+                let _10 := sub(_9, _5)
+                revert(_5, _10)
+            }
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+            let _11 := 0
+            /// @src 2:7916:7921  "value"
+            fun_update(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _11, /** @src 2:7907:7914  "account" */ var_account, /** @src 2:7916:7921  "value" */ var_value)
+        }
+        /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+        function mapping_index_access_mapping_address_uint256_of_address(slot, key) -> dataSlot
+        {
+            let _1 := and(key, sub(shl(160, 1), 1))
+            let _2 := 0
+            mstore(_2, _1)
+            let _3 := 0x20
+            mstore(_3, slot)
+            let _4 := 0x40
+            let _5 := _2
+            dataSlot := keccak256(_2, _4)
+        }
+        function abi_encode_uint256_to_uint256(value, pos)
+        { mstore(pos, value) }
+        function abi_encode_address_uint256_uint256(headStart, value0, value1, value2) -> tail
+        {
+            let _1 := 96
+            tail := add(headStart, _1)
+            abi_encode_address(value0, headStart)
+            let _2 := 32
+            let _3 := add(headStart, _2)
+            abi_encode_uint256_to_uint256(value1, _3)
+            let _4 := 64
+            let _5 := add(headStart, _4)
+            abi_encode_uint256_to_uint256(value2, _5)
+        }
+        function update_byte_slice_shift(value, toInsert) -> result
+        {
+            toInsert := toInsert
+            result := toInsert
+        }
+        function update_storage_value_offsett_uint256_to_uint256(slot, value)
+        {
+            let _1 := sload(slot)
+            let _2 := update_byte_slice_shift(_1, value)
+            sstore(slot, _2)
+        }
+        function panic_error_0x11()
+        {
+            let _1 := shl(224, 0x4e487b71)
+            let _2 := 0
+            mstore(_2, _1)
+            let _3 := 0x11
+            let _4 := 4
+            mstore(_4, _3)
+            let _5 := 0x24
+            let _6 := _2
+            revert(_2, _5)
+        }
+        function checked_add_uint256(x, y) -> sum
+        {
+            x := x
+            y := y
+            sum := add(x, y)
+            let _1 := gt(x, sum)
+            if _1 { panic_error_0x11() }
+        }
+        function abi_encode_uint256(headStart, value0) -> tail
+        {
+            let _1 := 32
+            tail := add(headStart, _1)
+            abi_encode_uint256_to_uint256(value0, headStart)
+        }
+        /// @ast-id 342 @src 2:6271:7378  "function _update(address from, address to, uint256 value) internal virtual {..."
+        function fun_update(var_from, var_to, var_value)
+        {
+            /// @src 2:6360:6364  "from"
+            let expr := var_from
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+            let _1 := sub(shl(160, 1), 1)
+            let _2 := and(/** @src 2:6360:6378  "from == address(0)" */ var_from, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+            /// @src 2:6360:6378  "from == address(0)"
+            let _3 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _2)
+            /// @src 2:6356:6896  "if (from == address(0)) {..."
+            switch /** @src 2:6360:6378  "from == address(0)" */ _3
+            case /** @src 2:6356:6896  "if (from == address(0)) {..." */ 0 {
+                /// @src 2:6570:6579  "_balances"
+                let _4 := 0x00
+                /// @src 2:6570:6585  "_balances[from]"
+                let _5 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:6570:6579  "_balances" */ _4, /** @src 2:6580:6584  "from" */ var_from)
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                let _6 := sload(/** @src 2:6570:6585  "_balances[from]" */ _5)
+                /// @src 2:6548:6585  "uint256 fromBalance = _balances[from]"
+                let var_fromBalance := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _6
+                /// @src 2:6603:6622  "fromBalance < value"
+                let _7 := lt(/** @src 2:6603:6614  "fromBalance" */ _6, /** @src 2:6617:6622  "value" */ var_value)
+                /// @src 2:6599:6714  "if (fromBalance < value) {..."
+                if /** @src 2:6603:6622  "fromBalance < value" */ _7
+                /// @src 2:6599:6714  "if (fromBalance < value) {..."
+                {
+                    /// @src 2:6674:6678  "from"
+                    let expr_1 := var_from
+                    /// @src 2:6680:6691  "fromBalance"
+                    let expr_2 := _6
+                    /// @src 2:6693:6698  "value"
+                    let expr_3 := var_value
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                    let _8 := 64
+                    /// @src 2:6649:6699  "ERC20InsufficientBalance(from, fromBalance, value)"
+                    let _9 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_8)
+                    /// @src 2:6649:6699  "ERC20InsufficientBalance(from, fromBalance, value)"
+                    let _10 := shl(226, 0x391434e3)
+                    mstore(_9, _10)
+                    let _11 := 4
+                    let _12 := add(_9, _11)
+                    let _13 := abi_encode_address_uint256_uint256(_12, var_from, _6, var_value)
+                    let _14 := sub(_13, _9)
+                    revert(_9, _14)
+                }
+                /// @src 2:6852:6871  "fromBalance - value"
+                let expr_4 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ sub(/** @src 2:6852:6863  "fromBalance" */ _6, /** @src 2:6866:6871  "value" */ var_value)
+                /// @src 2:6834:6843  "_balances"
+                let _15 := _4
+                /// @src 2:6834:6849  "_balances[from]"
+                let _16 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:6834:6843  "_balances" */ _4, /** @src 2:6844:6848  "from" */ var_from)
+                /// @src 2:6834:6871  "_balances[from] = fromBalance - value"
+                update_storage_value_offsett_uint256_to_uint256(/** @src 2:6834:6849  "_balances[from]" */ _16, /** @src 2:6834:6871  "_balances[from] = fromBalance - value" */ expr_4)
+            }
+            default /// @src 2:6356:6896  "if (from == address(0)) {..."
+            {
+                /// @src 2:6496:6517  "_totalSupply += value"
+                let _17 := 0x02
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                let _18 := sload(/** @src 2:6496:6517  "_totalSupply += value" */ _17)
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                let _19 := _18
+                /// @src 2:6496:6517  "_totalSupply += value"
+                let _20 := checked_add_uint256(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _18, /** @src 2:6512:6517  "value" */ var_value)
+                /// @src 2:6496:6517  "_totalSupply += value"
+                let _21 := _17
+                update_storage_value_offsett_uint256_to_uint256(_17, _20)
+            }
+            /// @src 2:6910:6912  "to"
+            let expr_5 := var_to
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+            let _22 := _1
+            let _23 := and(/** @src 2:6910:6926  "to == address(0)" */ var_to, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+            /// @src 2:6910:6926  "to == address(0)"
+            let _24 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _23)
+            /// @src 2:6906:7331  "if (to == address(0)) {..."
+            switch /** @src 2:6910:6926  "to == address(0)" */ _24
+            case /** @src 2:6906:7331  "if (to == address(0)) {..." */ 0 {
+                /// @src 2:7301:7306  "value"
+                let expr_6 := var_value
+                /// @src 2:7284:7293  "_balances"
+                let _25 := 0x00
+                /// @src 2:7284:7297  "_balances[to]"
+                let _26 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:7284:7293  "_balances" */ _25, /** @src 2:7294:7296  "to" */ var_to)
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                let _27 := sload(/** @src 2:7284:7306  "_balances[to] += value" */ _26)
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                let _28 := _27
+                let _29 := add(_27, /** @src 2:7284:7306  "_balances[to] += value" */ var_value)
+                update_storage_value_offsett_uint256_to_uint256(_26, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _29)
+            }
+            default /// @src 2:6906:7331  "if (to == address(0)) {..."
+            {
+                /// @src 2:7073:7094  "_totalSupply -= value"
+                let _30 := 0x02
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                let _31 := sload(/** @src 2:7073:7094  "_totalSupply -= value" */ _30)
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                let _32 := _31
+                let _33 := sub(_31, /** @src 2:7089:7094  "value" */ var_value)
+                /// @src 2:7073:7094  "_totalSupply -= value"
+                let _34 := _30
+                update_storage_value_offsett_uint256_to_uint256(_30, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _33)
+            }
+            /// @src 2:7355:7359  "from"
+            let expr_7 := var_from
+            /// @src 2:7361:7363  "to"
+            let expr_8 := var_to
+            /// @src 2:7365:7370  "value"
+            let expr_9 := var_value
+            /// @src 2:7346:7371  "Transfer(from, to, value)"
+            let _35 := 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+            let _36 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _2
+            /// @src 2:7346:7371  "Transfer(from, to, value)"
+            let _37 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _23
+            let _38 := 64
+            /// @src 2:7346:7371  "Transfer(from, to, value)"
+            let _39 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_38)
+            /// @src 2:7346:7371  "Transfer(from, to, value)"
+            let _40 := abi_encode_uint256(_39, var_value)
+            let _41 := sub(_40, _39)
+            log3(_39, _41, _35, _2, _23)
         }
     }
-    /// @use-src 1:"contracts/mocks/token/ERC20Shim.sol", 2:"contracts/token/ERC20/ERC20.sol", 5:"contracts/utils/Context.sol"
-    object "ERC20Shim_14_deployed" {
+    /// @use-src 1:"contracts/mocks/token/erc20shim.sol", 2:"contracts/token/ERC20/ERC20.sol", 5:"contracts/utils/Context.sol"
+    object "ERC20Shim_20_deployed" {
         code {
             {
-                /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                 let _1 := memoryguard(0x80)
                 let _2 := 64
                 mstore(_2, _1)
@@ -796,37 +1037,37 @@ object "ERC20Shim_14" {
                 let _3 := sub(_2, memPtr)
                 finalize_allocation(memPtr, _3)
             }
-            /// @ast-id 75 @src 2:1779:1868  "function name() public view virtual returns (string memory) {..."
+            /// @ast-id 81 @src 2:2074:2163  "function name() public view virtual returns (string memory) {..."
             function fun_name() -> var__mpos
             {
-                /// @src 2:1856:1861  "_name"
+                /// @src 2:2151:2156  "_name"
                 let _1 := 0x03
-                /// @src 2:1849:1861  "return _name"
-                var__mpos := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ copy_array_from_storage_to_memory_string(/** @src 2:1856:1861  "_name" */ _1)
+                /// @src 2:2144:2156  "return _name"
+                var__mpos := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ copy_array_from_storage_to_memory_string(/** @src 2:2151:2156  "_name" */ _1)
             }
-            /// @ast-id 84 @src 2:1981:2074  "function symbol() public view virtual returns (string memory) {..."
+            /// @ast-id 90 @src 2:2276:2369  "function symbol() public view virtual returns (string memory) {..."
             function fun_symbol() -> var_mpos
             {
-                /// @src 2:2060:2067  "_symbol"
+                /// @src 2:2355:2362  "_symbol"
                 let _1 := 0x04
-                /// @src 2:2053:2067  "return _symbol"
-                var_mpos := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ copy_array_from_storage_to_memory_string(/** @src 2:2060:2067  "_symbol" */ _1)
+                /// @src 2:2348:2362  "return _symbol"
+                var_mpos := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ copy_array_from_storage_to_memory_string(/** @src 2:2355:2362  "_symbol" */ _1)
             }
-            /// @ast-id 93 @src 2:2707:2789  "function decimals() public view virtual returns (uint8) {..."
+            /// @ast-id 99 @src 2:3002:3084  "function decimals() public view virtual returns (uint8) {..."
             function fun_decimals() -> var
             {
-                /// @src 2:2773:2782  "return 18"
-                var := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ 18
+                /// @src 2:3068:3077  "return 18"
+                var := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ 18
             }
-            /// @ast-id 102 @src 2:2849:2946  "function totalSupply() public view virtual returns (uint256) {..."
-            function fun_totalSupply() -> var_
+            /// @ast-id 108 @src 2:3144:3241  "function totalSupply() public view virtual returns (uint256) {..."
+            function fun_totalSupply() -> var
             {
-                /// @src 2:2927:2939  "_totalSupply"
+                /// @src 2:3222:3234  "_totalSupply"
                 let _1 := 0x02
-                /// @src 2:2920:2939  "return _totalSupply"
-                var_ := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ sload(/** @src 2:2927:2939  "_totalSupply" */ _1)
+                /// @src 2:3215:3234  "return _totalSupply"
+                var := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ sload(/** @src 2:3222:3234  "_totalSupply" */ _1)
             }
-            /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
             function mapping_index_access_mapping_address_uint256_of_address(slot, key) -> dataSlot
             {
                 let _1 := and(key, sub(shl(160, 1), 1))
@@ -838,27 +1079,27 @@ object "ERC20Shim_14" {
                 let _5 := _2
                 dataSlot := keccak256(_2, _4)
             }
-            /// @ast-id 115 @src 2:3004:3120  "function balanceOf(address account) public view virtual returns (uint256) {..."
-            function fun_balanceOf(var_account) -> var
+            /// @ast-id 121 @src 2:3299:3415  "function balanceOf(address account) public view virtual returns (uint256) {..."
+            function fun_balanceOf(var_account) -> var_
             {
-                /// @src 2:3095:3104  "_balances"
+                /// @src 2:3390:3399  "_balances"
                 let _1 := 0x00
-                /// @src 2:3095:3113  "_balances[account]"
-                let _2 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:3095:3104  "_balances" */ _1, /** @src 2:3105:3112  "account" */ var_account)
-                /// @src 2:3088:3113  "return _balances[account]"
-                var := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ sload(/** @src 2:3095:3113  "_balances[account]" */ _2)
+                /// @src 2:3390:3408  "_balances[account]"
+                let _2 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:3390:3399  "_balances" */ _1, /** @src 2:3400:3407  "account" */ var_account)
+                /// @src 2:3383:3408  "return _balances[account]"
+                var_ := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ sload(/** @src 2:3390:3408  "_balances[account]" */ _2)
             }
-            /// @ast-id 139 @src 2:3315:3493  "function transfer(address to, uint256 value) public virtual returns (bool) {..."
+            /// @ast-id 145 @src 2:3610:3788  "function transfer(address to, uint256 value) public virtual returns (bool) {..."
             function fun_transfer(var_to, var_value) -> var
             {
-                /// @src 2:3416:3428  "_msgSender()"
+                /// @src 2:3711:3723  "_msgSender()"
                 let _1 := fun_msgSender()
-                /// @src 2:3459:3464  "value"
-                fun__transfer(/** @src 2:3416:3428  "_msgSender()" */ _1, /** @src 2:3455:3457  "to" */ var_to, /** @src 2:3459:3464  "value" */ var_value)
-                /// @src 2:3475:3486  "return true"
-                var := /** @src 2:3482:3486  "true" */ 0x01
+                /// @src 2:3754:3759  "value"
+                fun__transfer(/** @src 2:3711:3723  "_msgSender()" */ _1, /** @src 2:3750:3752  "to" */ var_to, /** @src 2:3754:3759  "value" */ var_value)
+                /// @src 2:3770:3781  "return true"
+                var := /** @src 2:3777:3781  "true" */ 0x01
             }
-            /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
             function mapping_index_access_mapping_address_mapping_address_uint256_of_address(slot, key) -> dataSlot
             {
                 let _1 := and(key, sub(shl(160, 1), 1))
@@ -870,41 +1111,41 @@ object "ERC20Shim_14" {
                 let _5 := _2
                 dataSlot := keccak256(_2, _4)
             }
-            /// @ast-id 156 @src 2:3551:3691  "function allowance(address owner, address spender) public view virtual returns (uint256) {..."
+            /// @ast-id 162 @src 2:3846:3986  "function allowance(address owner, address spender) public view virtual returns (uint256) {..."
             function fun_allowance(var_owner, var_spender) -> var
             {
-                /// @src 2:3657:3668  "_allowances"
+                /// @src 2:3952:3963  "_allowances"
                 let _1 := 0x01
-                /// @src 2:3657:3675  "_allowances[owner]"
-                let _2 := mapping_index_access_mapping_address_mapping_address_uint256_of_address(/** @src 2:3657:3668  "_allowances" */ _1, /** @src 2:3669:3674  "owner" */ var_owner)
-                /// @src 2:3657:3684  "_allowances[owner][spender]"
-                let _3 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:3657:3675  "_allowances[owner]" */ _2, /** @src 2:3676:3683  "spender" */ var_spender)
-                /// @src 2:3650:3684  "return _allowances[owner][spender]"
-                var := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ sload(/** @src 2:3657:3684  "_allowances[owner][spender]" */ _3)
+                /// @src 2:3952:3970  "_allowances[owner]"
+                let _2 := mapping_index_access_mapping_address_mapping_address_uint256_of_address(/** @src 2:3952:3963  "_allowances" */ _1, /** @src 2:3964:3969  "owner" */ var_owner)
+                /// @src 2:3952:3979  "_allowances[owner][spender]"
+                let _3 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:3952:3970  "_allowances[owner]" */ _2, /** @src 2:3971:3978  "spender" */ var_spender)
+                /// @src 2:3945:3979  "return _allowances[owner][spender]"
+                var := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ sload(/** @src 2:3952:3979  "_allowances[owner][spender]" */ _3)
             }
-            /// @ast-id 180 @src 2:3998:4184  "function approve(address spender, uint256 value) public virtual returns (bool) {..."
+            /// @ast-id 186 @src 2:4293:4479  "function approve(address spender, uint256 value) public virtual returns (bool) {..."
             function fun_approve(var_spender, var_value) -> var
             {
-                /// @src 2:4103:4115  "_msgSender()"
+                /// @src 2:4398:4410  "_msgSender()"
                 let _1 := fun_msgSender()
-                /// @src 2:4150:4155  "value"
-                fun_approve_420(/** @src 2:4103:4115  "_msgSender()" */ _1, /** @src 2:4141:4148  "spender" */ var_spender, /** @src 2:4150:4155  "value" */ var_value)
-                /// @src 2:4166:4177  "return true"
-                var := /** @src 2:4173:4177  "true" */ 0x01
+                /// @src 2:4445:4450  "value"
+                fun_approve_426(/** @src 2:4398:4410  "_msgSender()" */ _1, /** @src 2:4436:4443  "spender" */ var_spender, /** @src 2:4445:4450  "value" */ var_value)
+                /// @src 2:4461:4472  "return true"
+                var := /** @src 2:4468:4472  "true" */ 0x01
             }
-            /// @ast-id 212 @src 2:4776:5020  "function transferFrom(address from, address to, uint256 value) public virtual returns (bool) {..."
+            /// @ast-id 218 @src 2:5039:5283  "function transferFrom(address from, address to, uint256 value) public virtual returns (bool) {..."
             function fun_transferFrom(var_from, var_to, var_value) -> var
             {
-                /// @src 2:4897:4909  "_msgSender()"
+                /// @src 2:5160:5172  "_msgSender()"
                 let _1 := fun_msgSender()
-                /// @src 2:4950:4955  "value"
-                fun_spendAllowance(/** @src 2:4935:4939  "from" */ var_from, /** @src 2:4897:4909  "_msgSender()" */ _1, /** @src 2:4950:4955  "value" */ var_value)
-                /// @src 2:4986:4991  "value"
-                fun__transfer(/** @src 2:4976:4980  "from" */ var_from, /** @src 2:4982:4984  "to" */ var_to, /** @src 2:4986:4991  "value" */ var_value)
-                /// @src 2:5002:5013  "return true"
-                var := /** @src 2:5009:5013  "true" */ 0x01
+                /// @src 2:5213:5218  "value"
+                fun_spendAllowance(/** @src 2:5198:5202  "from" */ var_from, /** @src 2:5160:5172  "_msgSender()" */ _1, /** @src 2:5213:5218  "value" */ var_value)
+                /// @src 2:5249:5254  "value"
+                fun__transfer(/** @src 2:5239:5243  "from" */ var_from, /** @src 2:5245:5247  "to" */ var_to, /** @src 2:5249:5254  "value" */ var_value)
+                /// @src 2:5265:5276  "return true"
+                var := /** @src 2:5272:5276  "true" */ 0x01
             }
-            /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
             function abi_encode_address(value, pos)
             {
                 let _1 := sub(shl(160, 1), 1)
@@ -917,65 +1158,65 @@ object "ERC20Shim_14" {
                 tail := add(headStart, _1)
                 abi_encode_address(value0, headStart)
             }
-            /// @ast-id 259 @src 2:5393:5693  "function _transfer(address from, address to, uint256 value) internal {..."
+            /// @ast-id 265 @src 2:5656:5956  "function _transfer(address from, address to, uint256 value) internal {..."
             function fun__transfer(var_from, var_to, var_value)
             {
-                /// @src 2:5476:5480  "from"
+                /// @src 2:5739:5743  "from"
                 let expr := var_from
-                /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                 let _1 := sub(shl(160, 1), 1)
-                let _2 := and(/** @src 2:5476:5494  "from == address(0)" */ var_from, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _1)
-                /// @src 2:5476:5494  "from == address(0)"
-                let _3 := iszero(/** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _2)
-                /// @src 2:5472:5558  "if (from == address(0)) {..."
-                if /** @src 2:5476:5494  "from == address(0)" */ _3
-                /// @src 2:5472:5558  "if (from == address(0)) {..."
+                let _2 := and(/** @src 2:5739:5757  "from == address(0)" */ var_from, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+                /// @src 2:5739:5757  "from == address(0)"
+                let _3 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _2)
+                /// @src 2:5735:5821  "if (from == address(0)) {..."
+                if /** @src 2:5739:5757  "from == address(0)" */ _3
+                /// @src 2:5735:5821  "if (from == address(0)) {..."
                 {
-                    /// @src 2:5536:5546  "address(0)"
-                    let expr_1 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ 0
+                    /// @src 2:5799:5809  "address(0)"
+                    let expr_1 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ 0
                     let _4 := 64
-                    /// @src 2:5517:5547  "ERC20InvalidSender(address(0))"
-                    let _5 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ mload(_4)
-                    /// @src 2:5517:5547  "ERC20InvalidSender(address(0))"
+                    /// @src 2:5780:5810  "ERC20InvalidSender(address(0))"
+                    let _5 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_4)
+                    /// @src 2:5780:5810  "ERC20InvalidSender(address(0))"
                     let _6 := shl(225, 0x4b637e8f)
                     mstore(_5, _6)
                     let _7 := 4
                     let _8 := add(_5, _7)
-                    let _9 := abi_encode_tuple_address(_8, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ expr_1)
-                    /// @src 2:5517:5547  "ERC20InvalidSender(address(0))"
+                    let _9 := abi_encode_tuple_address(_8, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ expr_1)
+                    /// @src 2:5780:5810  "ERC20InvalidSender(address(0))"
                     let _10 := sub(_9, _5)
                     revert(_5, _10)
                 }
-                /// @src 2:5571:5573  "to"
+                /// @src 2:5834:5836  "to"
                 let expr_2 := var_to
-                /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                 let _11 := _1
-                let _12 := and(/** @src 2:5571:5587  "to == address(0)" */ var_to, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _1)
-                /// @src 2:5571:5587  "to == address(0)"
-                let _13 := iszero(/** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _12)
-                /// @src 2:5567:5653  "if (to == address(0)) {..."
-                if /** @src 2:5571:5587  "to == address(0)" */ _13
-                /// @src 2:5567:5653  "if (to == address(0)) {..."
+                let _12 := and(/** @src 2:5834:5850  "to == address(0)" */ var_to, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+                /// @src 2:5834:5850  "to == address(0)"
+                let _13 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _12)
+                /// @src 2:5830:5916  "if (to == address(0)) {..."
+                if /** @src 2:5834:5850  "to == address(0)" */ _13
+                /// @src 2:5830:5916  "if (to == address(0)) {..."
                 {
-                    /// @src 2:5631:5641  "address(0)"
-                    let expr_3 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ 0
+                    /// @src 2:5894:5904  "address(0)"
+                    let expr_3 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ 0
                     let _14 := 64
-                    /// @src 2:5610:5642  "ERC20InvalidReceiver(address(0))"
-                    let _15 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ mload(_14)
-                    /// @src 2:5610:5642  "ERC20InvalidReceiver(address(0))"
+                    /// @src 2:5873:5905  "ERC20InvalidReceiver(address(0))"
+                    let _15 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_14)
+                    /// @src 2:5873:5905  "ERC20InvalidReceiver(address(0))"
                     let _16 := shl(224, 0xec442f05)
                     mstore(_15, _16)
                     let _17 := 4
                     let _18 := add(_15, _17)
-                    let _19 := abi_encode_tuple_address(_18, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ expr_3)
-                    /// @src 2:5610:5642  "ERC20InvalidReceiver(address(0))"
+                    let _19 := abi_encode_tuple_address(_18, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ expr_3)
+                    /// @src 2:5873:5905  "ERC20InvalidReceiver(address(0))"
                     let _20 := sub(_19, _15)
                     revert(_15, _20)
                 }
-                /// @src 2:5680:5685  "value"
-                fun_update(/** @src 2:5670:5674  "from" */ var_from, /** @src 2:5676:5678  "to" */ var_to, /** @src 2:5680:5685  "value" */ var_value)
+                /// @src 2:5943:5948  "value"
+                fun_update(/** @src 2:5933:5937  "from" */ var_from, /** @src 2:5939:5941  "to" */ var_to, /** @src 2:5943:5948  "value" */ var_value)
             }
-            /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+            /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
             function abi_encode_address_uint256_uint256(headStart, value0, value1, value2) -> tail
             {
                 let _1 := 96
@@ -1019,44 +1260,44 @@ object "ERC20Shim_14" {
                 let _1 := gt(x, sum)
                 if _1 { panic_error_0x11() }
             }
-            /// @ast-id 336 @src 2:6008:7115  "function _update(address from, address to, uint256 value) internal virtual {..."
+            /// @ast-id 342 @src 2:6271:7378  "function _update(address from, address to, uint256 value) internal virtual {..."
             function fun_update(var_from, var_to, var_value)
             {
-                /// @src 2:6097:6101  "from"
+                /// @src 2:6360:6364  "from"
                 let expr := var_from
-                /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                 let _1 := sub(shl(160, 1), 1)
-                let _2 := and(/** @src 2:6097:6115  "from == address(0)" */ var_from, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _1)
-                /// @src 2:6097:6115  "from == address(0)"
-                let _3 := iszero(/** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _2)
-                /// @src 2:6093:6633  "if (from == address(0)) {..."
-                switch /** @src 2:6097:6115  "from == address(0)" */ _3
-                case /** @src 2:6093:6633  "if (from == address(0)) {..." */ 0 {
-                    /// @src 2:6307:6316  "_balances"
+                let _2 := and(/** @src 2:6360:6378  "from == address(0)" */ var_from, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+                /// @src 2:6360:6378  "from == address(0)"
+                let _3 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _2)
+                /// @src 2:6356:6896  "if (from == address(0)) {..."
+                switch /** @src 2:6360:6378  "from == address(0)" */ _3
+                case /** @src 2:6356:6896  "if (from == address(0)) {..." */ 0 {
+                    /// @src 2:6570:6579  "_balances"
                     let _4 := 0x00
-                    /// @src 2:6307:6322  "_balances[from]"
-                    let _5 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:6307:6316  "_balances" */ _4, /** @src 2:6317:6321  "from" */ var_from)
-                    /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
-                    let _6 := sload(/** @src 2:6307:6322  "_balances[from]" */ _5)
-                    /// @src 2:6285:6322  "uint256 fromBalance = _balances[from]"
-                    let var_fromBalance := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _6
-                    /// @src 2:6340:6359  "fromBalance < value"
-                    let _7 := lt(/** @src 2:6340:6351  "fromBalance" */ _6, /** @src 2:6354:6359  "value" */ var_value)
-                    /// @src 2:6336:6451  "if (fromBalance < value) {..."
-                    if /** @src 2:6340:6359  "fromBalance < value" */ _7
-                    /// @src 2:6336:6451  "if (fromBalance < value) {..."
+                    /// @src 2:6570:6585  "_balances[from]"
+                    let _5 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:6570:6579  "_balances" */ _4, /** @src 2:6580:6584  "from" */ var_from)
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                    let _6 := sload(/** @src 2:6570:6585  "_balances[from]" */ _5)
+                    /// @src 2:6548:6585  "uint256 fromBalance = _balances[from]"
+                    let var_fromBalance := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _6
+                    /// @src 2:6603:6622  "fromBalance < value"
+                    let _7 := lt(/** @src 2:6603:6614  "fromBalance" */ _6, /** @src 2:6617:6622  "value" */ var_value)
+                    /// @src 2:6599:6714  "if (fromBalance < value) {..."
+                    if /** @src 2:6603:6622  "fromBalance < value" */ _7
+                    /// @src 2:6599:6714  "if (fromBalance < value) {..."
                     {
-                        /// @src 2:6411:6415  "from"
+                        /// @src 2:6674:6678  "from"
                         let expr_1 := var_from
-                        /// @src 2:6417:6428  "fromBalance"
+                        /// @src 2:6680:6691  "fromBalance"
                         let expr_2 := _6
-                        /// @src 2:6430:6435  "value"
+                        /// @src 2:6693:6698  "value"
                         let expr_3 := var_value
-                        /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                        /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                         let _8 := 64
-                        /// @src 2:6386:6436  "ERC20InsufficientBalance(from, fromBalance, value)"
-                        let _9 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ mload(_8)
-                        /// @src 2:6386:6436  "ERC20InsufficientBalance(from, fromBalance, value)"
+                        /// @src 2:6649:6699  "ERC20InsufficientBalance(from, fromBalance, value)"
+                        let _9 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_8)
+                        /// @src 2:6649:6699  "ERC20InsufficientBalance(from, fromBalance, value)"
                         let _10 := shl(226, 0x391434e3)
                         mstore(_9, _10)
                         let _11 := 4
@@ -1065,240 +1306,242 @@ object "ERC20Shim_14" {
                         let _14 := sub(_13, _9)
                         revert(_9, _14)
                     }
-                    /// @src 2:6589:6608  "fromBalance - value"
-                    let expr_4 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ sub(/** @src 2:6589:6600  "fromBalance" */ _6, /** @src 2:6603:6608  "value" */ var_value)
-                    /// @src 2:6571:6580  "_balances"
+                    /// @src 2:6852:6871  "fromBalance - value"
+                    let expr_4 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ sub(/** @src 2:6852:6863  "fromBalance" */ _6, /** @src 2:6866:6871  "value" */ var_value)
+                    /// @src 2:6834:6843  "_balances"
                     let _15 := _4
-                    /// @src 2:6571:6586  "_balances[from]"
-                    let _16 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:6571:6580  "_balances" */ _4, /** @src 2:6581:6585  "from" */ var_from)
-                    /// @src 2:6571:6608  "_balances[from] = fromBalance - value"
-                    update_storage_value_offsett_uint256_to_uint256(/** @src 2:6571:6586  "_balances[from]" */ _16, /** @src 2:6571:6608  "_balances[from] = fromBalance - value" */ expr_4)
+                    /// @src 2:6834:6849  "_balances[from]"
+                    let _16 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:6834:6843  "_balances" */ _4, /** @src 2:6844:6848  "from" */ var_from)
+                    /// @src 2:6834:6871  "_balances[from] = fromBalance - value"
+                    update_storage_value_offsett_uint256_to_uint256(/** @src 2:6834:6849  "_balances[from]" */ _16, /** @src 2:6834:6871  "_balances[from] = fromBalance - value" */ expr_4)
                 }
-                default /// @src 2:6093:6633  "if (from == address(0)) {..."
+                default /// @src 2:6356:6896  "if (from == address(0)) {..."
                 {
-                    /// @src 2:6233:6254  "_totalSupply += value"
+                    /// @src 2:6496:6517  "_totalSupply += value"
                     let _17 := 0x02
-                    /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
-                    let _18 := sload(/** @src 2:6233:6254  "_totalSupply += value" */ _17)
-                    /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                    let _18 := sload(/** @src 2:6496:6517  "_totalSupply += value" */ _17)
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                     let _19 := _18
-                    /// @src 2:6233:6254  "_totalSupply += value"
-                    let _20 := checked_add_uint256(/** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _18, /** @src 2:6249:6254  "value" */ var_value)
-                    /// @src 2:6233:6254  "_totalSupply += value"
+                    /// @src 2:6496:6517  "_totalSupply += value"
+                    let _20 := checked_add_uint256(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _18, /** @src 2:6512:6517  "value" */ var_value)
+                    /// @src 2:6496:6517  "_totalSupply += value"
                     let _21 := _17
                     update_storage_value_offsett_uint256_to_uint256(_17, _20)
                 }
-                /// @src 2:6647:6649  "to"
+                /// @src 2:6910:6912  "to"
                 let expr_5 := var_to
-                /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                 let _22 := _1
-                let _23 := and(/** @src 2:6647:6663  "to == address(0)" */ var_to, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _1)
-                /// @src 2:6647:6663  "to == address(0)"
-                let _24 := iszero(/** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _23)
-                /// @src 2:6643:7068  "if (to == address(0)) {..."
-                switch /** @src 2:6647:6663  "to == address(0)" */ _24
-                case /** @src 2:6643:7068  "if (to == address(0)) {..." */ 0 {
-                    /// @src 2:7038:7043  "value"
+                let _23 := and(/** @src 2:6910:6926  "to == address(0)" */ var_to, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+                /// @src 2:6910:6926  "to == address(0)"
+                let _24 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _23)
+                /// @src 2:6906:7331  "if (to == address(0)) {..."
+                switch /** @src 2:6910:6926  "to == address(0)" */ _24
+                case /** @src 2:6906:7331  "if (to == address(0)) {..." */ 0 {
+                    /// @src 2:7301:7306  "value"
                     let expr_6 := var_value
-                    /// @src 2:7021:7030  "_balances"
+                    /// @src 2:7284:7293  "_balances"
                     let _25 := 0x00
-                    /// @src 2:7021:7034  "_balances[to]"
-                    let _26 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:7021:7030  "_balances" */ _25, /** @src 2:7031:7033  "to" */ var_to)
-                    /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
-                    let _27 := sload(/** @src 2:7021:7043  "_balances[to] += value" */ _26)
-                    /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                    /// @src 2:7284:7297  "_balances[to]"
+                    let _26 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:7284:7293  "_balances" */ _25, /** @src 2:7294:7296  "to" */ var_to)
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                    let _27 := sload(/** @src 2:7284:7306  "_balances[to] += value" */ _26)
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                     let _28 := _27
-                    let _29 := add(_27, /** @src 2:7021:7043  "_balances[to] += value" */ var_value)
-                    update_storage_value_offsett_uint256_to_uint256(_26, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _29)
+                    let _29 := add(_27, /** @src 2:7284:7306  "_balances[to] += value" */ var_value)
+                    update_storage_value_offsett_uint256_to_uint256(_26, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _29)
                 }
-                default /// @src 2:6643:7068  "if (to == address(0)) {..."
+                default /// @src 2:6906:7331  "if (to == address(0)) {..."
                 {
-                    /// @src 2:6810:6831  "_totalSupply -= value"
+                    /// @src 2:7073:7094  "_totalSupply -= value"
                     let _30 := 0x02
-                    /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
-                    let _31 := sload(/** @src 2:6810:6831  "_totalSupply -= value" */ _30)
-                    /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                    let _31 := sload(/** @src 2:7073:7094  "_totalSupply -= value" */ _30)
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                     let _32 := _31
-                    let _33 := sub(_31, /** @src 2:6826:6831  "value" */ var_value)
-                    /// @src 2:6810:6831  "_totalSupply -= value"
+                    let _33 := sub(_31, /** @src 2:7089:7094  "value" */ var_value)
+                    /// @src 2:7073:7094  "_totalSupply -= value"
                     let _34 := _30
-                    update_storage_value_offsett_uint256_to_uint256(_30, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _33)
+                    update_storage_value_offsett_uint256_to_uint256(_30, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _33)
                 }
-                /// @src 2:7092:7096  "from"
+                /// @src 2:7355:7359  "from"
                 let expr_7 := var_from
-                /// @src 2:7098:7100  "to"
+                /// @src 2:7361:7363  "to"
                 let expr_8 := var_to
-                /// @src 2:7102:7107  "value"
+                /// @src 2:7365:7370  "value"
                 let expr_9 := var_value
-                /// @src 2:7083:7108  "Transfer(from, to, value)"
+                /// @src 2:7346:7371  "Transfer(from, to, value)"
                 let _35 := 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
-                let _36 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _2
-                /// @src 2:7083:7108  "Transfer(from, to, value)"
-                let _37 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _23
+                let _36 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _2
+                /// @src 2:7346:7371  "Transfer(from, to, value)"
+                let _37 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _23
                 let _38 := 64
-                /// @src 2:7083:7108  "Transfer(from, to, value)"
-                let _39 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ mload(_38)
-                /// @src 2:7083:7108  "Transfer(from, to, value)"
+                /// @src 2:7346:7371  "Transfer(from, to, value)"
+                let _39 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_38)
+                /// @src 2:7346:7371  "Transfer(from, to, value)"
                 let _40 := abi_encode_uint256(_39, var_value)
                 let _41 := sub(_40, _39)
                 log3(_39, _41, _35, _2, _23)
             }
-            /// @ast-id 420 @src 2:8726:8854  "function _approve(address owner, address spender, uint256 value) internal {..."
-            function fun_approve_420(var_owner, var_spender, var_value)
+            /// @ast-id 426 @src 2:8989:9117  "function _approve(address owner, address spender, uint256 value) internal {..."
+            function fun_approve_426(var_owner, var_spender, var_value)
             {
-                /// @src 2:8819:8824  "owner"
+                /// @src 2:9082:9087  "owner"
                 let expr := var_owner
-                /// @src 2:8842:8846  "true"
+                /// @src 2:9105:9109  "true"
                 let _1 := 0x01
-                fun__approve(var_owner, /** @src 2:8826:8833  "spender" */ var_spender, /** @src 2:8835:8840  "value" */ var_value, /** @src 2:8842:8846  "true" */ _1)
+                fun__approve(var_owner, /** @src 2:9089:9096  "spender" */ var_spender, /** @src 2:9098:9103  "value" */ var_value, /** @src 2:9105:9109  "true" */ _1)
             }
-            /// @ast-id 480 @src 2:9701:10133  "function _approve(address owner, address spender, uint256 value, bool emitEvent) internal virtual {..."
+            /// @ast-id 486 @src 2:9949:10381  "function _approve(address owner, address spender, uint256 value, bool emitEvent) internal virtual {..."
             function fun__approve(var_owner, var_spender, var_value, var_emitEvent)
             {
-                /// @src 2:9813:9818  "owner"
+                /// @src 2:10061:10066  "owner"
                 let expr := var_owner
-                /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                 let _1 := sub(shl(160, 1), 1)
-                let _2 := and(/** @src 2:9813:9832  "owner == address(0)" */ var_owner, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _1)
-                /// @src 2:9813:9832  "owner == address(0)"
-                let _3 := iszero(/** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _2)
-                /// @src 2:9809:9898  "if (owner == address(0)) {..."
-                if /** @src 2:9813:9832  "owner == address(0)" */ _3
-                /// @src 2:9809:9898  "if (owner == address(0)) {..."
+                let _2 := and(/** @src 2:10061:10080  "owner == address(0)" */ var_owner, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+                /// @src 2:10061:10080  "owner == address(0)"
+                let _3 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _2)
+                /// @src 2:10057:10146  "if (owner == address(0)) {..."
+                if /** @src 2:10061:10080  "owner == address(0)" */ _3
+                /// @src 2:10057:10146  "if (owner == address(0)) {..."
                 {
-                    /// @src 2:9876:9886  "address(0)"
-                    let expr_1 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ 0
+                    /// @src 2:10124:10134  "address(0)"
+                    let expr_1 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ 0
                     let _4 := 64
-                    /// @src 2:9855:9887  "ERC20InvalidApprover(address(0))"
-                    let _5 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ mload(_4)
-                    /// @src 2:9855:9887  "ERC20InvalidApprover(address(0))"
+                    /// @src 2:10103:10135  "ERC20InvalidApprover(address(0))"
+                    let _5 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_4)
+                    /// @src 2:10103:10135  "ERC20InvalidApprover(address(0))"
                     let _6 := shl(224, 0xe602df05)
                     mstore(_5, _6)
                     let _7 := 4
                     let _8 := add(_5, _7)
-                    let _9 := abi_encode_tuple_address(_8, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ expr_1)
-                    /// @src 2:9855:9887  "ERC20InvalidApprover(address(0))"
+                    let _9 := abi_encode_tuple_address(_8, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ expr_1)
+                    /// @src 2:10103:10135  "ERC20InvalidApprover(address(0))"
                     let _10 := sub(_9, _5)
                     revert(_5, _10)
                 }
-                /// @src 2:9911:9918  "spender"
+                /// @src 2:10159:10166  "spender"
                 let expr_2 := var_spender
-                /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
+                /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
                 let _11 := _1
-                let _12 := and(/** @src 2:9911:9932  "spender == address(0)" */ var_spender, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _1)
-                /// @src 2:9911:9932  "spender == address(0)"
-                let _13 := iszero(/** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _12)
-                /// @src 2:9907:9997  "if (spender == address(0)) {..."
-                if /** @src 2:9911:9932  "spender == address(0)" */ _13
-                /// @src 2:9907:9997  "if (spender == address(0)) {..."
+                let _12 := and(/** @src 2:10159:10180  "spender == address(0)" */ var_spender, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _1)
+                /// @src 2:10159:10180  "spender == address(0)"
+                let _13 := iszero(/** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _12)
+                /// @src 2:10155:10245  "if (spender == address(0)) {..."
+                if /** @src 2:10159:10180  "spender == address(0)" */ _13
+                /// @src 2:10155:10245  "if (spender == address(0)) {..."
                 {
-                    /// @src 2:9975:9985  "address(0)"
-                    let expr_3 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ 0
+                    /// @src 2:10223:10233  "address(0)"
+                    let expr_3 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ 0
                     let _14 := 64
-                    /// @src 2:9955:9986  "ERC20InvalidSpender(address(0))"
-                    let _15 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ mload(_14)
-                    /// @src 2:9955:9986  "ERC20InvalidSpender(address(0))"
+                    /// @src 2:10203:10234  "ERC20InvalidSpender(address(0))"
+                    let _15 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_14)
+                    /// @src 2:10203:10234  "ERC20InvalidSpender(address(0))"
                     let _16 := shl(225, 0x4a1406b1)
                     mstore(_15, _16)
                     let _17 := 4
                     let _18 := add(_15, _17)
-                    let _19 := abi_encode_tuple_address(_18, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ expr_3)
-                    /// @src 2:9955:9986  "ERC20InvalidSpender(address(0))"
+                    let _19 := abi_encode_tuple_address(_18, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ expr_3)
+                    /// @src 2:10203:10234  "ERC20InvalidSpender(address(0))"
                     let _20 := sub(_19, _15)
                     revert(_15, _20)
                 }
-                /// @src 2:10036:10041  "value"
+                /// @src 2:10284:10289  "value"
                 let expr_4 := var_value
-                /// @src 2:10006:10017  "_allowances"
+                /// @src 2:10254:10265  "_allowances"
                 let _21 := 0x01
-                /// @src 2:10006:10024  "_allowances[owner]"
-                let _22 := mapping_index_access_mapping_address_mapping_address_uint256_of_address(/** @src 2:10006:10017  "_allowances" */ _21, /** @src 2:10018:10023  "owner" */ var_owner)
-                /// @src 2:10006:10033  "_allowances[owner][spender]"
-                let _23 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:10006:10024  "_allowances[owner]" */ _22, /** @src 2:10025:10032  "spender" */ var_spender)
-                /// @src 2:10006:10041  "_allowances[owner][spender] = value"
-                update_storage_value_offsett_uint256_to_uint256(/** @src 2:10006:10033  "_allowances[owner][spender]" */ _23, /** @src 2:10006:10041  "_allowances[owner][spender] = value" */ var_value)
-                /// @src 2:10051:10127  "if (emitEvent) {..."
-                if /** @src 2:10055:10064  "emitEvent" */ var_emitEvent
-                /// @src 2:10051:10127  "if (emitEvent) {..."
+                /// @src 2:10254:10272  "_allowances[owner]"
+                let _22 := mapping_index_access_mapping_address_mapping_address_uint256_of_address(/** @src 2:10254:10265  "_allowances" */ _21, /** @src 2:10266:10271  "owner" */ var_owner)
+                /// @src 2:10254:10281  "_allowances[owner][spender]"
+                let _23 := mapping_index_access_mapping_address_uint256_of_address(/** @src 2:10254:10272  "_allowances[owner]" */ _22, /** @src 2:10273:10280  "spender" */ var_spender)
+                /// @src 2:10254:10289  "_allowances[owner][spender] = value"
+                update_storage_value_offsett_uint256_to_uint256(/** @src 2:10254:10281  "_allowances[owner][spender]" */ _23, /** @src 2:10254:10289  "_allowances[owner][spender] = value" */ var_value)
+                /// @src 2:10299:10375  "if (emitEvent) {..."
+                if /** @src 2:10303:10312  "emitEvent" */ var_emitEvent
+                /// @src 2:10299:10375  "if (emitEvent) {..."
                 {
-                    /// @src 2:10094:10099  "owner"
+                    /// @src 2:10342:10347  "owner"
                     let expr_5 := var_owner
-                    /// @src 2:10101:10108  "spender"
+                    /// @src 2:10349:10356  "spender"
                     let expr_6 := var_spender
-                    /// @src 2:10110:10115  "value"
+                    /// @src 2:10358:10363  "value"
                     let expr_7 := var_value
-                    /// @src 2:10085:10116  "Approval(owner, spender, value)"
+                    /// @src 2:10333:10364  "Approval(owner, spender, value)"
                     let _24 := 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
-                    let _25 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _2
-                    /// @src 2:10085:10116  "Approval(owner, spender, value)"
-                    let _26 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _12
+                    let _25 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _2
+                    /// @src 2:10333:10364  "Approval(owner, spender, value)"
+                    let _26 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _12
                     let _27 := 64
-                    /// @src 2:10085:10116  "Approval(owner, spender, value)"
-                    let _28 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ mload(_27)
-                    /// @src 2:10085:10116  "Approval(owner, spender, value)"
+                    /// @src 2:10333:10364  "Approval(owner, spender, value)"
+                    let _28 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_27)
+                    /// @src 2:10333:10364  "Approval(owner, spender, value)"
                     let _29 := abi_encode_uint256(_28, var_value)
                     let _30 := sub(_29, _28)
                     log3(_28, _30, _24, _2, _12)
                 }
             }
-            /// @ast-id 528 @src 2:10415:10891  "function _spendAllowance(address owner, address spender, uint256 value) internal virtual {..."
+            /// @ast-id 534 @src 2:10663:11140  "function _spendAllowance(address owner, address spender, uint256 value) internal virtual {..."
             function fun_spendAllowance(var_owner, var_spender, var_value)
             {
-                /// @src 2:10514:10566  "uint256 currentAllowance = allowance(owner, spender)"
-                let var_currentAllowance := /** @src 2:10541:10566  "allowance(owner, spender)" */ fun_allowance(/** @src 2:10551:10556  "owner" */ var_owner, /** @src 2:10558:10565  "spender" */ var_spender)
-                /// @src 2:10599:10616  "type(uint256).max"
+                /// @src 2:10762:10814  "uint256 currentAllowance = allowance(owner, spender)"
+                let var_currentAllowance := /** @src 2:10789:10814  "allowance(owner, spender)" */ fun_allowance(/** @src 2:10799:10804  "owner" */ var_owner, /** @src 2:10806:10813  "spender" */ var_spender)
+                /// @src 2:10848:10865  "type(uint256).max"
                 let _1 := not(0)
-                /// @src 2:10580:10616  "currentAllowance < type(uint256).max"
-                let _2 := lt(/** @src 2:10580:10596  "currentAllowance" */ var_currentAllowance, /** @src 2:10599:10616  "type(uint256).max" */ _1)
-                /// @src 2:10576:10885  "if (currentAllowance < type(uint256).max) {..."
-                if /** @src 2:10580:10616  "currentAllowance < type(uint256).max" */ _2
-                /// @src 2:10576:10885  "if (currentAllowance < type(uint256).max) {..."
+                /// @src 2:10828:10865  "currentAllowance != type(uint256).max"
+                let _2 := eq(/** @src 2:10828:10844  "currentAllowance" */ var_currentAllowance, /** @src 2:10848:10865  "type(uint256).max" */ _1)
+                /// @src 2:10828:10865  "currentAllowance != type(uint256).max"
+                let _3 := iszero(_2)
+                /// @src 2:10824:11134  "if (currentAllowance != type(uint256).max) {..."
+                if /** @src 2:10828:10865  "currentAllowance != type(uint256).max" */ _3
+                /// @src 2:10824:11134  "if (currentAllowance != type(uint256).max) {..."
                 {
-                    /// @src 2:10636:10660  "currentAllowance < value"
-                    let _3 := lt(/** @src 2:10636:10652  "currentAllowance" */ var_currentAllowance, /** @src 2:10655:10660  "value" */ var_value)
-                    /// @src 2:10632:10762  "if (currentAllowance < value) {..."
-                    if /** @src 2:10636:10660  "currentAllowance < value" */ _3
-                    /// @src 2:10632:10762  "if (currentAllowance < value) {..."
+                    /// @src 2:10885:10909  "currentAllowance < value"
+                    let _4 := lt(/** @src 2:10885:10901  "currentAllowance" */ var_currentAllowance, /** @src 2:10904:10909  "value" */ var_value)
+                    /// @src 2:10881:11011  "if (currentAllowance < value) {..."
+                    if /** @src 2:10885:10909  "currentAllowance < value" */ _4
+                    /// @src 2:10881:11011  "if (currentAllowance < value) {..."
                     {
-                        /// @src 2:10714:10721  "spender"
+                        /// @src 2:10963:10970  "spender"
                         let expr := var_spender
-                        /// @src 2:10723:10739  "currentAllowance"
+                        /// @src 2:10972:10988  "currentAllowance"
                         let expr_1 := var_currentAllowance
-                        /// @src 2:10741:10746  "value"
+                        /// @src 2:10990:10995  "value"
                         let expr_2 := var_value
-                        /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
-                        let _4 := 64
-                        /// @src 2:10687:10747  "ERC20InsufficientAllowance(spender, currentAllowance, value)"
-                        let _5 := /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ mload(_4)
-                        /// @src 2:10687:10747  "ERC20InsufficientAllowance(spender, currentAllowance, value)"
-                        let _6 := shl(225, 0x7dc7a0d9)
-                        mstore(_5, _6)
-                        let _7 := 4
-                        let _8 := add(_5, _7)
-                        let _9 := abi_encode_address_uint256_uint256(_8, var_spender, var_currentAllowance, var_value)
-                        let _10 := sub(_9, _5)
-                        revert(_5, _10)
+                        /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                        let _5 := 64
+                        /// @src 2:10936:10996  "ERC20InsufficientAllowance(spender, currentAllowance, value)"
+                        let _6 := /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ mload(_5)
+                        /// @src 2:10936:10996  "ERC20InsufficientAllowance(spender, currentAllowance, value)"
+                        let _7 := shl(225, 0x7dc7a0d9)
+                        mstore(_6, _7)
+                        let _8 := 4
+                        let _9 := add(_6, _8)
+                        let _10 := abi_encode_address_uint256_uint256(_9, var_spender, var_currentAllowance, var_value)
+                        let _11 := sub(_10, _6)
+                        revert(_6, _11)
                     }
-                    /// @src 2:10812:10817  "owner"
+                    /// @src 2:11061:11066  "owner"
                     let expr_3 := var_owner
-                    /// @src 2:10819:10826  "spender"
+                    /// @src 2:11068:11075  "spender"
                     let expr_4 := var_spender
-                    /// @src 2:10854:10859  "false"
-                    let _11 := 0x00
-                    /// @src 1:82:161  "contract ERC20Shim is ERC20 {..."
-                    let _12 := sub(/** @src 2:10828:10844  "currentAllowance" */ var_currentAllowance, /** @src 2:10847:10852  "value" */ var_value)
-                    /// @src 2:10854:10859  "false"
-                    fun__approve(var_owner, var_spender, /** @src 1:82:161  "contract ERC20Shim is ERC20 {..." */ _12, /** @src 2:10854:10859  "false" */ _11)
+                    /// @src 2:11103:11108  "false"
+                    let _12 := 0x00
+                    /// @src 1:82:197  "contract ERC20Shim is ERC20 {..."
+                    let _13 := sub(/** @src 2:11077:11093  "currentAllowance" */ var_currentAllowance, /** @src 2:11096:11101  "value" */ var_value)
+                    /// @src 2:11103:11108  "false"
+                    fun__approve(var_owner, var_spender, /** @src 1:82:197  "contract ERC20Shim is ERC20 {..." */ _13, /** @src 2:11103:11108  "false" */ _12)
                 }
             }
-            /// @ast-id 782 @src 5:656:752  "function _msgSender() internal view virtual returns (address) {..."
+            /// @ast-id 788 @src 5:656:752  "function _msgSender() internal view virtual returns (address) {..."
             function fun_msgSender() -> var
             {
                 /// @src 5:728:745  "return msg.sender"
                 var := /** @src 5:735:745  "msg.sender" */ caller()
             }
         }
-        data ".metadata" hex"a2646970667358221220e124d3304315e49a13a11d4379533b7d9c2fb14642277dba92735950eb596d5e64736f6c63430008150033"
+        data ".metadata" hex"a26469706673582212203d932434e4bd4197eab8db2a518b0e9104ba58a8d5544c262968763c71506a0b64736f6c63430008150033"
     }
 }
 

@@ -9,7 +9,9 @@ pragma solidity ^0.8.20;
 import {ERC20} from "contracts/token/ERC20/ERC20.sol";
 
 contract ERC20Shim is ERC20 {
-    constructor() ERC20("ERC20Shim", "E20S") {}
+    constructor() ERC20("ERC20Shim", "E20S") {
+      _mint(msg.sender, 1000);
+    }
 }
 ```
 4. Install `solc-select` to be able to select specific `solc` versions. See: https://github.com/crytic/solc-select or https://search.nixos.org/packages?channel=unstable&show=solc-select
