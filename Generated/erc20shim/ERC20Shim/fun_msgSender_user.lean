@@ -8,13 +8,13 @@ namespace Generated.erc20shim.ERC20Shim
 
 section
 
-open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities 
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities
 
-def A_fun_msgSender (var : Identifier)  (s₀ s₉ : State) : Prop := 
+def A_fun_msgSender (var : Identifier)  (s₀ s₉ : State) : Prop :=
   preservesEvm s₀ s₉ ∧
   s₉.isOk ∧
   (s₀.evm.isEVMState → s₉.evm.isEVMState) ∧
-  (s₀.evm.hash_collision = true → s₉.evm.hash_collision) ∧ 
+  (s₀.evm.hash_collision = true → s₉.evm.hash_collision) ∧
   (
     (
       match s₀ with
@@ -23,7 +23,7 @@ def A_fun_msgSender (var : Identifier)  (s₀ s₉ : State) : Prop :=
       | _ => s₉.evm.hash_collision = false -- OutOfFuel or Checkpoint
     )
     -- Case: Hash collision
-    ∨ s₉.evm.hash_collision = true 
+    ∨ s₉.evm.hash_collision = true
   )
 
 lemma fun_msgSender_abs_of_concrete {s₀ s₉ : State} {var } :
@@ -37,7 +37,7 @@ lemma fun_msgSender_abs_of_concrete {s₀ s₉ : State} {var } :
   simp at code
   rw [←code]
   simp
-  
+
   split_ands
   · unfold preservesEvm
     rw [← State.insert_of_ok, lookup_insert, State.insert_of_ok]

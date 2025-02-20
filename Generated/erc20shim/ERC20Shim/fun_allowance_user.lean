@@ -24,8 +24,10 @@ def A_fun_allowance (var : Identifier) (var_owner var_spender : Literal) (s₀ s
 lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spender} :
   Spec (fun_allowance_concrete_of_code.1 var var_owner var_spender) s₀ s₉ →
   Spec (A_fun_allowance var var_owner var_spender) s₀ s₉ := by
-  unfold fun_allowance_concrete_of_code A_fun_allowance
 
+  -- unfold the definitions of the two functions
+  unfold fun_allowance_concrete_of_code A_fun_allowance
+  -- f
   rcases s₀ with ⟨evm, varstore⟩ | _ | _ <;> [simp only; aesop_spec; aesop_spec]
   apply spec_eq
   clr_funargs
@@ -37,12 +39,12 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
   unfold A_mapping_index_access_mapping_address_mapping_address_uint256_of_address
          A_mapping_index_access_mapping_address_uint256_of_address at mapping
   clr_spec at mapping
-  
-  
+
+
 
   obtain ⟨⟨preservesEvm, s_isOk, s_isEVMStatePreserved, ⟨⟨intermediate_keccak, keccak_using_intermediate, hStore⟩,hHashCollision⟩⟩, hHashCollision₁⟩ := mapping -- Adds a goal
   · -- No hash collision from first keccak
-    
+
     obtain ⟨evmₛ, varstoreₛ, s_eq_ok⟩ := State_of_isOk s_isOk
     have keccak : Finmap.lookup [↑↑(Address.ofUInt256 var_owner), 1] s.evm.keccak_map = some (s["_2"]!!) := by
       unfold store State.insert at hStore
@@ -55,7 +57,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
     -- what we can get right now from mapping' function
     unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
     clr_spec at mapping'
-    
+
     obtain ⟨⟨preservesEvm', s_isOk', s_isEVMStatePreserved', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
     · -- No hash collision from second keccak
       left
@@ -94,7 +96,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
 
       -- make use of transitivity of Preserved
       have hPreserved'' : Clear.Preserved evm evmₛ' := Preserved.trans hPreserved hPreserved'
-      
+
       refine' ⟨IsERC20_of_preservesEvm (by aesop) is_erc20, (by aesop), ?returns_correct_value⟩
       rw [← code]
       -- lookup allowance
@@ -299,7 +301,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
             simp
           rw [this]
           rw [←keccak']
-          
+
           unfold not_mem_private at blocked_range'
           rw [keccak'] at blocked_range'
           simp at blocked_range'
@@ -343,7 +345,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
     by_cases s_isOk : s.isOk
     · unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping'
       clr_spec at mapping'
-      
+
       obtain ⟨⟨preservesEvm', s_isOk', s_isEVMStatePreserved', ⟨⟨intermediate_keccak', keccak_using_intermediate', hStore'⟩,hHashCollision'⟩⟩, hHashCollision₁'⟩ := mapping' -- Adds a goal
 
       have :   hash_collision (Ok evm Inhabited.default⟦"var_spender"↦var_spender⟧⟦"var_owner"↦var_owner⟧⟦"_1"↦1⟧.evm)
@@ -357,20 +359,20 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         simp [s_eq_ok'] at code
         rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok' ] at code
         clr_varstore,
-        
+
         · rw [←code]
           have : Ok evmₛ' varstore⟦var↦sload evmₛ' (s'["_3"]!!)⟧.evm.hash_collision
                 = evmₛ'.hash_collision := by simp
           rw [this]
           aesop
-        
+
 
       · rcases s' with ⟨evm, varstore⟩ | _ | _ <;> [skip; aesop_spec; skip]
         · unfold reviveJump at code
           simp at code
           rw [←code]
           aesop
-          
+
         · unfold reviveJump at code
           simp at code
           rename_i j
@@ -384,7 +386,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
           simp at code
           rw [←code]
           aesop
-          
+
         · unfold reviveJump at code
           simp at code
           unfold evm at hHashCollisionTrue'

@@ -99,7 +99,7 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
 
   · -- there is *no* such account in balances
     -- so sload should return 0
-  
+
     split_ands <;> [skip; aesop]
 
     rw [ Finmap.lookup_eq_none.mpr mem
