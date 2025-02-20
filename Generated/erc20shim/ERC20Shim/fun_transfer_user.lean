@@ -68,53 +68,48 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
 
   generalize eq : Ok s0_evm s0_varstore = s₀ at *
 
-  unfold reviveJump at code
-  simp [eq.symm] at code
-  rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok ] at code
-  clr_varstore,
-
-
-
-  #exit
-
   -- Clear specs at mappings
 
   unfold A_fun_msgSender at call_msgSender
   clr_spec at call_msgSender
 
   obtain ⟨s_preservesEvm, ⟨s_ok, s_preserve_evmState, s_preserve_collision, ⟨⟨s_source, s_collision_false⟩⟩⟩⟩ := call_msgSender
+  obtain ⟨sEvm, ⟨sVarstore, hs⟩⟩ := State_of_isOk s_ok 
+  rw [preservesEvm_of_insert, preservesEvm_of_insert, hs] at s_preservesEvm
+  have : preservesEvm s₀ s := by aesop (add simp preservesEvm)
+  have := IsERC20_of_preservesEvm this is_erc20_
+  
 
+  -- · obtain ⟨s_evm, s_varstore, s_ok⟩ := State_of_isOk s_ok
 
-  · obtain ⟨s_evm, s_varstore, s_ok⟩ := State_of_isOk s_ok
+  --   unfold A_fun__transfer at call_transfer
+  --   clr_spec at call_transfer
 
-    unfold A_fun__transfer at call_transfer
-    clr_spec at call_transfer
+  --   intro erc_20 is_erc20 evmState notReverted
 
-    intro erc_20 is_erc20 evmState notReverted
+  --   -- Want preservesEvm s0 s
+  --   -- then IsERC20 erc20 s0 --> IsERC20 erc20 s using IsERC20_of_preservesEvm
+  --   -- Problem is we have preservesEvm (Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧) s
+  --   -- Something to do with match in msgSender?
+  --   -- By preservesEVM definition, varstore variable is irrelevant
+  --   -- So substitute Inhabited.default for s0_varstore?
 
-    -- Want preservesEvm s0 s
-    -- then IsERC20 erc20 s0 --> IsERC20 erc20 s using IsERC20_of_preservesEvm
-    -- Problem is we have preservesEvm (Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧) s
-    -- Something to do with match in msgSender?
-    -- By preservesEVM definition, varstore variable is irrelevant
-    -- So substitute Inhabited.default for s0_varstore?
+  --   have : preservesEvm (Ok s0_evm s0_varstore) s_inhabited := by
+  --     dsimp [s_inhabited]
+  --     rw [preservesEvm_of_insert']
+  --     rw [preservesEvm_of_insert']
+  --     rcases s_inhabited with ⟨s_inhabited_evm, s_inhabited_varstore⟩
+  --     · simp
+  --     · simp
+  --     · simp
 
-    have : preservesEvm (Ok s0_evm s0_varstore) s_inhabited := by
-      dsimp [s_inhabited]
-      rw [preservesEvm_of_insert']
-      rw [preservesEvm_of_insert']
-      rcases s_inhabited with ⟨s_inhabited_evm, s_inhabited_varstore⟩
-      · simp
-      · simp
-      · simp
+  --   have : IsERC20 erc_20
 
-    have : IsERC20 erc_20
+  --   have : ∀ {erc20 : ERC20}, IsERC20 erc20 s ∧ isEVMState s.evm →  preservesEvm s s' := by
+  --     specialize call_transfer ⟨is_erc20, s_preserve_evmState⟩
+  --     exact call_transfer.1
 
-    have : ∀ {erc20 : ERC20}, IsERC20 erc20 s ∧ isEVMState s.evm →  preservesEvm s s' := by
-      specialize call_transfer ⟨is_erc20, s_preserve_evmState⟩
-      exact call_transfer.1
-
-    obtain ⟨erc20, ⟩ := call_transfer
+  --   obtain ⟨erc20, ⟩ := call_transfer
 
 
 
