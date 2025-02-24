@@ -20,6 +20,7 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
   let from_addr := Address.ofUInt256 var_from
   let to_addr := Address.ofUInt256 var_to
   let transfer_value : UInt256 := var_value -- in wei
+  s₉.isOk ∧
   (
     ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
     -- Case: _transfer succeeds
