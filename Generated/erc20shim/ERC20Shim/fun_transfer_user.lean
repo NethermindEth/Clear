@@ -95,7 +95,10 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
 
     swap
 
-    · sorry
+    · rcases s' with _ | _ | ⟨checkpoint'⟩
+      · simp
+      · simp at *; rw [←code] at hasFuel; simp at hasFuel
+      · simp at *
     ·
       specialize call_transfer ⟨isERC20_s, isEvmState_s⟩
 
