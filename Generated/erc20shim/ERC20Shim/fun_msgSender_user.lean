@@ -18,7 +18,8 @@ def A_fun_msgSender (var : Identifier)  (s₀ s₉ : State) : Prop :=
   (
     (
       match s₀ with
-      | Ok evm _ => s₉[var]!! = evm.execution_env.source ∧
+      | Ok evm _ => let s : State := s₀⟦var ↦ evm.execution_env.source⟧
+                    s₉.store = s.store  ∧
                     s₉.evm.hash_collision = false
       | _ => s₉.evm.hash_collision = false -- OutOfFuel or Checkpoint
     )
@@ -47,6 +48,8 @@ lemma fun_msgSender_abs_of_concrete {s₀ s₉ : State} {var } :
     split_ands <;> [skip;aesop]
     unfold lookup!
     simp
+    unfold State.insert
+    dsimp
 
 end
 

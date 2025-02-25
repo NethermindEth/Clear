@@ -53,7 +53,8 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
   clr_funargs
 
   -- Assign s_inhabited state to tidy up goal
-  set s_inhabited := (Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧) with eq1
+  --set s_inhabited := (Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧) with eq1
+  generalize s_inhabited_all : (Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧) = s_inhabited at *
   -- Show state is Ok
   have s_inhabited_ok : s_inhabited.isOk := by
     aesop_spec
@@ -64,30 +65,41 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
   rintro hasFuel ⟨s, call_msgSender, ⟨s', call_transfer, code⟩⟩
 
   -- Introduce hypotheses for s₀
-  intro erc_20 isERC20_s0 evmState notReverted
+  intro erc_20 s0_isERC20 evmState s0_notReverted
 
   -- Assign s₀ state to tidy up goal
-  generalize eq : Ok s0_evm s0_varstore = s₀ at *
+  generalize s0_all : Ok s0_evm s0_varstore = s₀ at *
+
+  have s0_ok : s₀.isOk := by
+    aesop
+
+  have s_inhabited_not_reverted : s_inhabited.evm.reverted = false := by
+    aesop
 
   -- Clear specs at call_msgSender
   unfold A_fun_msgSender at call_msgSender
   clr_spec at call_msgSender
 
+  rw[←s_inhabited_all] at call_msgSender
 
   obtain ⟨s_preservesEvm, ⟨s_ok, s_preserve_evmState, s_preserve_collision, ⟨⟨s_source, s_collision_false⟩⟩⟩⟩ := call_msgSender
 
   · -- No hash collision at state s
 
-
     -- Combine state s in s_all
     obtain ⟨s_evm, ⟨s_varstore, s_all⟩⟩ := State_of_isOk s_ok
 
+    have s_not_reverted : s.evm.reverted = false := by
+      rw [s_inhabited_all] at s_preservesEvm
+      have eq := preservesEvm_of_isOk s_inhabited_ok s_ok s_preservesEvm
+      rw [←eq.2.2.2.1]
+      exact s_inhabited_not_reverted
 
     rw [preservesEvm_of_insert, preservesEvm_of_insert, s_all] at s_preservesEvm
 
     -- Obtain hypotheses for state s from state s₀
-    have preservesEvm_s0_s : preservesEvm s₀ s := by aesop (add simp preservesEvm)
-    have isERC20_s : IsERC20 erc_20 s := IsERC20_of_preservesEvm preservesEvm_s0_s isERC20_s0
+    have s0_s_preservesEvm : preservesEvm s₀ s := by aesop (add simp preservesEvm)
+    have s_isERC20 : IsERC20 erc_20 s := IsERC20_of_preservesEvm s0_s_preservesEvm s0_isERC20
     have isEvmState_s : isEVMState s.evm := by aesop
 
     unfold A_fun__transfer at call_transfer
@@ -95,20 +107,91 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
 
     swap
 
-    · sorry
+    · rcases s' with _ | _ | ⟨checkpoint'⟩
+      · simp
+      · simp at *; rw [←code] at hasFuel; simp at hasFuel
+      · simp at *
     ·
-      specialize call_transfer ⟨isERC20_s, isEvmState_s⟩
+      dsimp at call_transfer
+      rcases call_transfer with ⟨s'_ok, transfer_right⟩
 
-      obtain (⟨s'_isERC20, s_s'_preservesEvm, s'_no_collision⟩
-              | ⟨s'_isERC20, s_s'_preservesEvm, s'_no_collision, addr_zero⟩
-              | s'_collision) := call_transfer
+      obtain ⟨s'_evm, ⟨s'_varstore, s'_all⟩⟩ := State_of_isOk s'_ok
+
+      have s9_ok : s₉.isOk := by
+        aesop
+
+      unfold reviveJump at code
+      simp [s'_all, ←s0_all] at code
+      rw [← State.insert_of_ok] at code
+      clr_varstore,
+
+      have s9_preserved : Preserved s'_evm s'_evm := by aesop
+      have s9_preservesEvm : preservesEvm s' s₉ := by
+        rw [s'_all, ←code]
+        apply s9_preserved
+
+      have h1 : var_to = s["var_to"]!! := by
+        rw [s_all]
+        rw [s_all] at s_source
+        unfold store at s_source
+        unfold State.insert at s_source
+        simp at s_source
+        rw [s_source]
+        unfold lookup!
+        simp
+        rw [Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)]
+        simp
+
+      have h2 : var_value = s["var_value"]!! := by
+        rw [s_all]
+        rw [s_all] at s_source
+        unfold store at s_source
+        unfold State.insert at s_source
+        simp at s_source
+        rw [s_source]
+        unfold lookup!
+        simp
+        rw [Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)
+                , Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)]
+        simp
+
+      have h3: s₀.evm.execution_env.source = Address.ofUInt256 (s["_1"]!!) := by
+        rw [s_all]
+        rw [s_all] at s_source
+        unfold store at s_source
+        unfold State.insert at s_source
+        simp at s_source
+        rw [s_source]
+        unfold lookup!
+        simp
+
+
+      specialize transfer_right ⟨s_isERC20, isEvmState_s, s_not_reverted⟩
+
+      obtain ⟨s'_erc20, s'_preservesEvm, s'_not_reverted, s'_no_collision⟩
+              | ⟨s'_erc20', s'_preservesEvm, s'_no_collision', zero_addr, s'_not_reverted⟩
+              | s'_collision
+              := transfer_right
 
       · -- Transfer success case
         left
 
-        have s'_ok : s'.isOk := sorry
+        refine' ⟨?_, ?_, (by aesop), ?_, (by aesop)⟩
 
-        obtain ⟨s'_evm, s'_varstore, s'_eq_ok⟩ := State_of_isOk s'_ok
+        · apply IsERC20_of_preservesEvm s9_preservesEvm
+          rw [←h1, ←h2, ←h3] at s'_erc20
+          exact s'_erc20
+
+
+        · apply Utilities.preservesEvm_trans s_ok
+          · aesop
+          · aesop
+
+        · rw [←code]
+          simp
+          unfold State.insert at code
+          unfold lookup!
+          simp
 
       · -- Transfer fail case
         right

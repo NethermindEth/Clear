@@ -468,18 +468,23 @@ structure Preserved (a : EVMState) (b : EVMState) : Prop where
   account_map : (Eq on EVMState.account_map) a b
   hash_collision : (Eq on EVMState.hash_collision) a b
   execution_env : (Eq on EVMState.execution_env) a b
+  reverted : (Eq on EVMState.reverted) a b
   keccak_map : a.keccak_map ≤ b.keccak_map
 
 lemma Preserved_def {σ₀ σ₁ : EVM} : Preserved σ₀ σ₁ =
   (σ₀.account_map    = σ₁.account_map ∧
    σ₀.hash_collision = σ₁.hash_collision ∧
    σ₀.execution_env  = σ₁.execution_env ∧
+   σ₀.reverted       = σ₁.reverted ∧
    σ₀.keccak_map     ≤ σ₁.keccak_map) := by
   ext
   apply Iff.intro
-  intro h
-  obtain ⟨_,_,_,_⟩ := h
-  all_goals tauto
+  · intro h
+    obtain ⟨_,_,_,_,_⟩ := h
+    tauto
+  · intro h
+    obtain ⟨a,b,c,d,e⟩ := h
+    exact ⟨a,b,c,d,e⟩
 
 namespace Preserved
 
@@ -494,6 +499,7 @@ lemma trans {e₀ e₁ e₂ : EVM} :
   have acc := Eq.trans h₀.account_map h₁.account_map
   have col := Eq.trans h₀.hash_collision h₁.hash_collision
   have env := Eq.trans h₀.execution_env h₁.execution_env
+  have rev := Eq.trans h₀.reverted h₁.reverted
   have kec := le_trans h₀.keccak_map h₁.keccak_map
   constructor <;> assumption
 

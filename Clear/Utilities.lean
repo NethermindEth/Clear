@@ -37,7 +37,7 @@ lemma spec_eq {P P' : State → State  → Prop} {s₀ s₉ : State} :
 --   split
 --   simp
 --   intro Spec_of_c c
---   exact S'_of_S c (Spec_of_c c) 
+--   exact S'_of_S c (Spec_of_c c)
 
 -- @[aesop safe apply (rule_sets := [Clear.aesop_spec])]
 -- lemma collision_spec_eq' {P P' : State → State  → Prop} {s₀ s₉ : State} :
@@ -109,6 +109,7 @@ lemma preservesEvm_of_isOk {s₀ s₁ : State} (s₀_ok : s₀.isOk) (s₁_ok : 
   (s₀.evm.account_map = s₁.evm.account_map ∧
   s₀.evm.hash_collision = s₁.evm.hash_collision ∧
   s₀.evm.execution_env = s₁.evm.execution_env ∧
+  s₀.evm.reverted = s₁.evm.reverted ∧
   s₀.evm.keccak_map ≤ s₁.evm.keccak_map) := by
   unfold preservesEvm
   cases s₀ <;> cases s₁ <;> simp at *
@@ -118,7 +119,7 @@ lemma preservesEvm_of_isOk {s₀ s₁ : State} (s₀_ok : s₀.isOk) (s₁_ok : 
 lemma Preserved_of_preservesEvm_of_Ok {σ₀ σ₁} {store₀ store₁} :
   preservesEvm (Ok σ₀ store₀) (Ok σ₁ store₁) → Preserved σ₀ σ₁ := by
   intro h
-  obtain ⟨_,_,_,_⟩ := preservesEvm_of_isOk isOk_Ok isOk_Ok h
+  obtain ⟨_,_,_,_,_⟩ := preservesEvm_of_isOk isOk_Ok isOk_Ok h
   constructor
   all_goals assumption
 

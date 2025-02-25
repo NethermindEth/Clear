@@ -22,18 +22,18 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
   let transfer_value : UInt256 := var_value -- in wei
   s₉.isOk ∧
   (
-    ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
+    ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState ∧ s₀.evm.reverted = false) →
     -- Case: _transfer succeeds
     (
       let balances := update_balances erc20 from_addr to_addr transfer_value
-      IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧
+      IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.evm.reverted = false ∧
       s₉.evm.hash_collision = false
     )
     ∨
     -- Case: _transfer fails
     (
       IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.evm.hash_collision = false ∧
-      (from_addr = 0 ∨ to_addr = 0)
+      (from_addr = 0 ∨ to_addr = 0) ∧ s₉.evm.reverted = true
     )
     -- Case: Hash collision
     ∨ s₉.evm.hash_collision = true
