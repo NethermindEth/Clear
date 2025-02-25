@@ -163,8 +163,33 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
         simp at s_source
         rw [s_source]
         unfold lookup!
-        simp
+        simp [←s0_all, Address.ofUInt256]
+        generalize eq₁ : s0_evm.execution_env.source = x
+        rw [
+          Nat.mod_eq_of_lt (by rw [Nat.mod_eq_of_lt (Fin.val_lt_of_le _ (by decide))]; omega),
+          Nat.mod_eq_of_lt (Fin.val_lt_of_le _ (by decide))
+        ]
+        rcases x with ⟨x, hx⟩
+        simp [Fin.ofNat]
+        unfold Address.size at hx
+        omega
+        
+        
+        
+        
+        
+        
 
+        -- unfold Address.ofUInt256 Fin.val Fin.ofNat Address.size
+        -- simp
+        -- rw [Nat.mod_eq_of_lt]
+
+
+
+        
+
+        
+        done
 
       specialize transfer_right ⟨s_isERC20, isEvmState_s, s_not_reverted⟩
 
