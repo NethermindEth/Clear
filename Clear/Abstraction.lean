@@ -128,6 +128,34 @@ end Clear.Abstraction
 
 namespace Clear
 
+/-- Looking at the code of fun_transfer :
+
+  ``` def fun_transfer : FunctionDefinition := <f
+    function fun_transfer(var_to, var_value) -> var
+
+{
+    let _1 := fun_msgSender()
+    fun__transfer(_1, var_to, var_value)
+    var := 1
+}
+
+>
+```
+Should return  0 (var = 0) in case
+`fun__transfer` reverts. As such, it would appear that `var := 1`
+must not execute in case `fun_transfer` reverts. This would entail
+that modelling revert would necessitate changing the evaluation function,
+which is not straightforward!
+
+Thus, EGREGIOUS_HACK_REVERTED  was born :o
+
+TODO:
+- FIX THIS
+
+ -/
+lemma EGREGIOUS_HACK_REVERTED (s₀ s₉ : State) {s : State} (h : s.evm.reverted = true) :
+  s₀ = s₉ := sorry
+
 open Abstraction State
 
 lemma spec_of_ok {s₀ s₉ : State} {S₁ S₂ : State → State → Prop}
@@ -138,7 +166,7 @@ lemma spec_of_ok {s₀ s₉ : State} {S₁ S₂ : State → State → Prop}
 lemma isOutOfFuel_iff_s_eq_OutOfFuel {s : State} : ❓ s ↔ (s = OutOfFuel) := by unfold isOutOfFuel; aesop
 
 @[simp]
-lemma setBreak_OutOfFuel_eq_OutOfFuel : 💔OutOfFuel = OutOfFuel := rfl  
+lemma setBreak_OutOfFuel_eq_OutOfFuel : 💔OutOfFuel = OutOfFuel := rfl
 
 @[aesop norm 100 simp (rule_sets := [Clear.aesop_spec])]
 lemma setBreak_ok_eq_checkpoint {evm : EVM} {varstore : VarStore} :

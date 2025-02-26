@@ -283,7 +283,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
             rw [this] at keccak_inj₁
             symm
             exact keccak_inj₁
-            done
+
           rw [←hOwner, ←hSpender] at mem
           contradiction
 
@@ -309,7 +309,7 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
           simp
           exact blocked_range'
 
-      done
+
     · -- Hash collision from second keccak
       rename_i hHashCollisionTrue
       right
@@ -324,8 +324,8 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
         simp [s_eq_ok, s_eq_ok'] at code
         rw [ ← State.insert_of_ok,  ← State.insert_of_ok, ← s_eq_ok' ] at code
         clr_varstore,
-
         rw [←code]
+        rw [s_eq_ok'] at hHashCollisionTrue
         aesop
       · rcases s' with ⟨evm, varstore⟩ | _ | _ <;> [skip; aesop_spec; skip]
         · unfold reviveJump at code

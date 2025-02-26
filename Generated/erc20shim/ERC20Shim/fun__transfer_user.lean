@@ -26,14 +26,15 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
     -- Case: _transfer succeeds
     (
       let balances := update_balances erc20 from_addr to_addr transfer_value
-      IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.evm.reverted = false ∧
-      s₉.evm.hash_collision = false
+      IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧
+      s₉.evm.reverted = false ∧ s₉.evm.hash_collision = false
     )
     ∨
     -- Case: _transfer fails
     (
       IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.evm.hash_collision = false ∧
-      (from_addr = 0 ∨ to_addr = 0) ∧ s₉.evm.reverted = true
+      (to_addr = 0  ∨ balanceOf s₀.evm from_addr < transfer_value) ∧
+      s₉.evm.reverted = true
     )
     -- Case: Hash collision
     ∨ s₉.evm.hash_collision = true
