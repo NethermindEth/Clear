@@ -5,7 +5,6 @@ import Generated.erc20shim.ERC20Shim.fun__transfer
 
 import Generated.erc20shim.ERC20Shim.fun_transfer_gen
 
-
 namespace Generated.erc20shim.ERC20Shim
 
 section
@@ -36,7 +35,6 @@ def A_fun_transfer (var : Identifier) (var_to var_value : Literal) (s₀ s₉ : 
   )
 
 -- set_option pp.notation false in
-
 
 set_option maxHeartbeats 1000000
 
@@ -220,15 +218,6 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
             rw [account_map_preservation]
             exact no_balance
 
-        · -- USED EGREGIOUS HACK THIS IS NOT CORRECT
-          have test := EGREGIOUS_HACK_REVERTED s₀ s₉ s'_reverted
-          aesop
-
-
-
-      · -- Hash Collision Case
-        aesop
-
   · right
     right
     rename_i s_collision
@@ -291,8 +280,6 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
       aesop
 
     · aesop
-
-
 
 end
 
