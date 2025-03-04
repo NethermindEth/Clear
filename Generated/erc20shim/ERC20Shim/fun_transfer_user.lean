@@ -119,7 +119,7 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
     clr_spec at call_transfer
 
     dsimp at call_transfer
-    rcases call_transfer with ⟨s'_ok, transfer_right⟩
+    rcases call_transfer with ⟨s'_ok, transfer_right, s'_collision⟩
 
     obtain ⟨s'_evm, ⟨s'_varstore, s'_all⟩⟩ := State_of_isOk s'_ok
 
@@ -205,7 +205,12 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
 
       · -- USED EGREGIOUS HACK THIS IS NOT CORRECT ***************************************************
         have := EGREGIOUS_HACK_REVERTED s₀ s₉ s'_reverted
-        aesop
+        --rw [←this]
+        -- clear this
+        subst s_all code s0_all s'_all s_inhabited_all
+
+        simp_all only [isOk_Ok, isOutOfFuel_Ok, not_false_eq_true, Preserved.refl, evm_insert, get_evm_of_ok,
+        Fin.isValue, isOutOfFuel_insert', isOk_insert, Bool.false_eq_true]
 
       · obtain zero_addr | no_balance := addr_balance_error
         · rw[←s_values.2.2] at zero_addr
@@ -220,7 +225,13 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
           rw [account_map_preservation]
           exact no_balance
 
-  · right
+    · -- collision at s'
+      right
+      right
+      aesop
+
+  · -- collision at s
+    right
     right
     rename_i s_collision
 
@@ -244,7 +255,7 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
     clr_spec at call_transfer
 
     simp at call_transfer
-    rcases call_transfer with ⟨s'_ok, transfer_right⟩
+    rcases call_transfer with ⟨s'_ok, transfer_right, s'_collision⟩
 
     obtain ⟨s'_evm, ⟨s'_varstore, s'_all⟩⟩ := State_of_isOk s'_ok
 

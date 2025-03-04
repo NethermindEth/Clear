@@ -18,25 +18,33 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 def A_fun_spendAllowance  (var_owner var_spender var_value : Literal) (s₀ s₉ : State) : Prop :=
   let owner_addr := Address.ofUInt256 var_owner
   let spender_addr := Address.ofUInt256 var_spender
-  let transfer_value : UInt256 := var_value -- in wei
+  let transfer_value : UInt256 := var_value
+  s₉.isOk ∧
+  (s₀.evm.isEVMState → s₉.evm.isEVMState) ∧
   (
-    ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
+    ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState ∧ s₀.evm.reverted = false) →
     let currentAllowance := (erc20.allowances.lookup (owner_addr, spender_addr)).getD 0
     -- Case: spendAllowance succeeds
     (
         let allowances := update_allowances erc20 owner_addr spender_addr transfer_value
-        IsERC20 ({ erc20 with allowances }) s₉ ∧ preservesEvm s₀ s₉ ∧
-        s₉.evm.hash_collision = false
+        IsERC20 ({ erc20 with allowances }) s₉ ∧
+        preservesEvm s₀ s₉ ∧
+        s₉.evm.hash_collision = false ∧
+        s₉.evm.reverted = false
     )
     ∨
     -- Case: spendAllowance fails
     (
-      IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.evm.hash_collision = false ∧
+      IsERC20 erc20 s₉ ∧
+      preservesEvm s₀ s₉ ∧
+      s₉.evm.hash_collision = false ∧
+      s₉.evm.reverted = true ∧
       currentAllowance < transfer_value
     )
     -- Case: Hash collision
     ∨ s₉.evm.hash_collision = true
   )
+  ∧ (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true)
 
 lemma fun_spendAllowance_abs_of_concrete {s₀ s₉ : State} { var_owner var_spender var_value} :
   Spec (fun_spendAllowance_concrete_of_code.1  var_owner var_spender var_value) s₀ s₉ →

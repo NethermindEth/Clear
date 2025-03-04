@@ -36,9 +36,12 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
       (to_addr = 0  ∨ balanceOf s₀.evm from_addr < transfer_value) ∧
       s₉.evm.reverted = true
     )
-    -- Case: Hash collision
+    -- Case: Hash collision during transfer
     ∨ s₉.evm.hash_collision = true
   )
+    -- Case: existing hash collision in s₀
+    ∧ (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true)
+
 
 lemma fun__transfer_abs_of_concrete {s₀ s₉ : State} { var_from var_to var_value} :
   Spec (fun__transfer_concrete_of_code.1  var_from var_to var_value) s₀ s₉ →

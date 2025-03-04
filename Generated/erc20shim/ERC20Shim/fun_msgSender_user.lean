@@ -14,8 +14,10 @@ def A_fun_msgSender (var : Identifier)  (s₀ s₉ : State) : Prop :=
   preservesEvm s₀ s₉ ∧
   s₉.isOk ∧
   (s₀.evm.isEVMState → s₉.evm.isEVMState) ∧
+  -- Case: Existing Hash collision in s₀
   (s₀.evm.hash_collision = true → s₉.evm.hash_collision) ∧
   (
+  -- Case: No hash collision
     (
       match s₀ with
       | Ok evm _ => let s : State := s₀⟦var ↦ evm.execution_env.source⟧
@@ -23,7 +25,7 @@ def A_fun_msgSender (var : Identifier)  (s₀ s₉ : State) : Prop :=
                     s₉.evm.hash_collision = false
       | _ => s₉.evm.hash_collision = false -- OutOfFuel or Checkpoint
     )
-    -- Case: Hash collision
+  -- Case: Hash collision during msgSender
     ∨ s₉.evm.hash_collision = true
   )
 
