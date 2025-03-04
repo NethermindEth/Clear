@@ -121,7 +121,6 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
 
   · -- collision at s
     rename_i s_collision
-    sorry
 
 
 
