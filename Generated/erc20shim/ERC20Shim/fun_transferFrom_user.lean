@@ -143,7 +143,8 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
 
     have s_values : s₀.evm.execution_env.source = Address.ofUInt256 (s["_1"]!!) ∧
                       var_value = s["var_value"]!! ∧
-                      var_from = s["var_from"]!! := by
+                      var_from = s["var_from"]!! ∧
+                      var_to = s["var_to"]!! := by
         rw [s_all]
         rw [s_all] at s_source
         unfold store at s_source
@@ -162,19 +163,15 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
           simp [Fin.ofNat]
           unfold Address.size at hx
           omega
-        · simp
-          rw [Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)
-                , Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)]
-          aesop
-        · simp
-          rw [Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)]
-          simp
+        · aesop
+        · aesop
+        · aesop
 
-    rw[←s_values.1, ←s_values.2.1, ←s_values.2.2] at spendAllowance_right
+    rw[←s_values.1, ←s_values.2.1, ←s_values.2.2.1] at spendAllowance_right
 
     specialize spendAllowance_right ⟨s_erc20, s_isEvmState, s_not_reverted⟩
 
-    obtain ⟨s'_erc20, s'_preservesEvm, s'_no_collision, s'_not_reverted⟩
+    obtain ⟨s'_erc20, s'_preservesEvm, s'_no_collision, s'_not_reverted, s'_source⟩
               | ⟨s'_erc20, s'_preservesEvm, s'_no_collision, s'_reverted, allowance_error⟩
               | s'_collision
               := spendAllowance_right
@@ -187,11 +184,10 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
       have s'_values : var_to = s'["var_to"]!! ∧
                       var_value = s'["var_value"]!! ∧
                       var_from = s'["var_from"]!! := by
-        rw [s'_all]
-        unfold lookup!
-        simp
-        split_ands
-        sorry
+        rw [s'_all] at s'_source
+        rw [s_all] at s'_source
+        unfold store at s'_source
+        aesop
 
       specialize transfer_right ⟨s'_erc20, isEvmState_s', s'_not_reverted⟩
 

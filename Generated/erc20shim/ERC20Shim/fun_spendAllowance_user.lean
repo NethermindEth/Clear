@@ -30,7 +30,8 @@ def A_fun_spendAllowance  (var_owner var_spender var_value : Literal) (s₀ s₉
         IsERC20 ({ erc20 with allowances }) s₉ ∧
         preservesEvm s₀ s₉ ∧
         s₉.evm.hash_collision = false ∧
-        s₉.evm.reverted = false
+        s₉.evm.reverted = false ∧
+        s₉.store = s₀.store
     )
     ∨
     -- Case: spendAllowance fails
