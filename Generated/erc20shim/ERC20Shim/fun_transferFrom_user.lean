@@ -38,7 +38,7 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
       IsERC20 erc20 s₉ ∧
       preservesEvm s₀ s₉ ∧
       s₉.evm.hash_collision = false ∧
-      s₉[var]!! = 0 ∧
+      s₉[var]!! = 1 ∧
       s₉.evm.reverted = true ∧
       (recipient.1 = 0 ∨
       sender.1 = 0 ∨
@@ -169,10 +169,10 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
 
     rw[←s_values.1, ←s_values.2.1, ←s_values.2.2.1] at spendAllowance_right
 
-    specialize spendAllowance_right ⟨s_erc20, s_isEvmState, s_not_reverted⟩
+    specialize spendAllowance_right ⟨s_erc20, s_isEvmState⟩
 
-    obtain ⟨s'_erc20, s'_preservesEvm, s'_no_collision, s'_not_reverted, s'_source⟩
-              | ⟨s'_erc20, s'_preservesEvm, s'_no_collision, s'_reverted, allowance_error⟩
+    obtain ⟨s'_erc20, s'_preservesEvm, s'_store, s'_not_reverted⟩
+              | ⟨s'_erc20, s'_preservesEvm, s'_reverted, s'_source⟩
               | s'_collision
               := spendAllowance_right
 
@@ -184,22 +184,22 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
       have s'_values : var_to = s'["var_to"]!! ∧
                       var_value = s'["var_value"]!! ∧
                       var_from = s'["var_from"]!! := by
-        rw [s'_all] at s'_source
-        rw [s_all] at s'_source
-        unfold store at s'_source
+        rw [s'_all] at s'_store
+        rw [s_all] at s'_store
+        unfold store at s'_store
         aesop
 
-      specialize transfer_right ⟨s'_erc20, isEvmState_s', s'_not_reverted⟩
+      specialize transfer_right ⟨s'_erc20, isEvmState_s'⟩
 
-      obtain ⟨s''_erc20, s''_preservesEvm, s''_not_reverted,  s''_no_collision⟩
-              | ⟨s''_erc20, s''_preservesEvm, s''_no_collision, allowance_error, s''_reverted⟩
+      obtain ⟨s''_erc20, s''_preservesEvm, s''_not_reverted⟩
+              | ⟨s''_erc20, s''_preservesEvm, s''_reverted, s''_error⟩
               | s''_collision
               := transfer_right
 
       · -- transfer success
         left
 
-        refine' ⟨?_ ,?_, (by aesop), ?_, (by aesop)⟩
+        refine' ⟨?_ ,?_, ?_, ?_, (by aesop)⟩
 
         · apply IsERC20_of_preservesEvm s9_preservesEvm
           aesop
@@ -209,6 +209,14 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
           · apply Utilities.preservesEvm_trans s'_ok
             · aesop
             · aesop
+
+        · have : s'.evm.hash_collision = false := by
+            have := (preservesEvm_of_isOk s_ok s'_ok)
+            aesop
+          have : s''.evm.hash_collision = false := by
+            have := (preservesEvm_of_isOk s'_ok s''_ok)
+            aesop
+          aesop
 
         · rw [←code]
           simp
@@ -221,7 +229,7 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
         right
         left
 
-        refine' ⟨?_, ?_, (by aesop), ?_, (by aesop), ?_⟩
+        refine' ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
 
         · apply IsERC20_of_preservesEvm s9_preservesEvm
           apply IsERC20_of_preservesEvm s''_preservesEvm
@@ -232,43 +240,182 @@ lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to 
           · aesop
           · apply Utilities.preservesEvm_trans s'_ok
             · aesop
-            · aesop
+            · apply Utilities.preservesEvm_trans s''_ok
+              · aesop
+              · aesop
 
-        · -- HACK USED THIS IS NOT CORRECT ***********************************************************
-          have := EGREGIOUS_HACK_REVERTED s_inhabited s₉ s''_reverted
-          rw [←s_inhabited_all] at this
-          rw [←this]
-          subst s_all code s0_all s'_all s_inhabited_all
-          simp_all only [isOk_Ok, isOutOfFuel_Ok, not_false_eq_true, Preserved.refl, evm_insert, get_evm_of_ok,
-          Fin.isValue, isOutOfFuel_insert', isOk_insert, Bool.false_eq_true]
+        · have : s'.evm.hash_collision = false := by
+            have := (preservesEvm_of_isOk s_ok s'_ok)
+            aesop
+          have : s''.evm.hash_collision = false := by
+            have := (preservesEvm_of_isOk s'_ok s''_ok)
+            aesop
+          rw [←code]
+          rw[s''_all] at this
+          rw[←this]
+          simp
 
-        · rw [←s'_values.1, ←s'_values.2.1, ←s'_values.2.2] at allowance_error
-          obtain zero_addr | balance_error := allowance_error
+        · rw [←code]
+          simp
+          unfold lookup!
+          simp
+
+        · have : s''.evm.reverted = true := by
+              unfold setRevert at s''_reverted
+              aesop
+          rw [←code]
+          simp
+          rw[s''_all] at this
+          rw[<-this]
+          simp
+
+        · rw [←s'_values.1, ←s'_values.2.1, ←s'_values.2.2] at s''_error
+          obtain zero_addr | balance_error := s''_error
           · aesop
           · right
             right
             left
+            have : s₀.evm.account_map = s'.evm.account_map := by
+              have := (preservesEvm_of_isOk s0_ok s'_ok)
+              have : preservesEvm s₀ s' := by
+                apply Utilities.preservesEvm_trans s_ok
+                · aesop
+                · aesop
+              aesop
             unfold balanceOf
             unfold balanceOf at balance_error
-            have s0_s'_preservesEvm : preservesEvm s₀ s' := by
-              apply Utilities.preservesEvm_trans s_ok
-              · aesop
-              · aesop
-            have := (preservesEvm_of_isOk s0_ok s'_ok s0_s'_preservesEvm).1
             rw[this]
             exact balance_error
 
-      · -- collision at s''
+      · -- collision at transfer
         right
         right
         aesop
 
     · -- spendAllowance fail
 
-      -- surely is spendAllowancefails then transfer is never called?
-      -- need to make changes to how reversion works for this
+      have isEvmState_s' : isEVMState s'.evm := by
+        aesop
 
-      sorry
+      have s'_store : s'.store = s.store := by
+        rw[s'_reverted]
+        rw[s_all]
+        unfold setRevert
+        simp
+        unfold store
+        simp
+
+      have s'_values : var_to = s'["var_to"]!! ∧
+                      var_value = s'["var_value"]!! ∧
+                      var_from = s'["var_from"]!! := by
+        rw [s'_all] at s'_store
+        rw [s_all] at s'_store
+        unfold store at s'_store
+        aesop
+
+      specialize transfer_right ⟨s'_erc20, isEvmState_s'⟩
+
+      obtain ⟨s''_erc20, s''_preservesEvm, s''_not_reverted⟩
+              | ⟨s''_erc20, s''_preservesEvm, s''_reverted, s''_error⟩
+              | s''_collision
+              := transfer_right
+
+      · -- transfer success
+        left
+
+        refine' ⟨?_ ,?_, ?_, ?_, (by aesop)⟩
+
+        · apply IsERC20_of_preservesEvm s9_preservesEvm
+
+          rw [←s'_values.1, ←s'_values.2.1, ←s'_values.2.2] at s''_erc20
+          unfold update_allowances
+          simp
+          split
+          · exact s''_erc20
+          · sorry
+
+        · apply Utilities.preservesEvm_trans s_ok
+          · aesop
+          · apply Utilities.preservesEvm_trans s'_ok
+            · aesop
+            · aesop
+
+        · have : s'.evm.hash_collision = false := by
+            have := (preservesEvm_of_isOk s_ok s'_ok)
+            aesop
+          have : s''.evm.hash_collision = false := by
+            have := (preservesEvm_of_isOk s'_ok s''_ok)
+            aesop
+          aesop
+
+        · rw [←code]
+          simp
+          unfold State.insert at code
+          unfold lookup!
+          simp
+
+      · -- transfer fail
+
+        right
+        left
+
+        refine' ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+
+        · apply IsERC20_of_preservesEvm s9_preservesEvm
+          apply IsERC20_of_preservesEvm s''_preservesEvm
+          apply IsERC20_of_preservesEvm s'_preservesEvm
+          aesop
+
+        · apply Utilities.preservesEvm_trans s_ok
+          · aesop
+          · apply Utilities.preservesEvm_trans s'_ok
+            · aesop
+            · apply Utilities.preservesEvm_trans s''_ok
+              · aesop
+              · aesop
+
+        · have : s'.evm.hash_collision = false := by
+            have := (preservesEvm_of_isOk s_ok s'_ok)
+            aesop
+          have : s''.evm.hash_collision = false := by
+            have := (preservesEvm_of_isOk s'_ok s''_ok)
+            aesop
+          rw [←code]
+          rw[s''_all] at this
+          rw[←this]
+          simp
+
+        · rw [←code]
+          simp
+          unfold lookup!
+          simp
+
+        · have : s''.evm.reverted = true := by
+              unfold setRevert at s''_reverted
+              aesop
+          rw [←code]
+          simp
+          rw[s''_all] at this
+          rw[<-this]
+          simp
+
+        · rw [←s'_values.1, ←s'_values.2.1, ←s'_values.2.2] at s''_error
+          obtain zero_addr | balance_error := s''_error
+          · aesop
+          · right
+            right
+            left
+            have : s₀.evm.account_map = s'.evm.account_map := by
+              have := (preservesEvm_of_isOk s0_ok s'_ok)
+              have : preservesEvm s₀ s' := by
+                apply Utilities.preservesEvm_trans s_ok
+                · aesop
+                · aesop
+              aesop
+            unfold balanceOf
+            unfold balanceOf at balance_error
+            rw[this]
+            exact balance_error
 
     · --collision in spendAllowance
       aesop

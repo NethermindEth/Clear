@@ -12,6 +12,7 @@ section
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
 def A_fun_transfer (var : Identifier) (var_to var_value : Literal) (s₀ s₉ : State) : Prop :=
+
   let recipient := Address.ofUInt256 var_to
   let amount : UInt256 := var_value
   let sender := s₀.evm.execution_env.source
@@ -32,7 +33,7 @@ def A_fun_transfer (var : Identifier) (var_to var_value : Literal) (s₀ s₉ : 
       IsERC20 erc20 s₉ ∧
       preservesEvm s₀ s₉ ∧
       s₉.evm.hash_collision = false ∧
-      s₉[var]!! = 0 ∧
+      s₉[var]!! = 1 ∧
       s₉.evm.reverted = true ∧
       (recipient.1 = 0 ∨ balanceOf s₀.evm sender < amount)
     )
@@ -164,17 +165,17 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
           rw [Finmap.lookup_insert_of_ne _ (by unfold Ne; apply String.ne_of_data_ne; simp)]
           simp
 
-    specialize transfer_right ⟨s_isERC20, isEvmState_s, s_not_reverted⟩
+    specialize transfer_right ⟨s_isERC20, isEvmState_s⟩
 
-    obtain ⟨s'_erc20, s'_preservesEvm, s'_not_reverted, s'_no_collision⟩
-              | ⟨s'_erc20, s'_preservesEvm, s'_no_collision, addr_balance_error, s'_reverted⟩
+    obtain ⟨s'_erc20, s'_preservesEvm, s'_not_reverted⟩
+              | ⟨s'_erc20, s'_preservesEvm, s'_reverted, addr_balance_error⟩
               | s'_collision
               := transfer_right
 
     · -- Transfer success case
       left
 
-      refine' ⟨?_ ,?_, (by aesop), ?_, (by aesop)⟩
+      refine' ⟨?_ ,?_, ?_, ?_, (by aesop)⟩
 
       · apply IsERC20_of_preservesEvm s9_preservesEvm
         rw [←s_values.1, ←s_values.2.1, ←s_values.2.2] at s'_erc20
@@ -183,6 +184,11 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
       · apply Utilities.preservesEvm_trans s_ok
         · aesop
         · aesop
+
+      · have : s'.evm.hash_collision = false := by
+          have := (preservesEvm_of_isOk s_ok s'_ok)
+          aesop
+        aesop
 
       · rw [←code]
         simp
@@ -194,7 +200,15 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
       right
       left
 
-      refine' ⟨?_, ?_, (by aesop), ?_, (by aesop), ?_⟩
+      have evm_revert : s'_evm = {s_evm with reverted := true} := by
+          unfold setRevert at s'_reverted
+          aesop
+
+      have varstore_eq : s'_varstore = s_varstore := by
+          unfold setRevert at s'_reverted
+          aesop
+
+      refine' ⟨?_, ?_, ?_, ?_, (by aesop), ?_⟩
 
       · apply IsERC20_of_preservesEvm s9_preservesEvm
         exact s'_erc20
@@ -202,6 +216,29 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
       · apply Utilities.preservesEvm_trans s_ok
         · aesop
         · aesop
+
+      · have : s'.evm.hash_collision = false := by
+          have := (preservesEvm_of_isOk s_ok s'_ok)
+          aesop
+        aesop
+
+      · rw [←code]
+        simp
+        unfold lookup!
+        simp
+
+      · cases addr_balance_error
+        · aesop
+        · rename_i h
+          right
+          rw[s_values.1, s_values.2.1]
+          have : s.evm.account_map = s₀.evm.account_map := by
+            have := (preservesEvm_of_isOk s_ok s'_ok)
+            aesop
+          unfold balanceOf
+          unfold balanceOf at h
+          rw[←this]
+          exact h
 
     · -- collision at s'
       right
@@ -249,28 +286,32 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
       rw [s'_all, ←code]
       apply s9_preserved
 
-    specialize transfer_right s_isERC20 isEvmState_s s_not_reverted
+    specialize transfer_right s_isERC20 isEvmState_s
 
-    obtain ⟨s'_erc20, s'_preservesEvm, s'_not_reverted, s'_no_collision⟩
-              | ⟨s'_erc20, s'_preservesEvm, s'_no_collision, addr_balance_error, s'_reverted⟩
+    obtain ⟨s'_erc20, s'_preservesEvm, s'_not_reverted⟩
+              | ⟨s'_erc20, s'_preservesEvm, s'_reverted, addr_balance_error⟩
               | s'_collision
               := transfer_right
 
-    · rw [←code]
+    · -- transfer success
+      rw [←code]
       simp
       have : s.evm.hash_collision = true → s'.evm.hash_collision = true := by
         have account_map_preservation := (preservesEvm_of_isOk s_ok s'_ok s'_preservesEvm).2.1
         aesop
       aesop
 
-    · rw [←code]
+    · -- transfer fail
+      rw [←code]
       simp
-      have : s.evm.hash_collision = true → s'.evm.hash_collision = true := by
-        have account_map_preservation := (preservesEvm_of_isOk s_ok s'_ok s'_preservesEvm).2.1
-        aesop
-      aesop
+      have : s'.evm.hash_collision = true := by
+          have := (preservesEvm_of_isOk s_ok s'_ok)
+          aesop
+      rw[s'_all] at this
+      exact this
 
-    · aesop
+    · -- hash collision
+      aesop
 
 end
 

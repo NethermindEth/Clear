@@ -17,30 +17,35 @@ section
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities ERC20Shim.Common Generated.erc20shim ERC20Shim
 
 def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) : Prop :=
+
   let from_addr := Address.ofUInt256 var_from
   let to_addr := Address.ofUInt256 var_to
-  let transfer_value : UInt256 := var_value -- in wei
+  let transfer_value : UInt256 := var_value
   s₉.isOk ∧
   (
-    ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState ∧ s₀.evm.reverted = false) →
-    -- Case: _transfer succeeds
+    ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
+    -- Case 1.1: _transfer succeeds
     (
       let balances := update_balances erc20 from_addr to_addr transfer_value
-      IsERC20 ({ erc20 with balances }) s₉ ∧ preservesEvm s₀ s₉ ∧
-      s₉.evm.reverted = false ∧ s₉.evm.hash_collision = false
+      IsERC20 ({ erc20 with balances }) s₉ ∧
+      preservesEvm s₀ s₉ ∧
+      s₉.evm.reverted = false
     )
     ∨
-    -- Case: _transfer fails
+    -- Case 1.2: _transfer fails
     (
-      IsERC20 erc20 s₉ ∧ preservesEvm s₀ s₉ ∧ s₉.evm.hash_collision = false ∧
-      (to_addr = 0  ∨ balanceOf s₀.evm from_addr < transfer_value) ∧
-      s₉.evm.reverted = true
+      IsERC20 erc20 s₉ ∧
+      preservesEvm s₀ s₉ ∧
+      s₉ = s₀.setRevert  ∧
+      (to_addr = 0  ∨ balanceOf s₀.evm from_addr < transfer_value)
     )
-    -- Case: Hash collision during transfer
+    -- Case 1.3: Hash collision during transfer
     ∨ s₉.evm.hash_collision = true
   )
-    -- Case: existing hash collision in s₀
-    ∧ (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true)
+    -- Case : existing hash collision in s₀
+  ∧ (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true)
+
+
 
 
 lemma fun__transfer_abs_of_concrete {s₀ s₉ : State} { var_from var_to var_value} :

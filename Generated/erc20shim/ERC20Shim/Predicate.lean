@@ -126,6 +126,7 @@ def update_balances (erc20 : ERC20) from_addr to_addr transfer_value :=
 def update_allowances (erc20 : ERC20) owner_addr spender_addr transfer_value :=
   let currentAllowance := (erc20.allowances.lookup (owner_addr, spender_addr)).getD 0
   if currentAllowance = UInt256.top then erc20.allowances else
+ -- if currentAllowance < transfer_value then erc20.allowances else
   Finmap.insert
     (owner_addr, spender_addr)
     (currentAllowance - transfer_value)

@@ -106,6 +106,10 @@ def setLeave : State → State
   | Ok evm store => Checkpoint (.Leave evm store)
   | s => s
 
+def setRevert : State → State
+  | Ok evm store => Ok {evm with reverted := true} store
+  | s => s
+
 -- | Indicate that we've hit an infinite loop/ran out of fuel.
 def diverge : State → State
   | Ok _ _ => .OutOfFuel
