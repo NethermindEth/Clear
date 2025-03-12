@@ -203,28 +203,6 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
         · aesop
         · aesop
 
-      · -- USED EGREGIOUS HACK THIS IS NOT CORRECT ***************************************************
-        have := EGREGIOUS_HACK_REVERTED s₀ s₉ s'_reverted
-        --rw [←this]
-        -- clear this
-        subst s_all code s0_all s'_all s_inhabited_all
-
-        simp_all only [isOk_Ok, isOutOfFuel_Ok, not_false_eq_true, Preserved.refl, evm_insert, get_evm_of_ok,
-        Fin.isValue, isOutOfFuel_insert', isOk_insert, Bool.false_eq_true]
-
-      · obtain zero_addr | no_balance := addr_balance_error
-        · rw[←s_values.2.2] at zero_addr
-          rw[zero_addr]
-          left
-          rfl
-        · rw[←s_values.1, ←s_values.2.1] at no_balance
-          right
-          unfold balanceOf
-          unfold balanceOf at no_balance
-          have account_map_preservation := (preservesEvm_of_isOk s0_ok s_ok s0_s_preservesEvm).1
-          rw [account_map_preservation]
-          exact no_balance
-
     · -- collision at s'
       right
       right
