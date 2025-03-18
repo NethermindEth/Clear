@@ -45,13 +45,30 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
     -- Case : existing hash collision in s₀
   ∧ (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true)
 
-
-
-
 lemma fun__transfer_abs_of_concrete {s₀ s₉ : State} { var_from var_to var_value} :
   Spec (fun__transfer_concrete_of_code.1  var_from var_to var_value) s₀ s₉ →
   Spec (A_fun__transfer  var_from var_to var_value) s₀ s₉ := by
   unfold fun__transfer_concrete_of_code A_fun__transfer
+  rcases s₀ with ⟨s0_evm, s0_varstore⟩ | _ | _ <;> [simp only; aesop_spec; aesop_spec]
+
+  apply spec_eq
+
+
+  clr_funargs
+
+  generalize s_inhabited_all : (Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧⟦"var_from"↦var_from⟧) = s_inhabited at *
+  have s_inhabited_ok : s_inhabited.isOk := by
+    aesop_spec
+
+  -- s₀ --> s₉ using _transfer
+
+  rintro hasFuel ⟨s, call_914, ⟨s', call_239, ⟨s'', call_update, code⟩⟩⟩
+
+  -- Assign s₀ state to tidy up goal
+  generalize s0_all : Ok s0_evm s0_varstore = s₀ at *
+  have s0_ok : s₀.isOk := by
+    aesop
+
   sorry
 
 end

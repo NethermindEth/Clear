@@ -240,12 +240,12 @@ lemma fun_transfer_abs_of_concrete {s₀ s₉ : State} {var var_to var_value} :
           rw[←this]
           exact h
 
-    · -- collision at s'
+    · -- collision at transfer
       right
       right
       aesop
 
-  · -- collision at s
+  · -- collision at msgSender
     right
     right
     rename_i s_collision

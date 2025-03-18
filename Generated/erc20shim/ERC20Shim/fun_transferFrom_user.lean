@@ -17,7 +17,7 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) (s₀ s₉ : State) : Prop :=
   let sender := Address.ofUInt256 var_from
   let recipient := Address.ofUInt256 var_to
-  let amount : UInt256 := var_value -- in wei
+  let amount : UInt256 := var_value
   (
     ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState ∧ s₀.evm.reverted = false) →
     -- Case: transferFrom succeeds
@@ -50,6 +50,63 @@ def A_fun_transferFrom (var : Identifier) (var_from var_to var_value : Literal) 
   )
 
 set_option maxHeartbeats 1500000
+
+theorem Generated.erc20shim.ERC20Shim.extracted_1 {s₉ : State} {var : Identifier} {var_from var_to var_value : Literal}
+  (s0_evm : EVM) (s0_varstore : VarStore) (s_inhabited : State)
+  (s_inhabited_all :
+    Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧⟦"var_from"↦var_from⟧ = s_inhabited)
+  (s_inhabited_ok : s_inhabited.isOk) (hasFuel : ¬❓ s₉) (s s' s'' : State) {erc_20 : ERC20} (s₀ : State)
+  (s0_all : Ok s0_evm s0_varstore = s₀) (s0_isERC20 : IsERC20 erc_20 s₀) (evmState : isEVMState s₀.evm)
+  (s0_notReverted : s₀.evm.reverted = false) (s0_ok : s₀.isOk)
+  (s_inhabited_not_reverted : s_inhabited.evm.reverted = false) (s_ok : s.isOk)
+  (s_preserve_evmState :
+    isEVMState Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧⟦"var_from"↦var_from⟧.evm →
+      isEVMState s.evm)
+  (s_preserve_collision :
+    Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧⟦"var_from"↦var_from⟧.evm.hash_collision = true →
+      s.evm.hash_collision = true)
+  (s_source :
+    s.store =
+      Ok s0_evm
+                  Inhabited.default⟦"var_value"↦var_value⟧⟦"var_to"↦var_to⟧⟦"var_from"↦var_from⟧⟦"_1"↦↑↑s0_evm.execution_env.source⟧.store)
+  (s_collision_false : s.evm.hash_collision = false) (s_evm : EVM) (s_varstore : VarStore)
+  (s_preservesEvm : preservesEvm (Ok s0_evm Inhabited.default⟦"var_value"↦var_value⟧) (Ok s_evm s_varstore))
+  (s_all : s = Ok s_evm s_varstore) (s_not_reverted : s.evm.reverted = false) (s0_s_preservesEvm : preservesEvm s₀ s)
+  (s_erc20 : IsERC20 erc_20 s) (s_isEvmState : isEVMState s.evm) (s'_ok : s'.isOk)
+  (s'_isEVMState : isEVMState s.evm → isEVMState s'.evm)
+  (s'_pres_collision : s.evm.hash_collision = true → s'.evm.hash_collision = true) (s'_evm : EVM)
+  (s'_varstore : VarStore) (s'_all : s' = Ok s'_evm s'_varstore) (s''_ok : s''.isOk)
+  (s''_pres_collision : s'.evm.hash_collision = true → s''.evm.hash_collision = true) (s''_evm : EVM)
+  (s''_varstore : VarStore) (s''_all : s'' = Ok s''_evm s''_varstore) (s9_ok : s₉.isOk)
+  (code : Ok s''_evm s0_varstore⟦var↦ State.lookup! var (Ok s''_evm (Finmap.insert "var" 1 s''_varstore))⟧ = s₉)
+  (this : Preserved s''_evm s''_evm) (s9_preservesEvm : preservesEvm s'' s₉)
+  (s_values :
+    s₀.evm.execution_env.source = Address.ofUInt256 (s["_1"]!!) ∧
+      var_value = s["var_value"]!! ∧ var_from = s["var_from"]!! ∧ var_to = s["var_to"]!!)
+  (s'_erc20 : IsERC20 erc_20 s') (s'_preservesEvm : preservesEvm s s') (s'_reverted : s' = s.setRevert)
+  (s'_source :
+    (Finmap.lookup (Address.ofUInt256 var_from, s₀.evm.execution_env.source) erc_20.allowances).getD 0 < var_value)
+  (isEvmState_s' : isEVMState s'.evm) (s'_store : s'.store = s.store)
+  (s'_values : var_to = s'["var_to"]!! ∧ var_value = s'["var_value"]!! ∧ var_from = s'["var_from"]!!)
+  (s''_erc20 :
+    IsERC20
+      { supply := erc_20.supply,
+        balances := update_balances erc_20 (Address.ofUInt256 var_from) (Address.ofUInt256 var_to) var_value,
+        allowances := erc_20.allowances }
+      s'')
+  (s''_preservesEvm : preservesEvm s' s'') (s''_not_reverted : s''.evm.reverted = false)
+  (h :
+    ¬(Finmap.lookup (Address.ofUInt256 var_from, s₀.evm.execution_env.source) erc_20.allowances).getD 0 =
+        Fin.last UInt256.top) :
+  IsERC20
+    { supply := erc_20.supply,
+      balances := update_balances erc_20 (Address.ofUInt256 var_from) (Address.ofUInt256 var_to) var_value,
+      allowances :=
+        Finmap.insert (Address.ofUInt256 var_from, s₀.evm.execution_env.source)
+          ((Finmap.lookup (Address.ofUInt256 var_from, s₀.evm.execution_env.source) erc_20.allowances).getD 0 -
+            var_value)
+          erc_20.allowances }
+    s'' := by sorry
 
 lemma fun_transferFrom_abs_of_concrete {s₀ s₉ : State} {var var_from var_to var_value} :
   Spec (fun_transferFrom_concrete_of_code.1 var var_from var_to var_value) s₀ s₉ →
