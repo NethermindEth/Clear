@@ -12,13 +12,13 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 
 def A_abi_encode_address  (value pos : Literal) (s₀ s₉ : State) : Prop :=
 
-  let address := Address.ofUInt256 value
   let position : UInt256 := pos
   preservesEvm s₀ s₉ ∧
+  s₉.isOk ∧
   (s₀.evm.isEVMState → s₉.evm.isEVMState) ∧
   (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true) ∧
   (
-    ( Fin.land address (Fin.shiftLeft 1 160 - 1) = EVMState.mload s₉.evm position ∧
+    ( Fin.land value (Fin.shiftLeft 1 160 - 1) = EVMState.mload s₉.evm position ∧
     s₉.evm.hash_collision = false)
 
     ∨ s₉.evm.hash_collision = true
