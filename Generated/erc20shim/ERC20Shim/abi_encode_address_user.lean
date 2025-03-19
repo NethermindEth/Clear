@@ -67,6 +67,7 @@ lemma abi_encode_address_abs_of_concrete {s₀ s₉ : State} { value pos} :
   · exact s0_s9_preservesEvm
   · aesop
   · aesop
+  · aesop
   · by_cases s0_collision : evm₀.hash_collision
     · right
       aesop
@@ -83,8 +84,6 @@ lemma abi_encode_address_abs_of_concrete {s₀ s₉ : State} { value pos} :
           unfold EVMState.mload
           apply lookup_mstore
         rw[value_get]
-        rw[←val_arg]
-        sorry
 
       · aesop
 
