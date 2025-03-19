@@ -13,14 +13,14 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 def A_abi_encode_address  (value pos : Literal) (s₀ s₉ : State) : Prop :=
 
   let position : UInt256 := pos
-  preservesEvm s₀ s₉ ∧
   s₉.isOk ∧
-  (s₀.evm.isEVMState → s₉.evm.isEVMState) ∧
-  (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true) ∧
-  (
-    ( Fin.land value (Fin.shiftLeft 1 160 - 1) = EVMState.mload s₉.evm position ∧
-    s₉.evm.hash_collision = false)
 
+  ((-- Case of no collision
+    preservesEvm s₀ s₉ ∧
+    ( Fin.land value (Fin.shiftLeft 1 160 - 1) = EVMState.mload s₉.evm position ∧
+    s₉.evm.hash_collision = false))
+
+    -- Collision
     ∨ s₉.evm.hash_collision = true
   )
 
@@ -64,17 +64,15 @@ lemma abi_encode_address_abs_of_concrete {s₀ s₉ : State} { value pos} :
 
   split_ands
 
-  · exact s0_s9_preservesEvm
-  · aesop
-  · aesop
   · aesop
   · by_cases s0_collision : evm₀.hash_collision
     · right
       aesop
     · left
       split_ands
-      ·
-        rw[←code]
+      · exact s0_s9_preservesEvm
+
+      · rw[←code]
         rw[←lkup_arg]
         have pos_get : lookup_arg.get! = pos := by
           aesop
