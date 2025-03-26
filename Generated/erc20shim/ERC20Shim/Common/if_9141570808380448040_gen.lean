@@ -10,7 +10,7 @@ section
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Generated.erc20shim ERC20Shim
 
 def if_9141570808380448040 := <s
-  if _3 
+  if _3
 {
     let expr_1 := 0
     let _4 := 64
@@ -59,24 +59,24 @@ def if_9141570808380448040_concrete_of_code : {
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMMload']
   try simp
-  
+
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMShl']
   try simp
-  
+
   rw [cons, ExprStmtPrimCall']; try simp only
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   rw [EVMMstore']
   try simp
-  
+
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMAdd']
   try simp
-  
+
   rw [cons]; simp only [LetCall', AssignCall']
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
@@ -88,20 +88,18 @@ def if_9141570808380448040_concrete_of_code : {
   swap; clear hs
   try revert h'
   revert h
-  
+
   rw [cons]; simp only [LetPrimCall', AssignPrimCall']
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMSub']
   try simp
-  
+
   rw [cons, ExprStmtPrimCall']; try simp only
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   rw [EVMRevert']
   try simp
-  
-  
-  
+
   -- tacticsOfStmt offsetting
   try rw [nil]
   try simp [Bool.toUInt256, UInt256.size]

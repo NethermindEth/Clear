@@ -22,7 +22,7 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
   let to_addr := Address.ofUInt256 var_to
   let transfer_value : UInt256 := var_value
   s₉.isOk ∧
-  (
+  ( --Case 1: No Collision in s₀
     ∀ {erc20}, (IsERC20 erc20 s₀ ∧ s₀.evm.isEVMState) →
     -- Case 1.1: _transfer succeeds
     (
@@ -42,7 +42,7 @@ def A_fun__transfer  (var_from var_to var_value : Literal) (s₀ s₉ : State) :
     -- Case 1.3: Hash collision during transfer
     ∨ s₉.evm.hash_collision = true
   )
-    -- Case : existing hash collision in s₀
+    -- Case 2 : existing hash collision in s₀
   ∧ (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true)
 
 lemma fun__transfer_abs_of_concrete {s₀ s₉ : State} { var_from var_to var_value} :
