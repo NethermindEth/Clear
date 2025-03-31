@@ -977,15 +977,8 @@ def evm_return (σ : EVMState) (mstart s : UInt256) : EVMState :=
   let vals := extractFill mstart.val s.val arr
   {σ with machine_state := σ.machine_state.setReturnData vals.data}
 
--- def evm_revert (σ : EVMState) (mstart s : UInt256) : EVMState :=
- --  {(σ.evm_return mstart s) with reverted := true}
-
 def evm_revert (σ : EVMState) (mstart s : UInt256) : EVMState :=
-  {σ with reverted := true}
-
-def evm_revert! (σ : EVMState) : EVMState :=
-  evm_revert σ 42 24601
-
+  {(σ.evm_return mstart s) with reverted := true}
 
 lemma mstore_preserved {σ} {pos val} : Preserved σ (σ.mstore pos val) := by
   unfold mstore updateMemory

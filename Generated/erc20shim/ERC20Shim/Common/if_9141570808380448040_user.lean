@@ -20,7 +20,7 @@ def A_if_9141570808380448040 (s₀ s₉ : State) : Prop :=
   (
     ( -- Case 1.1 : Reversion
       preservesEvm s₀ s₉ ∧
-      s₉ = s₀.setEvm (evm_revert! s₀.evm)  ∧
+      s₉.evm.reverted = true  ∧
       s₀["_3"]!! ≠ 0 ∧
       s₉.evm.hash_collision = false
     )
@@ -40,6 +40,8 @@ def A_if_9141570808380448040 (s₀ s₉ : State) : Prop :=
      s₀.evm.hash_collision = true →
     s₉.evm.hash_collision = true
   )
+
+set_option maxHeartbeats 400000
 
 lemma if_9141570808380448040_abs_of_concrete {s₀ s₉ : State} :
   Spec if_9141570808380448040_concrete_of_code s₀ s₉ →
@@ -122,7 +124,9 @@ lemma if_9141570808380448040_abs_of_concrete {s₀ s₉ : State} :
                           simp [s_all]
                           rw [insert_of_ok]
                           unfold evm_revert
+                          unfold evm_return
                           simp
+
           simp [Preserved_def]
           aesop
         aesop
@@ -136,33 +140,7 @@ lemma if_9141570808380448040_abs_of_concrete {s₀ s₉ : State} :
         split_ands
         · apply preservesEvm_trans s_ok
           all_goals aesop
-        · unfold setEvm
-          simp [←s0_all, ←code]
-          unfold evm_revert!
-          unfold evm_revert
-
-          unfold preservesEvm at s0_s_preservesEvm
-          simp [←s0_all, s_all] at s0_s_preservesEvm
-          simp [Preserved_def] at s0_s_preservesEvm
-          simp [s0_s_preservesEvm]
-
-          have:  s_evm.machine_state = evm₀.machine_state ∧
-                s_evm.keccak_map = evm₀.keccak_map ∧
-                s_evm.keccak_range = evm₀.keccak_range ∧
-                s_evm.used_range = evm₀.used_range ∧
-                s_evm.blocks = evm₀.blocks := by sorry
-
-          simp [←this]
-
-          unfold State.insert
-          simp
-
-          have : Finmap.insert "_10" ((Finmap.lookup "_9" s_varstore).get! - (Finmap.lookup "_5" s_varstore).get!) s_varstore = varstore₀
-                  := by sorry
-
-          aesop
-
-  #exit
+        · aesop
         · aesop
         · aesop
 
@@ -184,7 +162,9 @@ lemma if_9141570808380448040_abs_of_concrete {s₀ s₉ : State} :
                             simp [s_all]
                             rw [insert_of_ok]
                             unfold evm_revert
-                            aesop
+                            unfold evm_return
+                            simp
+
             simp [Preserved_def]
             aesop
           aesop
@@ -215,10 +195,11 @@ lemma if_9141570808380448040_abs_of_concrete {s₀ s₉ : State} :
 
         have : upd_evm.hash_collision = evm₀.hash_collision := by
           simp [Preserved_def] at this
+          unfold evm_return at this
           aesop
 
         aesop
-
+    aesop
   · aesop
 
 end

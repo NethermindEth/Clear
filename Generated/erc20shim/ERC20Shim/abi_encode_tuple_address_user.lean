@@ -17,8 +17,9 @@ def A_abi_encode_tuple_address (tail : Identifier) (headStart value0 : Literal) 
   s₉.isOk ∧
   (
   --Case of no collision
+  let s := s₀⟦tail ↦ headStart + 32⟧
   (preservesEvm s₀ s₉ ∧
-  Fin.land value0 (Fin.shiftLeft 1 160 - 1) = EVMState.mload s₉.evm headStart ∧
+  (Ok (EVMState.mstore s₀.evm headStart (Fin.land value0 (Fin.shiftLeft 1 160 - 1))) s.store) = s₉ ∧
   s₉.evm.hash_collision = false)
 
   -- Case of collision
@@ -43,13 +44,27 @@ lemma abi_encode_tuple_address_abs_of_concrete {s₀ s₉ : State} {tail headSta
   generalize s0_all :
   (Ok evm₀ varstore₀) = s₀ at *
 
+  have s0_ok : s₀.isOk := by aesop
+  have sinhab_ok : s_inhabited.isOk := by aesop
+
   unfold A_abi_encode_address at call_encode_address
   clr_spec at call_encode_address
 
-  obtain ⟨s_ok, ⟨sInhab_s_preservesEvm, pos_correct, s_no_collision⟩| s_collision⟩
+  obtain ⟨s_ok, s_no_collision, s_collision⟩
           := call_encode_address
 
-  all_goals { obtain ⟨s_evm, ⟨s_varstore, s_all⟩⟩ := State_of_isOk s_ok; aesop }
+  obtain ⟨s_evm, ⟨s_varstore, s_all⟩⟩ := State_of_isOk s_ok
+
+  unfold reviveJump at code
+  simp [s_all, ←s0_all] at code
+
+  by_cases no_s_collision : s_inhabited.evm.hash_collision = false
+
+  · have : s_inhabited.evm.hash_collision = false := by aesop
+    simp [this] at s_no_collision
+    obtain ⟨sinhab_s_preservesEvm,s_new, s_no_collision⟩ := s_no_collision
+    all_goals aesop
+  · aesop
 
 end
 

@@ -12,16 +12,23 @@ open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemma
 
 def A_abi_encode_address  (value pos : Literal) (s₀ s₉ : State) : Prop :=
 
-  let position : UInt256 := pos
   s₉.isOk ∧
-
-  ((-- Case of no collision
+  (--Case 1: No initial collision
+    s₀.evm.hash_collision = false →
+   (
+    (-- Case 1.1 No hash collision in function
     preservesEvm s₀ s₉ ∧
-    ( Fin.land value (Fin.shiftLeft 1 160 - 1) = EVMState.mload s₉.evm position ∧
-    s₉.evm.hash_collision = false))
-
-    -- Collision
+    (Ok (EVMState.mstore s₀.evm pos (Fin.land value (Fin.shiftLeft 1 160 - 1))) s₀.store) = s₉ ∧
+    s₉.evm.hash_collision = false
+    )
+    -- Case 1.2 collision in function
     ∨ s₉.evm.hash_collision = true
+   )
+  )
+  ∧
+  (-- Case 2: existing initial collision
+     s₀.evm.hash_collision = true →
+    s₉.evm.hash_collision = true
   )
 
 lemma abi_encode_address_abs_of_concrete {s₀ s₉ : State} { value pos} :
@@ -66,24 +73,16 @@ lemma abi_encode_address_abs_of_concrete {s₀ s₉ : State} { value pos} :
 
   · aesop
   · by_cases s0_collision : evm₀.hash_collision
-    · right
+    · intro s0_no_collision
+      right
       aesop
-    · left
+    · intro s0_no_collision
+      left
       split_ands
       · exact s0_s9_preservesEvm
-
-      · rw[←code]
-        rw[←lkup_arg]
-        have pos_get : lookup_arg.get! = pos := by
-          aesop
-        rw [←lkup_arg] at pos_get
-        rw[pos_get]
-        have value_get : EVMState.mload (Ok (mstore evm₀ pos value_arg) varstore₀).evm pos = value_arg := by
-          unfold EVMState.mload
-          apply lookup_mstore
-        rw[value_get]
-
       · aesop
+      · aesop
+  · aesop
 
 end
 
