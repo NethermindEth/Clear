@@ -38,17 +38,6 @@ def A_abi_encode_address_uint256_uint256 (tail : Identifier) (headStart value0 v
 set_option maxHeartbeats 2500000
 set_option maxRecDepth 1000
 
-@[simp]
-lemma abc {evm' : EVMState} {varstore' : VarStore} :
-  (Ok evm' varstore').store = varstore' :=
-  by simp [State.store]
-
-@[simp]
-lemma cba {evm' : EVMState} {varstore' : VarStore} :
-  (Ok evm' varstore').evm = evm' :=
-  by simp
-
-
 lemma abi_encode_address_uint256_uint256_abs_of_concrete {s₀ s₉ : State} {tail headStart value0 value1 value2} :
   Spec (abi_encode_address_uint256_uint256_concrete_of_code.1 tail headStart value0 value1 value2) s₀ s₉ →
   Spec (A_abi_encode_address_uint256_uint256 tail headStart value0 value1 value2) s₀ s₉ := by
@@ -56,8 +45,8 @@ lemma abi_encode_address_uint256_uint256_abs_of_concrete {s₀ s₉ : State} {ta
   rcases s₀ with ⟨evm₀, varstore₀⟩ | _ | _ <;> [simp only; aesop_spec; aesop_spec]
   apply spec_eq
   clr_funargs
-  rintro hasFuel ⟨s, call_encode_address, ⟨s', call_encode_uint, ⟨s'', call_encode_uint', code⟩⟩⟩
   clr_varstore,
+  rintro hasFuel ⟨s, call_encode_address, ⟨s', call_encode_uint, ⟨s'', call_encode_uint', code⟩⟩⟩
   generalize s_inhabited_all :
   (Ok evm₀
     Inhabited.default⟦"value2"↦value2⟧⟦"value1"↦value1⟧⟦"value0"↦value0⟧⟦"headStart"↦headStart⟧⟦"_1"↦96⟧⟦"tail"↦headStart + 96⟧)

@@ -1,16 +1,14 @@
 import Clear.ReasoningPrinciple
 
-
-
 namespace Generated.erc20shim.ERC20Shim
 
 section
 
-open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities 
+open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities
 
 def panic_error_0x11 : FunctionDefinition := <f
-    function panic_error_0x11() -> 
-    
+    function panic_error_0x11() ->
+
 {
     let _1 := shl(224, 1313373041)
     let _2 := 0
@@ -22,7 +20,7 @@ def panic_error_0x11 : FunctionDefinition := <f
     let _6 := _2
     revert(_2, _5)
 }
-    
+
 >
 
 set_option maxRecDepth 4000
@@ -31,7 +29,7 @@ set_option maxHeartbeats 300000
 def panic_error_0x11_concrete_of_code
 : {
     C :
-      
+
       State → State → Prop
     // ∀ {s₀ s₉ : State} {  fuel},
          execCall fuel panic_error_0x11 [] (s₀, []) = s₉ →
@@ -69,14 +67,14 @@ def panic_error_0x11_concrete_of_code
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   rw [EVMShl']
   try simp
-  
+
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
   (try (simp only [Fin.isValue])); (try (rw [List.foldr_cons])); (try (rw [List.foldr_nil])); simp [evalArgs, head', reverse', multifill', PrimCall', Lit', Var', execPrimCall, evalPrimCall]; (try (rewrite [List.foldr_nil]))
   -- EXPR 
   rw [EVMMstore']
   try simp
-  
+
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
@@ -84,7 +82,7 @@ def panic_error_0x11_concrete_of_code
   -- EXPR 
   rw [EVMMstore']
   try simp
-  
+
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons]; simp only [LetEq', Assign', Lit', Var']
   rw [cons, ExprStmtPrimCall']; try simp only
@@ -92,7 +90,7 @@ def panic_error_0x11_concrete_of_code
   -- EXPR 
   rw [EVMRevert']
   try simp
-  
+
   try clr_varstore_target
   -- finish offsetting
   subst hs₉
