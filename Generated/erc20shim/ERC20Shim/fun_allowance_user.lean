@@ -36,11 +36,11 @@ lemma fun_allowance_abs_of_concrete {s₀ s₉ : State} {var var_owner var_spend
   clr_varstore,
 
   -- what we can get right now from mapping function
-  unfold A_mapping_index_access_mapping_address_mapping_address_uint256_of_address
-         A_mapping_index_access_mapping_address_uint256_of_address at mapping
+  unfold A_mapping_index_access_mapping_address_mapping_address_uint256_of_address at mapping
+  unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping
   clr_spec at mapping
 
-
+#exit
 
   obtain ⟨⟨preservesEvm, s_isOk, s_isEVMStatePreserved, ⟨⟨intermediate_keccak, keccak_using_intermediate, hStore⟩,hHashCollision⟩⟩, hHashCollision₁⟩ := mapping -- Adds a goal
   · -- No hash collision from first keccak

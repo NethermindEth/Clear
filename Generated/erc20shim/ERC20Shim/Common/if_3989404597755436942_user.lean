@@ -168,7 +168,12 @@ lemma if_3989404597755436942_abs_of_concrete {s₀ s₉ : State} :
           all_goals aesop
         · aesop
         · aesop
-      · aesop
+      · rw[←code]
+        unfold lookup! State.insert evm_revert evm_return
+        simp
+        unfold preservesEvm at s0_s_preservesEvm
+        simp[←s0_all, s_all, Preserved_def] at s0_s_preservesEvm
+        aesop
     · aesop
   · aesop
 
