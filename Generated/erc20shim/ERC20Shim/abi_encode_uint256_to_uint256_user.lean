@@ -38,7 +38,6 @@ lemma abi_encode_uint256_to_uint256_abs_of_concrete {s₀ s₉ : State} { value 
   apply spec_eq
   clr_funargs
   rintro hasFuel code
-
   generalize s_inhabited_all :
   (Ok evm₀ Inhabited.default⟦"pos"↦pos⟧⟦"value"↦value⟧) = s_inhabited at *
 
@@ -51,6 +50,7 @@ lemma abi_encode_uint256_to_uint256_abs_of_concrete {s₀ s₉ : State} { value 
   unfold State.insert at code
   simp at code
 
+  extract_goal
   have s0_s9_preservesEvm : preservesEvm s₀ s₉ := by
     rw [←s0_all, ←code]
     unfold preservesEvm

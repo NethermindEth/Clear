@@ -56,7 +56,7 @@ lemma if_9141570808380448040_abs_of_concrete {s₀ s₉ : State} :
   (Ok evm₀ varstore₀) = s₀ at *
 
   unfold A_abi_encode_tuple_address at call_encode_tuple
-  --clr_varstore
+  clr_varstore
 
   rw [←s0_all] at call_encode_tuple
   rw [insert_of_ok] at call_encode_tuple

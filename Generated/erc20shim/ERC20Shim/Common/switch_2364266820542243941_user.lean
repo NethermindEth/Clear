@@ -50,6 +50,7 @@ def A_switch_2364266820542243941 (s₀ s₉ : State) : Prop :=
   )
 
 set_option maxHeartbeats 2000000
+set_option maxRecDepth 1000
 
 lemma switch_2364266820542243941_abs_of_concrete {s₀ s₉ : State} :
   Spec switch_2364266820542243941_concrete_of_code s₀ s₉ →
@@ -61,19 +62,78 @@ lemma switch_2364266820542243941_abs_of_concrete {s₀ s₉ : State} :
 
   apply spec_eq
 
-  rintro hasFuel ⟨s1, call_mapping1,
-                  ⟨s2, call_308,
-                    ⟨s3, call_mapping2,
-                      ⟨s4, call_update1,
-                        ⟨s5, call_add,
-                          ⟨s6, call_update2, code⟩⟩⟩⟩⟩⟩
+  rintro hasFuel ⟨s1, mapping1,
+                  ⟨s2, if308,
+                    ⟨s3, mapping2,
+                      ⟨s4, update1,
+                        ⟨s5, add,
+                          ⟨s6, update2, code⟩⟩⟩⟩⟩⟩
 
   generalize s0_all :
   (Ok evm₀ varstore₀) = s₀ at *
+  have s0_ok : s₀.isOk := by aesop
 
-  unfold A_mapping_index_access_mapping_address_uint256_of_address at call_mapping1
-  unfold lookup! State.insert at call_mapping1
-  simp[←s0_all] at call_mapping1
+  by_cases _3 : s₀["_3"]!! = 0
+
+  · simp[_3] at code
+    clear update2 add
+    clr_varstore mapping1,
+    clr_varstore mapping2,
+    clr_varstore update1,
+    unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping1
+    unfold A_mapping_index_access_mapping_address_uint256_of_address at mapping2
+    unfold A_if_3989404597755436942 at if308
+    unfold A_update_storage_value_offsett_uint256_to_uint256 at update1
+
+    rw[←code] at hasFuel
+    have s3_hasFuel: ¬❓ s3 := by
+      apply not_isOutOfFuel_Spec update1 hasFuel
+    have s2insert_hasFuel : ¬❓ (s2⟦"expr_4"↦s2["_6"]!! - (s2["var_value"]!!)⟧⟦"_15"↦s2["_4"]!!⟧) := by
+      apply not_isOutOfFuel_Spec mapping2 s3_hasFuel
+    have s2_hasFuel : ¬❓ s2 := by aesop
+
+    have s1insert_hasFuel : ¬❓ (s1⟦"_6"↦sload s1.evm
+                  (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                    (s1["_5"]!!)⟧["_6"]!!⟧⟦"_7"↦(decide
+                (s1⟦"_6"↦sload s1.evm (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm (s1["_5"]!!)⟧["_6"]!!⟧["_6"]!! <
+                  s1⟦"_6"↦sload s1.evm
+                          (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                            (s1["_5"]!!)⟧["_6"]!!⟧["var_value"]!!)).toUInt256⟧) := by
+      apply not_isOutOfFuel_Spec if308 s2_hasFuel
+    have s1_hasFuel : ¬❓ s1 := by aesop
+
+    -- These all work, sorrys for speed
+    apply Spec_ok_unfold (by sorry) (by sorry) at mapping1
+    apply Spec_ok_unfold (by sorry) (by sorry) at if308
+    apply Spec_ok_unfold (by sorry) (by sorry) at mapping2
+    apply Spec_ok_unfold (by sorry) (by sorry) at update1
+
+    clr_varstore if308,
+
+#exit
+  · clear update1 if308 mapping1 mapping2
+
+    have : 0 ≠ s₀["_3"]!! := by aesop
+    simp[this] at code
+    clear this
+
+    unfold A_checked_add_uint256 at add
+    unfold A_update_storage_value_offsett_uint256_to_uint256 at update2
+    clr_varstore,
+
+    clr_spec at add
+    clr_spec at update2
+    sorry
+
+
+
+
+
+
+
+
+
+
 
 
 end
