@@ -36,7 +36,7 @@ theorem ERC20Shim.Common.extracted_1 {s₉ : State} (evm₀ : EVM) (varstore₀ 
   (mapping1 :
     s1.isOk ∧
       (preservesEvm (s₀⟦"_4"↦0⟧) s1 ∧
-            (isEVMState (s₀⟦"_4"↦0⟧.evm) → isEVMState s1.evm) ∧
+            (isEVMState s₀⟦"_4"↦0⟧.evm → isEVMState s1.evm) ∧
               (∃ keccak,
                   Finmap.lookup [↑↑(Address.ofUInt256 (s₀["var_from"]!!)), 0] s1.evm.keccak_map = some keccak ∧
                     s1.store = s₀⟦"_4"↦0⟧⟦"_5"↦keccak⟧.store) ∧
@@ -46,33 +46,70 @@ theorem ERC20Shim.Common.extracted_1 {s₉ : State} (evm₀ : EVM) (varstore₀ 
   (if308 :
     s2.isOk ∧
       (s1⟦"_6"↦sload s1.evm
-                        (s1["_5"]!!)⟧⟦"var_fromBalance"↦sload s1.evm
-                      (s1["_5"]!!)⟧⟦"_7"↦(decide
-                      (sload s1.evm (s1["_5"]!!) < s1["var_value"]!!)).toUInt256⟧.evm.hash_collision =
+                        (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                          (s1["_5"]!!)⟧["_6"]!!⟧⟦"_7"↦(decide
+                      (s1⟦"_6"↦sload s1.evm
+                                (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm (s1["_5"]!!)⟧["_6"]!!⟧["_6"]!! <
+                        s1⟦"_6"↦sload s1.evm
+                                (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                                  (s1["_5"]!!)⟧["_6"]!!⟧["var_value"]!!)).toUInt256⟧.evm.hash_collision =
             false →
           preservesEvm
                 (s1⟦"_6"↦sload s1.evm
-                        (s1["_5"]!!)⟧⟦"var_fromBalance"↦sload s1.evm
-                      (s1["_5"]!!)⟧⟦"_7"↦(decide (sload s1.evm (s1["_5"]!!) < s1["var_value"]!!)).toUInt256⟧)
+                        (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                          (s1["_5"]!!)⟧["_6"]!!⟧⟦"_7"↦(decide
+                      (s1⟦"_6"↦sload s1.evm
+                                (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm (s1["_5"]!!)⟧["_6"]!!⟧["_6"]!! <
+                        s1⟦"_6"↦sload s1.evm
+                                (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                                  (s1["_5"]!!)⟧["_6"]!!⟧["var_value"]!!)).toUInt256⟧)
                 s2 ∧
-              s2.evm.reverted = true ∧ (decide (sload s1.evm (s1["_5"]!!) < s1["var_value"]!!)).toUInt256 ≠ 0 ∨
+              s2.evm.reverted = true ∧
+                s1⟦"_6"↦sload s1.evm
+                            (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                              (s1["_5"]!!)⟧["_6"]!!⟧⟦"_7"↦(decide
+                          (s1⟦"_6"↦sload s1.evm
+                                    (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                                      (s1["_5"]!!)⟧["_6"]!!⟧["_6"]!! <
+                            s1⟦"_6"↦sload s1.evm
+                                    (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                                      (s1["_5"]!!)⟧["_6"]!!⟧["var_value"]!!)).toUInt256⟧["_7"]!! ≠
+                  0 ∨
             preservesEvm
                   (s1⟦"_6"↦sload s1.evm
-                          (s1["_5"]!!)⟧⟦"var_fromBalance"↦sload s1.evm
-                        (s1["_5"]!!)⟧⟦"_7"↦(decide (sload s1.evm (s1["_5"]!!) < s1["var_value"]!!)).toUInt256⟧)
+                          (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                            (s1["_5"]!!)⟧["_6"]!!⟧⟦"_7"↦(decide
+                        (s1⟦"_6"↦sload s1.evm
+                                  (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm (s1["_5"]!!)⟧["_6"]!!⟧["_6"]!! <
+                          s1⟦"_6"↦sload s1.evm
+                                  (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                                    (s1["_5"]!!)⟧["_6"]!!⟧["var_value"]!!)).toUInt256⟧)
                   s2 ∧
-                (decide (sload s1.evm (s1["_5"]!!) < s1["var_value"]!!)).toUInt256 = 0 ∨
+                s1⟦"_6"↦sload s1.evm
+                            (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                              (s1["_5"]!!)⟧["_6"]!!⟧⟦"_7"↦(decide
+                          (s1⟦"_6"↦sload s1.evm
+                                    (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                                      (s1["_5"]!!)⟧["_6"]!!⟧["_6"]!! <
+                            s1⟦"_6"↦sload s1.evm
+                                    (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                                      (s1["_5"]!!)⟧["_6"]!!⟧["var_value"]!!)).toUInt256⟧["_7"]!! =
+                  0 ∨
               s2.evm.hash_collision = true) ∧
         (s1⟦"_6"↦sload s1.evm
-                        (s1["_5"]!!)⟧⟦"var_fromBalance"↦sload s1.evm
-                      (s1["_5"]!!)⟧⟦"_7"↦(decide
-                      (sload s1.evm (s1["_5"]!!) < s1["var_value"]!!)).toUInt256⟧.evm.hash_collision =
+                        (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                          (s1["_5"]!!)⟧["_6"]!!⟧⟦"_7"↦(decide
+                      (s1⟦"_6"↦sload s1.evm
+                                (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm (s1["_5"]!!)⟧["_6"]!!⟧["_6"]!! <
+                        s1⟦"_6"↦sload s1.evm
+                                (s1["_5"]!!)⟧⟦"var_fromBalance"↦s1⟦"_6"↦sload s1.evm
+                                  (s1["_5"]!!)⟧["_6"]!!⟧["var_value"]!!)).toUInt256⟧.evm.hash_collision =
             true →
           s2.evm.hash_collision = true))
   (mapping2 :
     s3.isOk ∧
       (preservesEvm (s2⟦"expr_4"↦s2["_6"]!! - (s2["var_value"]!!)⟧⟦"_15"↦s2["_4"]!!⟧) s3 ∧
-            (isEVMState (s2⟦"expr_4"↦s2["_6"]!! - (s2["var_value"]!!)⟧⟦"_15"↦s2["_4"]!!⟧).evm → isEVMState s3.evm) ∧
+            (isEVMState s2⟦"expr_4"↦s2["_6"]!! - (s2["var_value"]!!)⟧⟦"_15"↦s2["_4"]!!⟧.evm → isEVMState s3.evm) ∧
               (∃ keccak,
                   Finmap.lookup [↑↑(Address.ofUInt256 (s2["var_from"]!!)), s2["_4"]!!] s3.evm.keccak_map = some keccak ∧
                     s3.store = s2⟦"expr_4"↦s2["_6"]!! - (s2["var_value"]!!)⟧⟦"_15"↦s2["_4"]!!⟧⟦"_16"↦keccak⟧.store) ∧
@@ -89,77 +126,10 @@ theorem ERC20Shim.Common.extracted_1 {s₉ : State} (evm₀ : EVM) (varstore₀ 
         (s3.evm.hash_collision = true → s4.evm.hash_collision = true)) :
   s₉.isOk ∧
     (s₀.evm.hash_collision = false →
-        (preservesEvm s₀ s₉ ∧ s₉.evm.reverted = true ∧ s₉.evm.hash_collision = false ∨
+        ((∃ slot value, preservesEvm (Ok (sstore s₀.evm slot value) s₀.store) s₉) ∧ s₉.evm.hash_collision = false ∨
             preservesEvm s₀ s₉ ∧ s₉.evm.hash_collision = false) ∨
           preservesEvm s₀ s₉ ∧ s₉.evm.hash_collision = false ∨ s₉.evm.hash_collision = true) ∧
-      (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true) := by
-
-      obtain ⟨s1_ok, ⟨s0s1_preserves, s0s1_state, s1_keccak, s1_no_collision⟩ | s1_collision, s0s1_colliion⟩ := mapping1
-
-      · -- NO collision in mapping1
-        obtain ⟨s1_evm, ⟨s1_varstore, s1_all⟩⟩ := State_of_isOk s1_ok
-        by_cases _7 : (decide (sload s1.evm (s1["_5"]!!) < s1["var_value"]!!)).toUInt256 = 1
-
-        · -- _7 = 1 (Reversion)
-
-          simp[s1_no_collision, _7] at if308
-          obtain ⟨s2_ok, ⟨s1s2_preserves, s2_reverted⟩| s2_collision⟩ := if308
-
-          · -- no Collision in if308
-            obtain ⟨s2_evm, ⟨s2_varstore, s2_all⟩⟩ := State_of_isOk s2_ok
-            obtain ⟨s3_ok, ⟨s2s3_preserves, s2s3_state, s3_keccak, s3_no_collision⟩ | s3_collision, s2s3_colliion⟩ := mapping2
-
-            · -- No collision in mapping2
-              obtain ⟨s3_evm, ⟨s3_varstore, s3_all⟩⟩ := State_of_isOk s3_ok
-              have s3__ok : (Ok (sstore s3.evm (s3["_16"]!!) (s3["expr_4"]!!)) s3.store).isOk := by aesop
-              simp[s3_no_collision, _7] at update1
-              obtain ⟨s4_ok, s3s4_preserves | s4_collision⟩ := update1
-
-              · -- No collision in update1
-                obtain ⟨s4_evm, ⟨s4_varstore, s4_all⟩⟩ := State_of_isOk s4_ok
-                rw[←code]
-                split_ands
-                · aesop
-                · intro s0_no_collison
-                  left
-                  left
-                  split_ands
-                  · apply preservesEvm_trans s2_ok
-                    · apply preservesEvm_trans s1_ok
-                      · aesop
-                      · aesop
-                    · apply preservesEvm_trans s3_ok
-                      · aesop
-                      · cases' s1_keccak with keccak1 keccak_value
-                        have : s1["_5"]!! = keccak1 := by
-                          unfold lookup!
-                          simp[s1_all]
-                          have : s1_varstore = s₀⟦"_4"↦0⟧⟦"_5"↦keccak1⟧.store := by aesop
-                          rw[this]
-                          unfold State.insert
-                          aesop
-
-
-
-                · aesop
-
-              · -- Collision in update 1
-                sorry --aesop
-
-            · -- Collision in mapping 2
-              sorry -- aesop
-
-          · -- collision in if308
-            sorry --aesop
-
-        · -- _7 = 0 (No reversion)
-          sorry
-
-      · -- Collision in mapping1
-        sorry --aesop
-
-
-
+      (s₀.evm.hash_collision = true → s₉.evm.hash_collision = true) := sorry
 
 
 
