@@ -11,14 +11,11 @@ import Mathlib.Tactic
 
 -- 2^256
 @[simp]
-def UInt256.size : ℕ := 115792089237316195423570985008687907853269984665640564039457584007913129639936
+def UInt256.size : ℕ := 2 ^ 256
 
 instance : NeZero UInt256.size := ⟨by decide⟩
 
 abbrev UInt256 := Fin UInt256.size
-
-instance : SizeOf UInt256 where
-  sizeOf := 1
 
 instance (n : ℕ) : OfNat UInt256 n := ⟨Fin.ofNat n⟩
 instance : Inhabited UInt256 := ⟨0⟩
@@ -26,6 +23,21 @@ instance : NatCast UInt256 := ⟨Fin.ofNat⟩
 
 abbrev Nat.toUInt256 : ℕ → UInt256 := Fin.ofNat
 abbrev UInt8.toUInt256 (a : UInt8) : UInt256 := a.toNat.toUInt256
+
+def UInt256.top : ℕ := (⊤ : UInt256).val
+
+lemma UInt256.top_def : UInt256.top = 2 ^ 256 - 1 := by
+  unfold top
+  rw [Fin.top_eq_last]
+  simp
+
+lemma UInt256.top_def'
+  : UInt256.top = 115792089237316195423570985008687907853269984665640564039457584007913129639935 := by
+  rw [UInt256.top_def]; simp
+
+lemma UInt256.size_def
+  : UInt256.size = 115792089237316195423570985008687907853269984665640564039457584007913129639936 := by
+  unfold size; simp
 
 def Bool.toUInt256 (b : Bool) : UInt256 := if b then 1 else 0
 
@@ -234,6 +246,13 @@ def toBytes! (n : UInt256) : List UInt8 := zeroPadBytes 32 (toBytes' n)
 
 @[simp]
 lemma length_toBytes! {n : UInt256} : (toBytes! n).length = 32 := zeroPadBytes_len (toBytes'_UInt256_le n.2)
+
+lemma fromBytes!_toBytes! : ∀ {n}, ↑(fromBytes! (toBytes! n)) = n := by
+  intro n
+  unfold fromBytes!
+  rw [ ← length_toBytes! (n := n) ]
+  unfold toBytes!
+  simp
 
 lemma UInt256_pow_def {a b : UInt256} : a ^ b = a ^ b.val := by
   rfl

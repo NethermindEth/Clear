@@ -46,7 +46,7 @@ lemma AOk_for_84821961910748561 : ∀ s₀ s₂ s₄ s₅, isOk s₀ → isOk s�
   · clr_spec at h₇
     split_ands <;> [skip; aesop_spec; tauto]
     by_cases eq : s₀["k"]!! = 0 <;> simp [eq] at h₅ <;> [simp [h₅] at h₂; skip]
-    rw [h₆] at h₇; rw [h₇.1.symm, h₅]; clr_varstore
+    rw [h₆] at h₇; rw [h₇.1.symm, h₅]; clr_varstore,
     ring
   · have h : isOk (s₂⟦"k"↦(s₂["k"]!!) - 1⟧) := by aesop
     simp [h₆.symm] at h

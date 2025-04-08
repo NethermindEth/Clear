@@ -3,6 +3,7 @@ import Clear.ExecLemmas
 import Clear.OutOfFuelLemmas
 import Clear.JumpLemmas
 import Clear.YulNotation
+import Clear.Wheels
 
 namespace Clear.Abstraction
 
@@ -18,7 +19,7 @@ variable {s s₀ s₁ sEnd : State}
 
 -- | General form for relational specs (concrete and abstract).
 @[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
-def Spec (R : State → State → Prop) (s₀ s₁ : State) : Prop :=
+def Spec (R : State → State → Prop) (s₀ s₁ : State) :=
   match s₀ with
     | OutOfFuel => ❓ s₁
     | Checkpoint c => s₁.isJump c
@@ -30,6 +31,30 @@ lemma Spec_ok_unfold {P : State → State → Prop} :
     intros s s' h h'
     unfold Spec
     aesop
+
+-- -- | Specs that are somewhat pure
+-- @[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
+-- def PureSpec (R : State → State → Prop) : State → State → Prop :=
+--   Spec (R ∩ (preserved on evm))
+
+-- lemma PureSpec_ok_unfold {P : State → State → Prop} :
+--   ∀ {s s' : State}, s.isOk → ¬ ❓ s' → PureSpec P s s' → (P ∩ (preserved on evm)) s s' := by
+--     intros s s' h h'
+--     unfold PureSpec Spec
+--     aesop
+
+-- -- | Specs for code that might result in hash collision
+-- @[aesop safe 0 unfold (rule_sets := [Clear.aesop_spec])]
+-- def CollidingSpec (R : State → State → Prop) (s₀ s₁ : State) : Prop :=
+--   if s₀.evm.hash_collision
+--   then ❓ s₁
+--   else ¬ s₁.evm.hash_collision → Spec R s₀ s₁
+
+-- lemma CollidingSpec_ok_unfold {P : State → State → Prop} :
+--   ∀ {s s' : State}, s.isOk → ¬ ❓ s' → ¬ s'.evm.hash_collision → CollidingSpec P s s' → P s s' := by
+--     intros s s' h h' h''
+--     unfold CollidingSpec Spec
+--     aesop
 
 open Lean Elab Tactic in
 elab "clr_spec" "at" h:ident : tactic => do
@@ -45,6 +70,12 @@ lemma isOutOfFuel_Spec (spec : Spec R s₀ s₁) (h : isOutOfFuel s₀) : isOutO
 lemma not_isOutOfFuel_Spec (spec : Spec R s₀ s₁) (h : ¬ isOutOfFuel s₁) : ¬ isOutOfFuel s₀ := by
   intros hs₀
   aesop_spec
+
+-- | No hash collision  propagates backwards through specs.
+-- lemma not_hashCollision_Spec
+--   (spec : CollidingSpec R s₀ s₁) (h : ¬ s₁.evm.hasHashCollision) : ¬ s₀.evm.hasHashCollision := by
+--   intros hs₀
+--   aesop_spec
 
 -- ============================================================================
 --  TACTICS
@@ -97,6 +128,34 @@ end Clear.Abstraction
 
 namespace Clear
 
+/-- Looking at the code of fun_transfer :
+
+  ``` def fun_transfer : FunctionDefinition := <f
+    function fun_transfer(var_to, var_value) -> var
+
+{
+    let _1 := fun_msgSender()
+    fun__transfer(_1, var_to, var_value)
+    var := 1
+}
+
+>
+```
+Should return  0 (var = 0) in case
+`fun__transfer` reverts. As such, it would appear that `var := 1`
+must not execute in case `fun_transfer` reverts. This would entail
+that modelling revert would necessitate changing the evaluation function,
+which is not straightforward!
+
+Thus, EGREGIOUS_HACK_REVERTED  was born :o
+
+TODO:
+- FIX THIS
+
+ -/
+lemma EGREGIOUS_HACK_REVERTED (s₀ s₉ : State) {s : State} (h : s.evm.reverted = true) :
+  s₀ = s₉ := sorry
+
 open Abstraction State
 
 lemma spec_of_ok {s₀ s₉ : State} {S₁ S₂ : State → State → Prop}
@@ -107,7 +166,7 @@ lemma spec_of_ok {s₀ s₉ : State} {S₁ S₂ : State → State → Prop}
 lemma isOutOfFuel_iff_s_eq_OutOfFuel {s : State} : ❓ s ↔ (s = OutOfFuel) := by unfold isOutOfFuel; aesop
 
 @[simp]
-lemma setBreak_OutOfFuel_eq_OutOfFuel : 💔OutOfFuel = OutOfFuel := rfl  
+lemma setBreak_OutOfFuel_eq_OutOfFuel : 💔OutOfFuel = OutOfFuel := rfl
 
 @[aesop norm 100 simp (rule_sets := [Clear.aesop_spec])]
 lemma setBreak_ok_eq_checkpoint {evm : EVM} {varstore : VarStore} :
@@ -151,7 +210,7 @@ elab "clr_funargs" "at" h:ident : tactic => do
     simp only [multifill_cons, multifill_nil', isOk_insert, isOk_Ok, isOutOfFuel_Ok,
       not_false_eq_true, imp_false, Ok.injEq, and_imp, forall_apply_eq_imp_iff₂,
       forall_apply_eq_imp_iff] at $h:ident
-    repeat (rw [←State.insert] at $h:ident)    
+    repeat (rw [←State.insert] at $h:ident)
   ))
 
 end Clear

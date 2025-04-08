@@ -1,6 +1,16 @@
 import Aesop
 
+import Mathlib.Data.Rel
 import Mathlib.Tactic.ApplyAt
+
+instance instRelInter {α β} : Inter (Rel α β) where
+  inter r s := λ a b ↦ r a b ∧ s a b
+
+def Rel.inter {α β} (r : α → β → Prop) (s : α → β → Prop) : α → β → Prop :=
+  λ a b ↦ r a b ∧ s a b
+
+instance instFunInter {α β : Type} : Inter (α → β → Prop) where
+  inter r s := λ a b ↦ r a b ∧ s a b
 
 declare_aesop_rule_sets [Clear.aesop_ok, Clear.aesop_spec, Clear.aesop_varstore]
 
@@ -40,12 +50,29 @@ elab "aesop_varstore" : tactic => do
 
 set_option hygiene false in
 open Lean Elab Tactic in
-elab "clr_varstore" : tactic => do
-  evalTactic <| ← `(tactic| (
-    repeat (
-      first | rw [State.lookup_insert (by assumption)] at * |
-              rw [State.lookup_insert' (by aesop_spec)] at * |
-              rw [State.lookup_insert_of_ne (by decide)] at *
-    )
-  )
-  )
+elab "clr_varstore" id:(ident)? "," : tactic =>
+  match id with
+  | .none => do evalTactic <| ← `(tactic| (
+                repeat (
+                  first | rw [State.lookup_insert (by assumption)] at * |
+                          rw [State.lookup_insert' (by aesop_spec)] at * |
+                          rw [State.lookup_insert_of_ne (by decide)] at *
+                )))
+  | .some id => do
+                evalTactic <| ← `(tactic| (
+                  repeat (
+                    first | rw [State.lookup_insert (by assumption)] at $id:ident |
+                            rw [State.lookup_insert' (by aesop_spec)] at $id:ident |
+                            rw [State.lookup_insert_of_ne (by decide)] at $id:ident
+                  )
+                )
+                )
+
+set_option hygiene false in
+open Lean Elab Tactic in
+elab "clr_varstore_target" : tactic =>
+  do evalTactic <| ← `(tactic| (
+      repeat (
+    first | (rw [State.lookup_insert' ?XX]; case XX => ((try simp [primCall]); aesop_spec)) |
+            rw [State.lookup_insert_of_ne (by decide)]
+  )))
