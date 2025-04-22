@@ -49,7 +49,7 @@ lemma AOk_for_4806375509446804985 : ∀ s₀ s₂ s₄ s₅, isOk s₀ → isOk 
     · split_ifs at h₅
       · aesop_spec
       · simp only [h₇, h₅] at *
-        clr_varstore
+        clr_varstore,
         ring
   · have : isOk (s₂⟦"k"↦s₂["k"]!! - 1⟧) := by aesop
     simp [h₆.symm] at this

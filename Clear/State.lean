@@ -66,6 +66,8 @@ def isLeave : State → Prop
   | .Checkpoint (.Leave _ _) => True
   | _ => False
 
+def allGood (s : State) : Prop := s.isOk ∧ ¬ s.evm.hash_collision
+
 -- ============================================================================
 --  STATE TRANSFORMERS
 -- ============================================================================
@@ -389,6 +391,10 @@ lemma overwrite?_insert : (s.overwrite? (s'.insert var x)) = s.overwrite? s'
   unfold insert overwrite?
   rcases s' <;> simp
 
+lemma insert_of_ok : (Ok evm store)⟦var ↦ val⟧ = Ok evm (store.insert var val)
+:= by
+  rfl
+
 -- | Looking up a variable you've just inserted gives you the value you inserted.
 @[simp]
 lemma lookup_insert : (Ok evm store)⟦var ↦ x⟧[var]!! = x
@@ -401,7 +407,6 @@ lemma lookup_insert' (h : isOk s) : s⟦var ↦ x⟧[var]!! = x
 := by
   unfold insert lookup!
   rcases s <;> simp at *
-  aesop
 
 -- | Inserting with the same key twice overwrites.
 @[simp]
@@ -632,6 +637,64 @@ lemma lookup_initcall_5 (ha : ve ≠ va) (hb : ve ≠ vb) (hc : ve ≠ vc) (hd :
   rw [lookup_insert_of_ne hd]
   rw [lookup_insert']
   aesop
+
+@[simp]
+lemma get_evm_of_ok : (Ok evm store).evm = evm
+:= by
+  unfold evm
+  simp
+
+lemma get_evm_of_isOk (h : isOk s) : ∃ evm, s.evm = evm
+:= by
+  let ⟨evm, store, h'⟩ := State_of_isOk h
+  exists evm
+  rw [h']
+  simp
+
+@[simp]
+lemma evm_get_set_of_ok : ((Ok evm store).setEvm evm').evm = evm'
+:= by
+  unfold setEvm evm
+  simp
+
+@[simp]
+lemma evm_get_set_of_isOk (h : isOk s) : (s.setEvm evm').evm = evm'
+:= by
+  unfold setEvm evm
+  rcases s <;> simp <;> try contradiction
+
+@[simp]
+lemma setEvm_insert_comm : s⟦var ↦ val⟧.setEvm evm' = (s.setEvm evm')⟦var ↦ val⟧
+:= by
+  rcases s <;> [(try simp only); aesop_spec; aesop_spec]
+  rfl
+
+-- @[simp]
+lemma insert_setEvm_insert : (s.setEvm evm')⟦var ↦ val⟧ = s⟦var ↦ val⟧.setEvm evm'
+:= by
+  rcases s <;> [(try simp only); aesop_spec; aesop_spec]
+  rfl
+
+-- TODO: Option.get!_some in newer mathlib
+theorem come_get!_some {α} [Inhabited α] {a : α} : (some a).get! = a := rfl
+
+open Lean Meta Elab Tactic in
+elab "clr_match" : tactic => do
+  evalTactic <| ← `(tactic| (
+    simp only [lookup!, setEvm, Fin.isValue, insert_of_ok,
+      multifill_cons, multifill_nil', Finmap.lookup_insert,
+      come_get!_some, isOk_Ok]
+    rw [← State.insert_of_ok]
+  ))
+
+open Lean Meta Elab Tactic in
+elab "clr_match" "at" h:ident : tactic => do
+  evalTactic <| ← `(tactic| (
+    simp only [lookup!, setEvm, Fin.isValue, insert_of_ok,
+      multifill_cons, multifill_nil', Finmap.lookup_insert,
+      come_get!_some, isOk_Ok] at $h:ident
+    repeat rw [← State.insert_of_ok] at $h:ident
+  ))
 
 end
 
