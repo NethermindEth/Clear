@@ -430,6 +430,8 @@ structure EVMState : Type where
   -- blocks
   blocks : List EVMBlock
   hash_collision : Bool
+  -- reversion
+  reverted : Bool
   -- props
   -- keccak_inj   : ∀ {a b},
   --   (a ∈ keccak_map.keys) → keccak_map.lookup a = keccak_map.lookup b → a = b
@@ -437,7 +439,7 @@ structure EVMState : Type where
 deriving DecidableEq
 
 instance : Inhabited EVMState :=
-  ⟨ ∅ , default, default , ∅ , default, ∅ , default , false ⟩
+  ⟨ ∅ , default, default , ∅ , default, ∅ , default , false, false⟩
 
 abbrev EVM := EVMState
 
@@ -619,7 +621,7 @@ theorem filter_eq_cons_iff {α} {p : α → Bool} {l} {a} {as} :
 --   (h_int : interval ∉ σ.keccak_map)
 --   (h_filter : σ.keccak_range.filter (· ∉ σ.used_range) = r :: rs)
 --   -- (h_head : r ∉ σ.used_range)
---   -- (h_rest : rs ⊆ σ.keccak_range) -- .filter (· ∉ σ.used_range) 
+--   -- (h_rest : rs ⊆ σ.keccak_range) -- .filter (· ∉ σ.used_range)
 --   :
 --   EVMState :=
 --     have := filter_eq_cons_iff.mp h_filter
@@ -973,7 +975,7 @@ def evm_return (σ : EVMState) (mstart s : UInt256) : EVMState :=
   {σ with machine_state := σ.machine_state.setReturnData vals.data}
 
 def evm_revert (σ : EVMState) (mstart s : UInt256) : EVMState :=
-  σ.evm_return mstart s
+  {(σ.evm_return mstart s) with reverted := true}
 
 lemma mstore_preserved {σ} {pos val} : Preserved σ (σ.mstore pos val) := by
   unfold mstore updateMemory
@@ -2282,8 +2284,8 @@ lemma mstore_preserves_keccak_map :
   unfold mstore
   unfold updateMemory
   simp
-  
-lemma mstore_preserves_used_range : 
+
+lemma mstore_preserves_used_range :
   (mstore evm addr val).used_range = evm.used_range := by
   unfold mstore
   unfold updateMemory
