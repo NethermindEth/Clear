@@ -140,10 +140,19 @@ lemma if_2395397427938978657_abs_of_concrete {s₀ s₉ : State} :
         left
         split_ands
         · apply preservesEvm_trans s_ok
-          all_goals aesop
+          · aesop
+          · aesop
         · aesop
         · aesop
-        · aesop
+        · rw[←code]
+          simp only [evm_insert, get_evm_of_ok]
+          unfold evm_revert
+          simp only
+          unfold evm_return
+          simp only
+          rw [s_all] at s_no_collision
+          simp only [get_evm_of_ok] at s_no_collision
+          exact s_no_collision
 
       · -- collision at s0
         intro s0_colliision
