@@ -70,7 +70,8 @@ lemma panic_error_0x11_abs_of_concrete {s₀ s₉ : State}  :
       unfold preservesEvm
       aesop
     · aesop
-    · aesop
+    · rw [←code,←s0_all]
+      simp [State.store]
     · rw[←code]
       simp[s0_evm.symm]
       unfold mstore updateMemory evm_revert evm_return
