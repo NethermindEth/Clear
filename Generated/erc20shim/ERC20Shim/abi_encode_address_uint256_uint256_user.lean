@@ -62,21 +62,21 @@ lemma abi_encode_address_uint256_uint256_abs_of_concrete {s₀ s₉ : State} {ta
   have sinhab_s0 : s_inhab.evm = s₀.evm := by aesop
 
   unfold A_abi_encode_address at call_encode_address
-  apply Spec_ok_unfold (by sorry) (by sorry) at call_encode_address
+  clr_spec at call_encode_address
 
   unfold A_abi_encode_uint256_to_uint256 at call_encode_uint
   have s_ok : s.isOk := by aesop
   obtain ⟨s_evm, ⟨s_varstore, s_all⟩⟩ := State_of_isOk s_ok
   unfold lookup! at call_encode_uint
   simp [s_all] at call_encode_uint
-  apply Spec_ok_unfold (by sorry) (by sorry) at call_encode_uint
+  clr_spec at call_encode_uint
 
   unfold A_abi_encode_uint256_to_uint256 at call_encode_uint'
   have s'_ok : s'.isOk := by aesop
   obtain ⟨s'_evm, ⟨s'_varstore, s'_all⟩⟩ := State_of_isOk s'_ok
   unfold lookup! at call_encode_uint'
   simp [s'_all] at call_encode_uint'
-  apply Spec_ok_unfold (by sorry) (by sorry) at call_encode_uint'
+  clr_spec at call_encode_uint'
 
   unfold reviveJump at code
   have s''_ok : s''.isOk := by aesop
