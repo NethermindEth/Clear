@@ -279,6 +279,28 @@ lemma State_of_isOk (h : isOk s) : ∃ evm store, s = Ok evm store
   unfold isOk at h
   rcases s <;> simp at *
 
+@[simp]
+lemma store_eq_store {evm' : EVMState} {varstore' : VarStore} :
+  (Ok evm' varstore').store = varstore' :=
+  by simp [State.store]
+
+@[aesop norm simp]
+lemma store_eq_store' {s' : State} {evm' : EVMState} {varstore' : VarStore} (h : s' = Ok evm' varstore') :
+  s'.store = varstore' := by
+  rw[h]
+  simp [State.store]
+
+@[simp]
+lemma evm_eq_evm {evm' : EVMState} {varstore' : VarStore} :
+  (Ok evm' varstore').evm = evm' :=
+  by simp [State.evm]
+
+@[aesop norm simp]
+lemma evm_eq_evm' {s' : State} {evm' : EVMState} {varstore' : VarStore} (h : s' = Ok evm' varstore') :
+  s'.evm = evm' := by
+  rw[h]
+  simp [State.evm]
+
 -- | We can unpack an infinite loop state.
 lemma State_of_isOutOfFuel (h : isOutOfFuel s) : s = OutOfFuel
 := by
@@ -587,8 +609,6 @@ lemma setStore_initcall : (initcall vars vals s).setStore (Ok evm store) = s.set
     subst this
     subst h
     simp
-    unfold evm
-    simp only
 
 @[simp]
 lemma setStore_same : s.setStore s = s
