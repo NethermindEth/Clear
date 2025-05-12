@@ -43,8 +43,8 @@ lemma fun_balanceOf_abs_of_concrete {s₀ s₉ : State} {var var_account} :
   clr_spec at mapping
 
   -- Discharge the hash-colliding case immediately using `aesop_spec`.
-  rcases mapping with ⟨
-    ⟨preservesEvm, s_isOk, s_isEVMStatePreserved,
+  rcases mapping with ⟨s_isOk,
+    ⟨preservesEvm, s_isEVMStatePreserved,
     ⟨⟨keccak_value, keccak_using_keccak_value, hStore⟩,hHashCollision⟩⟩ | _, hHashCollision₁
   ⟩ <;> [left; rcases s <;> aesop_spec]
 
