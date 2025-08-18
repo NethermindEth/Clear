@@ -235,6 +235,13 @@ def toBytes! (n : UInt256) : List UInt8 := zeroPadBytes 32 (toBytes' n)
 @[simp]
 lemma length_toBytes! {n : UInt256} : (toBytes! n).length = 32 := zeroPadBytes_len (toBytes'_UInt256_le n.2)
 
+lemma fromBytes!_toBytes! : ∀ {n}, ↑(fromBytes! (toBytes! n)) = n := by
+  intro n
+  unfold fromBytes!
+  rw [ ← length_toBytes! (n := n) ]
+  unfold toBytes!
+  simp
+
 lemma UInt256_pow_def {a b : UInt256} : a ^ b = a ^ b.val := by
   rfl
 

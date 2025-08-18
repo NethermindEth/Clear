@@ -389,6 +389,10 @@ lemma overwrite?_insert : (s.overwrite? (s'.insert var x)) = s.overwrite? s'
   unfold insert overwrite?
   rcases s' <;> simp
 
+lemma insert_of_ok : (Ok evm store)⟦var ↦ val⟧ = Ok evm (store.insert var val)
+:= by
+  rfl
+
 -- | Looking up a variable you've just inserted gives you the value you inserted.
 @[simp]
 lemma lookup_insert : (Ok evm store)⟦var ↦ x⟧[var]!! = x
@@ -401,7 +405,6 @@ lemma lookup_insert' (h : isOk s) : s⟦var ↦ x⟧[var]!! = x
 := by
   unfold insert lookup!
   rcases s <;> simp at *
-  aesop
 
 -- | Inserting with the same key twice overwrites.
 @[simp]
