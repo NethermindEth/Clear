@@ -3,6 +3,7 @@ import Mathlib.Data.Fin.Basic
 import Clear.Ast
 import Clear.Instr
 import Clear.UInt256
+import Clear.Wheels
 
 open Clear Instr UInt256
 
@@ -165,6 +166,51 @@ instance : Inhabited EVMState :=
   ⟨ ∅ , default, default , ∅ , default, ∅ , default , False ⟩
 
 abbrev EVM := EVMState
+
+instance instPreorderFinmap : Preorder (Finmap (λ _ : List UInt256 ↦ UInt256)) where
+  le a b := a.keys ⊆ b.keys ∧ ∀ {key}, key ∈ a → a.lookup key = b.lookup key
+  le_refl := by aesop
+  le_trans := by aesop (add safe forward subset_trans)
+
+structure Preserved (a : EVMState) (b : EVMState) : Prop where
+  account_map : (Eq on EVMState.account_map) a b
+  hash_collision : (Eq on EVMState.hash_collision) a b
+  execution_env : (Eq on EVMState.execution_env) a b
+  keccak_map : a.keccak_map ≤ b.keccak_map
+
+lemma Preserved_def {σ₀ σ₁ : EVM} : Preserved σ₀ σ₁ =
+  (σ₀.account_map    = σ₁.account_map ∧
+   σ₀.hash_collision = σ₁.hash_collision ∧
+   σ₀.execution_env  = σ₁.execution_env ∧
+   σ₀.keccak_map     ≤ σ₁.keccak_map) := by
+  ext
+  apply Iff.intro
+  intro h
+  obtain ⟨_,_,_,_⟩ := h
+  all_goals tauto
+
+namespace Preserved
+
+@[simp]
+lemma refl {e : EVM} : Preserved e e := by
+  constructor
+  all_goals simp
+
+lemma trans {e₀ e₁ e₂ : EVM} :
+  Preserved e₀ e₁ → Preserved e₁ e₂ → Preserved e₀ e₂ := by
+  intro h₀ h₁
+  have acc := Eq.trans h₀.account_map h₁.account_map
+  have col := Eq.trans h₀.hash_collision h₁.hash_collision
+  have env := Eq.trans h₀.execution_env h₁.execution_env
+  have kec := le_trans h₀.keccak_map h₁.keccak_map
+  constructor <;> assumption
+
+end Preserved
+
+instance instPreorderEVMState : Preorder EVMState where
+  le := Preserved
+  le_refl := @Preserved.refl
+  le_trans := @Preserved.trans
 
 -- functions for querying balance
 
@@ -341,6 +387,18 @@ def evm_return (σ : EVMState) (mstart s : UInt256) : EVMState :=
 
 def evm_revert (σ : EVMState) (mstart s : UInt256) : EVMState :=
   σ.evm_return mstart s
+
+lemma mstore_preserved {σ} {pos val} : Preserved σ (σ.mstore pos val) := by
+  unfold mstore updateMemory
+  rw [Preserved_def]
+  simp
+
+lemma sload_eq_of_preserved {σ₀ σ₁} {pos} (h : Preserved σ₀ σ₁) :
+  sload σ₀ pos = sload σ₁ pos := by
+  unfold sload lookupAccount
+  rw [ h.account_map
+     , h.execution_env
+     ]
 
 end
 

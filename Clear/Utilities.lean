@@ -82,4 +82,62 @@ lemma evm_eq_symm_of_isPure_ok_ok {evm evm'} {vs vs'} (h : isPure (Ok evm vs) (O
   symm
   aesop_spec
 
+def preservesEvm (s₀ : State) (s₁ : State) : Prop :=
+  match s₀, s₁ with
+  | .Ok e₀ _, .Ok e₁ _ => Preserved e₀ e₁
+  | _, _ => True
+
+lemma preservesEvm_of_isOk {s₀ s₁ : State} (s₀_ok : s₀.isOk) (s₁_ok : s₁.isOk) :
+  preservesEvm s₀ s₁ →
+  (s₀.evm.account_map = s₁.evm.account_map ∧
+  s₀.evm.hash_collision = s₁.evm.hash_collision ∧
+  s₀.evm.execution_env = s₁.evm.execution_env ∧
+  s₀.evm.keccak_map ≤ s₁.evm.keccak_map) := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp at *
+  rw [Preserved_def]
+  intro _; assumption
+
+@[simp]
+lemma preservesEvm_rfl {s : State} : preservesEvm s s := by
+  unfold preservesEvm
+  cases s <;> simp
+
+lemma preservesEvm_trans {s₀ s₁ s₂} (h : s₁.isOk) :
+  preservesEvm s₀ s₁ → preservesEvm s₁ s₂ → preservesEvm s₀ s₂ := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> cases s₂ <;> simp_all
+  exact Preserved.trans
+
+lemma preservesEvm_of_preserved (s₀ : State) (s₁ : State) :
+  Preserved s₀.evm s₁.evm → preservesEvm s₀ s₁ := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp
+  simp [evm]
+
+lemma sload_eq_of_preservesEvm
+  {s s' : State} {a : UInt256} (h : s.isOk) (h' : s'.isOk) (hss : preservesEvm s s') :
+  s.evm.sload a = s'.evm.sload a := by
+  unfold preservesEvm at hss
+  unfold isOk at h h'
+  cases s <;> cases s' <;> simp [evm] at *
+  exact EVMState.sload_eq_of_preserved hss
+
+@[aesop safe norm (rule_sets := [Clear.aesop_spec])]
+lemma preservesEvm_of_insert {s₀ s₁} {var val} :
+  preservesEvm (s₀⟦var ↦ val⟧) s₁ ↔ preservesEvm s₀ s₁ := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp
+  unfold State.insert; simp
+  unfold State.insert; simp
+
+@[aesop safe norm (rule_sets := [Clear.aesop_spec])]
+lemma preservesEvm_of_insert' {s₀ s₁} {var val} :
+  preservesEvm s₀ (s₁⟦var ↦ val⟧) ↔ preservesEvm s₀ s₁ := by
+  unfold preservesEvm
+  cases s₀ <;> cases s₁ <;> simp
+  swap
+  unfold State.insert; simp
+  unfold State.insert; simp
+
 end Clear.Utilities
