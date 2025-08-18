@@ -162,7 +162,7 @@ structure EVMState : Type where
 deriving DecidableEq
 
 instance : Inhabited EVMState :=
-  ⟨ ∅ , default, default , ∅ , default, ∅ , default , False ⟩
+  ⟨ ∅ , default, default , ∅ , default, ∅ , default , false ⟩
 
 abbrev EVM := EVMState
 
