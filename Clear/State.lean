@@ -633,6 +633,27 @@ lemma lookup_initcall_5 (ha : ve ≠ va) (hb : ve ≠ vb) (hc : ve ≠ vc) (hd :
   rw [lookup_insert']
   aesop
 
+-- TODO: Option.get!_some in newer mathlib
+theorem come_get!_some {α} [Inhabited α] {a : α} : (some a).get! = a := rfl
+
+open Lean Meta Elab Tactic in
+elab "clr_match" : tactic => do
+  evalTactic <| ← `(tactic| (
+    simp only [lookup!, setEvm, Fin.isValue, insert_of_ok,
+      multifill_cons, multifill_nil', Finmap.lookup_insert,
+      come_get!_some, isOk_Ok]
+    rw [← State.insert_of_ok]
+  ))
+
+open Lean Meta Elab Tactic in
+elab "clr_match" "at" h:ident : tactic => do
+  evalTactic <| ← `(tactic| (
+    simp only [lookup!, setEvm, Fin.isValue, insert_of_ok,
+      multifill_cons, multifill_nil', Finmap.lookup_insert,
+      come_get!_some, isOk_Ok] at $h:ident
+    repeat rw [← State.insert_of_ok] at $h:ident
+  ))
+
 end
 
 end State
