@@ -14,10 +14,10 @@ section
 
 open Clear EVMState Ast Expr Stmt FunctionDefinition State Interpreter ExecLemmas OutOfFuelLemmas Abstraction YulNotation PrimOps ReasoningPrinciple Utilities Peano.Common Generated.peano Peano
 
-def ACond_for_4806375509446804985 (s₀ : State) : Literal := 1 
-def APost_for_4806375509446804985 (s₀ s₉ : State) : Prop := s₉ = s₀⟦"k"↦(s₀["k"]!!) - 1⟧
-def ABody_for_4806375509446804985 (s₀ s₉ : State) : Prop := s₉ = if s₀["k"]!! = 0 then 💔 s₀ else s₀⟦"y"↦(s₀["y"]!!) + (s₀["x"]!!)⟧
-def AFor_for_4806375509446804985 (s₀ s₉ : State) : Prop := (s₉["y"]!!) = (s₀["y"]!!) + (s₀["x"]!!) * (s₀["k"]!!) ∧ isPure s₀ s₉ ∧ s₉.isOk
+def ACond_for_4806375509446804985 (s₀ : State) : Literal := 1
+def APost_for_4806375509446804985 (s₀ s₉ : State) : Prop := s₉ = s₀⟦"k"↦(s₀["k"]!) - 1⟧
+def ABody_for_4806375509446804985 (s₀ s₉ : State) : Prop := s₉ = if s₀["k"]! = 0 then 💔 s₀ else s₀⟦"y"↦(s₀["y"]!) + (s₀["x"]!)⟧
+def AFor_for_4806375509446804985 (s₀ s₉ : State) : Prop := (s₉["y"]!) = (s₀["y"]!) + (s₀["x"]!) * (s₀["k"]!) ∧ isPure s₀ s₉ ∧ s₉.isOk
 
 lemma for_4806375509446804985_cond_abs_of_code {s₀ fuel} : eval fuel for_4806375509446804985_cond (s₀) = (s₀, ACond_for_4806375509446804985 (s₀)) := by
   unfold eval ACond_for_4806375509446804985
@@ -36,7 +36,7 @@ lemma for_4806375509446804985_concrete_of_body_abs {s₀ s₉ : State} :
   aesop_spec
 
 lemma AZero_for_4806375509446804985 : ∀ s₀, isOk s₀ → ACond_for_4806375509446804985 (👌 s₀) = 0 → AFor_for_4806375509446804985 s₀ s₀ := by
-  unfold ACond_for_4806375509446804985 
+  unfold ACond_for_4806375509446804985
   aesop_spec
 
 lemma AOk_for_4806375509446804985 : ∀ s₀ s₂ s₄ s₅, isOk s₀ → isOk s₂ → ¬ ❓ s₅ → ¬ ACond_for_4806375509446804985 s₀ = 0 → ABody_for_4806375509446804985 s₀ s₂ → APost_for_4806375509446804985 s₂ s₄ → Spec AFor_for_4806375509446804985 s₄ s₅ → AFor_for_4806375509446804985 s₀ s₅
@@ -51,7 +51,7 @@ lemma AOk_for_4806375509446804985 : ∀ s₀ s₂ s₄ s₅, isOk s₀ → isOk 
       · simp only [h₇, h₅] at *
         clr_varstore
         ring
-  · have : isOk (s₂⟦"k"↦s₂["k"]!! - 1⟧) := by aesop
+  · have : isOk (s₂⟦"k"↦s₂["k"]! - 1⟧) := by aesop
     simp [h₆.symm] at this
 
 lemma AContinue_for_4806375509446804985 : ∀ s₀ s₂ s₄ s₅, isOk s₀ → isContinue s₂ → ¬ ACond_for_4806375509446804985 s₀ = 0 → ABody_for_4806375509446804985 s₀ s₂ → Spec APost_for_4806375509446804985 (🧟s₂) s₄ → Spec AFor_for_4806375509446804985 s₄ s₅ → AFor_for_4806375509446804985 s₀ s₅ := by
