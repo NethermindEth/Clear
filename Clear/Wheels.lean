@@ -45,7 +45,10 @@ elab "clr_varstore" : tactic => do
     repeat (
       first | rw [State.lookup_insert (by assumption)] at * |
               rw [State.lookup_insert' (by aesop_spec)] at * |
-              rw [State.lookup_insert_of_ne (by decide)] at *
+              rw [State.lookup_insert_of_ne (by decide)] at * |
+              rw [State.lookup_insert_string (by assumption)] at * |
+              rw [State.lookup_insert_string' (by aesop_spec)] at * |
+              rw [State.lookup_insert_string_of_ne (by decide)] at *
     )
   )
   )

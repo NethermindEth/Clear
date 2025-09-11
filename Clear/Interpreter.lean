@@ -103,7 +103,7 @@ mutual
 
       | .PrimCall prim args => evalPrimCall prim (reverse' (evalArgs fuel args.reverse s))
       | .Call f args        => evalCall fuel f (reverse' (evalArgs fuel args.reverse s))
-      | .Var id             => (s, s[id]!!)
+      | .Var id             => (s, s[id]!)
       | .Lit val            => (s, val)
   termination_by fuel + sizeOf expr
   decreasing_by
@@ -194,7 +194,7 @@ mutual
               | .OutOfFuel                      => s₂✏️⟦s⟧?
               | .Checkpoint (.Break _ _)      => 🧟s₂✏️⟦s⟧?
               | .Checkpoint (.Leave _ _)      => s₂✏️⟦s⟧?
-              | .Checkpoint (.Continue _ _) 
+              | .Checkpoint (.Continue _ _)
               | _ =>
                 let s₃ := exec fuel (.Block post) (🧟 s₂)
                 let s₄ := s₃✏️⟦s⟧?
@@ -258,7 +258,7 @@ lemma Lit' : eval fuel (.Lit x) s = (s, x) := by unfold eval; rfl
 /--
   Evaluating a variable does a varstore lookup.
 -/
-lemma Var' : eval fuel (.Var var) s = (s, s[var]!!) := by unfold eval; rfl
+lemma Var' : eval fuel (.Var var) s = (s, s[var]!) := by unfold eval; rfl
 
 /--
   A call in an expression.
