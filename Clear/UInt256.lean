@@ -1,11 +1,11 @@
 import Init.Data.Nat.Div
-import Mathlib.Data.Nat.Defs
+import Mathlib.Data.Nat.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Vector.Basic
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Algebra.GroupWithZero.Defs
 import Mathlib.Algebra.Ring.Basic
-import Mathlib.Algebra.Order.Floor
+import Mathlib.Algebra.Order.Floor.Defs
 import Mathlib.Data.ZMod.Defs
 import Mathlib.Tactic
 
@@ -20,11 +20,11 @@ abbrev UInt256 := Fin UInt256.size
 instance : SizeOf UInt256 where
   sizeOf := 1
 
-instance (n : ℕ) : OfNat UInt256 n := ⟨Fin.ofNat n⟩
+instance (n : ℕ) : OfNat UInt256 n := ⟨Fin.ofNat UInt256.size n⟩
 instance : Inhabited UInt256 := ⟨0⟩
-instance : NatCast UInt256 := ⟨Fin.ofNat⟩
+instance : NatCast UInt256 := ⟨Fin.ofNat UInt256.size⟩
 
-abbrev Nat.toUInt256 : ℕ → UInt256 := Fin.ofNat
+abbrev Nat.toUInt256 : ℕ → UInt256 := Fin.ofNat UInt256.size
 abbrev UInt8.toUInt256 (a : UInt8) : UInt256 := a.toNat.toUInt256
 
 def Bool.toUInt256 (b : Bool) : UInt256 := if b then 1 else 0
@@ -120,7 +120,7 @@ def signextend (a b : UInt256) : UInt256 :=
 -- | Convert from a list of little-endian bytes to a natural number.
 def fromBytes' : List UInt8 → ℕ
 | [] => 0
-| b :: bs => b.val.val + 2^8 * fromBytes' bs
+| b :: bs => b.toNat + 2^8 * fromBytes' bs
 
 variable {bs : List UInt8}
          {n : ℕ}
@@ -131,7 +131,7 @@ private lemma fromBytes'_le : fromBytes' bs < 2^(8 * bs.length) := by
   | nil => unfold fromBytes'; simp
   | cons b bs ih =>
     unfold fromBytes'
-    have h := b.val.isLt
+    have h := b.toNat_lt
     simp only [List.length_cons, Nat.mul_succ, Nat.add_comm, Nat.pow_add]
     have :=
       Nat.add_le_of_le_sub
@@ -148,13 +148,12 @@ private lemma fromBytes'_UInt256_le (h : bs.length = 32) : fromBytes' bs < 2^256
 -- | Convert a natural number into a list of bytes.
 private def toBytes' : ℕ → List UInt8
   | 0 => []
-  | n@(.succ n') =>
-    let byte : UInt8 := ⟨Nat.mod n UInt8.size, Nat.mod_lt _ (by linarith)⟩
-    have : n / UInt8.size < n' + 1 := by
-      rename_i h
-      rw [h]
-      apply Nat.div_lt_self <;> simp
+  | n@(.succ _) =>
+    let byte : UInt8 := UInt8.ofNat n
     byte :: toBytes' (n / UInt8.size)
+termination_by n => n
+decreasing_by
+  exact Nat.div_lt_self (Nat.succ_pos _) (by decide)
 
 -- | If n < 2⁸ᵏ, then (toBytes' n).length ≤ k.
 private lemma toBytes'_le {k : ℕ} (h : n < 2 ^ (8 * k)) : (toBytes' n).length ≤ k := by
@@ -207,11 +206,14 @@ private lemma fromBytes'_toBytes' {x : ℕ} : fromBytes' (toBytes' x) = x := by
   | .zero => simp [toBytes', fromBytes']
   | .succ n =>
     unfold toBytes' fromBytes'
-    simp only
-    have := Nat.div_lt_self (Nat.zero_lt_succ n) (by decide : 1 < UInt8.size)
     rw [fromBytes'_toBytes']
-    simp [UInt8.size, add_comm]
-    apply Nat.div_add_mod
+    have hbyte : (UInt8.ofNat n.succ).toNat = n.succ % UInt8.size := by
+      simp [UInt8.toNat_ofNat, UInt8.size]
+    rw [hbyte, show UInt8.size = 256 from rfl, show (2:ℕ)^8 = 256 from by decide]
+    omega
+termination_by x
+decreasing_by
+  exact Nat.div_lt_self (Nat.succ_pos _) (by decide)
 
 def fromBytes! (bs : List UInt8) : ℕ := fromBytes' (bs.take 32)
 
@@ -220,7 +222,7 @@ private lemma fromBytes_was_good_all_year_long
   have h' := @fromBytes'_le bs
   rw [pow_mul] at h'
   refine lt_of_lt_of_le (b := (2 ^ 8) ^ List.length bs) h' ?lenBs
-  case lenBs => rw [←pow_mul]; exact pow_le_pow_right (by decide) (by linarith)
+  case lenBs => rw [←pow_mul]; exact Nat.pow_le_pow_right (by decide) (by linarith)
 
 @[simp]
 lemma fromBytes_wasnt_naughty : fromBytes! bs < 2^256 := fromBytes_was_good_all_year_long (by simp)
@@ -239,15 +241,19 @@ lemma UInt256_pow_def {a b : UInt256} : a ^ b = a ^ b.val := by
   rfl
 
 lemma UInt256_pow_succ {a b : UInt256} (h : b.val + 1 < UInt256.size) : a * a ^ b = a ^ (b + 1) := by
-  rw [UInt256_pow_def, UInt256_pow_def]
-  have : (↑(b + 1) : ℕ) = (b + 1 : ℕ) := by rw [Fin.val_add, Nat.mod_eq_of_lt (by norm_cast)]; rfl
-  rw [this]
-  ring
+  simp only [UInt256_pow_def]
+  have hval : (b + 1 : UInt256).val = b.val + 1 := by
+    simp only [Fin.val_add, Fin.val_one]
+    exact Nat.mod_eq_of_lt h
+  rw [hval, pow_succ]
+  exact mul_comm _ _
 
-lemma UInt256_zero_pow {a : UInt256} (h : a.val ≠ 0) : (0 : UInt256) ^ a = 0 := zero_pow h
+lemma UInt256_zero_pow {a : UInt256} (h : a.val ≠ 0) : (0 : UInt256) ^ a = 0 := by
+  simp only [UInt256_pow_def]
+  rcases Nat.exists_eq_succ_of_ne_zero h with ⟨n, hn⟩
+  rw [hn, pow_succ, mul_zero]
 
 lemma UInt256_pow_zero {a : UInt256} : a ^ (0 : UInt256) = 1 := by
-  unfold HPow.hPow instHPowUInt256
-  simp
+  simp [UInt256_pow_def]
 
 end Clear.UInt256

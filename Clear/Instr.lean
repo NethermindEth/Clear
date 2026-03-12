@@ -1,4 +1,4 @@
-import Mathlib.Data.Nat.Defs
+import Mathlib.Data.Nat.Basic
 import Clear.UInt256
 
 inductive AInstr : Type where

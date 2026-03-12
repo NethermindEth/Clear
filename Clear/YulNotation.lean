@@ -24,20 +24,19 @@ def idSubsequentChar : Array Char := Id.run <| do
   return arr.push '.'
 
 def idFn : ParserFn := fun c s => Id.run do
-  let input := c.input
   let start := s.pos
-  if h : input.atEnd start then
+  if h : c.atEnd start then
     s.mkEOIError
   else
-    let fst := input.get' start h
+    let fst := c.get' start h
     if not (idFirstChar.contains fst) then
       return s.mkError "yul identifier"
-    let s := takeWhileFn idSubsequentChar.contains c (s.next input start)
+    let s := takeWhileFn idSubsequentChar.contains c (s.next c start)
     let stop := s.pos
-    let name := .str .anonymous (input.extract start stop)
+    let name := .str .anonymous ((Substring.Raw.mk c.inputString start stop).toString)
     if yulKeywords.contains name.lastComponentAsString then
       return s.mkError "yul identifier"
-    mkIdResult start none name c s
+    mkIdResult start none name true c s
 
 def idNoAntiquot : Parser := { fn := idFn }
 
@@ -49,7 +48,7 @@ def idNoAntiquot.formatter : Formatter := do
   Formatter.checkKind identKind
   let Syntax.ident info _ idn _ ← getCur
     | throwError m!"not an ident: {← getCur}"
-  Formatter.pushToken info idn.toString
+  Formatter.pushToken info idn.toString true
   goLeft
 
 @[combinator_parenthesizer idNoAntiquot]
@@ -62,25 +61,36 @@ def ident : Parser := withAntiquot (mkAntiquot "ident" identKind) idNoAntiquot
 declare_syntax_cat expr
 declare_syntax_cat stmt
 
-syntax identifier_list := ident,*
-syntax typed_identifier_list := ident,*
-syntax function_call := ident "(" expr,* ")"
-syntax block := "{" stmt* "}"
-syntax if' := "if" expr block
-syntax function_definition :=
-  "function" ident "(" typed_identifier_list ")"
+declare_syntax_cat identifier_list
+syntax ident,* : identifier_list
+declare_syntax_cat typed_identifier_list
+syntax ident,* : typed_identifier_list
+declare_syntax_cat function_call
+syntax ident "(" expr,* ")" : function_call
+declare_syntax_cat yulBlock
+syntax "{" stmt* "}" : yulBlock
+declare_syntax_cat if'
+syntax "if" expr yulBlock : if'
+declare_syntax_cat function_definition
+syntax "function" ident "(" typed_identifier_list ")"
     ("->" typed_identifier_list)?
-    block
-syntax params_list := "[" typed_identifier_list "]"
-syntax variable_declaration := "let" ident (":=" expr)?
+    yulBlock : function_definition
+declare_syntax_cat params_list
+syntax "[" typed_identifier_list "]" : params_list
+declare_syntax_cat variable_declaration
+syntax "let" ident (":=" expr)? : variable_declaration
 -- syntax let_str_literal := "let" ident ":=" str -- TODO(fix)
-syntax variable_declarations := "let" typed_identifier_list (":=" expr)?
-syntax for_loop := "for" block expr block block
-syntax assignment := identifier_list ":=" expr
+declare_syntax_cat variable_declarations
+syntax "let" typed_identifier_list (":=" expr)? : variable_declarations
+declare_syntax_cat for_loop
+syntax "for" yulBlock expr yulBlock yulBlock : for_loop
+declare_syntax_cat assignment
+syntax identifier_list ":=" expr : assignment
 
-syntax stmtlist := stmt*
+declare_syntax_cat stmtlist
+syntax stmt* : stmtlist
 
-syntax block : stmt
+syntax yulBlock : stmt
 syntax if' : stmt
 syntax function_definition : stmt
 syntax variable_declarations : stmt
@@ -96,13 +106,17 @@ syntax ident : expr
 syntax numLit : expr
 syntax function_call: expr
 
-syntax default := "default" "{" stmt* "}"
-syntax case := "case" expr "{" stmt* "}"
-syntax switch := "switch" expr case+ (default)?
-syntax switch_default := "switch" expr default
+declare_syntax_cat yulDefault
+syntax "default" "{" stmt* "}" : yulDefault
+declare_syntax_cat yulCase
+syntax "case" expr "{" stmt* "}" : yulCase
+declare_syntax_cat yulSwitch
+syntax "switch" expr yulCase+ (yulDefault)? : yulSwitch
+declare_syntax_cat yulSwitchDefault
+syntax "switch" expr yulDefault : yulSwitchDefault
 
-syntax switch : stmt
-syntax switch_default : stmt
+syntax yulSwitch : stmt
+syntax yulSwitchDefault : stmt
 
 scoped syntax:max "<<" expr ">>" : term
 scoped syntax:max "<f" function_definition ">" : term
@@ -111,7 +125,7 @@ scoped syntax:max "<ss" stmt ">" : term
 scoped syntax:max "<params" params_list ">" : term
 
 partial def translatePrimOp' (primOp : P) : TSyntax `term :=
-  Syntax.mkStrLit primOp.toString 
+  Syntax.mkStrLit primOp.toString
 
 partial def translateIdent (idn : TSyntax `ident) : TSyntax `term :=
   Syntax.mkStrLit idn.getId.lastComponentAsString
@@ -184,7 +198,7 @@ def parseFunction : String → PrimOp ⊕ Identifier
   | "log3" => .inl Log3
   | "log4" => .inl Log4
   | "number" => .inl Number
-  | userF => .inr userF 
+  | userF => .inr userF
 
 partial def translateExpr (expr : TSyntax `expr) : MacroM (TSyntax `term) :=
   match expr with
@@ -215,19 +229,22 @@ partial def translateParamsList
     `([$args',*])
   | _ => Macro.throwError (toString params.raw)
 
+private def getBlockBody (blk : TSyntax `yulBlock) : Array (TSyntax `stmt) :=
+  blk.raw[1].getArgs.map (⟨·⟩)
+
 mutual
 partial def translateFdef
   (fdef : TSyntax `Clear.YulNotation.function_definition)
 : MacroM (TSyntax `term) :=
   match fdef with
-  | `(function_definition| function $_:ident($args:ident,*) {$body:stmt*}) => do
+  | `(function_definition| function $_:ident($args:ident,*) $blk:yulBlock) => do
     let args' := (args : TSyntaxArray _).map translateIdent
-    let body' ← body.mapM translateStmt
+    let body' ← (getBlockBody blk).mapM translateStmt
     `(Clear.Ast.FunctionDefinition.Def [$args',*] [] [$body',*])
-  | `(function_definition| function $_:ident($args:ident,*) -> $rets,* {$body:stmt*}) => do
+  | `(function_definition| function $_:ident($args:ident,*) -> $rets,* $blk:yulBlock) => do
     let args' := (args : TSyntaxArray _).map translateIdent
     let rets' := (rets : TSyntaxArray _).map translateIdent
-    let body' ← body.mapM translateStmt
+    let body' ← (getBlockBody blk).mapM translateStmt
     `(Clear.Ast.FunctionDefinition.Def [$args',*] [$rets',*] [$body',*])
   | _ => Macro.throwError (toString fdef.raw)
 
@@ -235,14 +252,14 @@ partial def translateStmt (stmt : TSyntax `stmt) : MacroM (TSyntax `term) :=
   match stmt with
 
   -- Block
-  | `(stmt| {$stmts:stmt*}) => do
-    let stmts' ← stmts.mapM translateStmt
+  | `(stmt| $blk:yulBlock) => do
+    let stmts' ← (getBlockBody blk).mapM translateStmt
     `(Stmt.Block ([$stmts',*]))
 
   -- If
-  | `(stmt| if $cond:expr {$body:stmt*}) => do
+  | `(stmt| if $cond:expr $blk:yulBlock) => do
     let cond' ← translateExpr cond
-    let body' ← body.mapM translateStmt
+    let body' ← (getBlockBody blk).mapM translateStmt
     `(Stmt.If $cond' [$body',*])
 
   -- Function Definition
@@ -263,12 +280,12 @@ partial def translateStmt (stmt : TSyntax `stmt) : MacroM (TSyntax `term) :=
                  | .some dflts => `([$(←dflts.mapM translateStmt),*])
     `(Stmt.Switch $expr [$switchCases,*] $dflt)
 
-  -- Switch
+  -- Switch (default only)
   | `(stmt| switch $expr:expr default {$dflts:stmt*}) => do
     let expr ← translateExpr expr
     let dflt ← dflts.mapM translateStmt
     `(Stmt.Switch $expr [] ([$dflt,*]))
-  
+
   -- LetCall
   | `(stmt| let $ids:ident,* := $f:ident ( $es:expr,* )) => do
     let ids' := (ids : TSyntaxArray _).map translateIdent
@@ -327,10 +344,10 @@ partial def translateStmt (stmt : TSyntax `stmt) : MacroM (TSyntax `term) :=
         `(Stmt.ExprStmtCall $f [$es',*])
 
   -- For
-  | `(stmt| for {} $cond:expr {$post:stmt*} {$body:stmt*}) => do
+  | `(stmt| for $pre:yulBlock $cond:expr $post:yulBlock $body:yulBlock) => do
     let cond' ← translateExpr cond
-    let post' ← post.mapM translateStmt
-    let body' ← body.mapM translateStmt
+    let post' ← (getBlockBody post).mapM translateStmt
+    let body' ← (getBlockBody body).mapM translateStmt
     `(Stmt.For $cond' [$post',*] [$body',*])
 
   -- Break
@@ -348,8 +365,8 @@ end
 
 partial def translateStmtList (stmt : TSyntax `stmt) : MacroM (TSyntax `term) :=
   match stmt with
-  | `(stmt| {$stmts:stmt*}) => do
-    let stmts' ← stmts.mapM translateStmt
+  | `(stmt| $blk:yulBlock) => do
+    let stmts' ← (getBlockBody blk).mapM translateStmt
     `([$stmts',*])
   | _ => Macro.throwError (toString stmt.raw)
 

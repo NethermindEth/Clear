@@ -1,5 +1,4 @@
 import Mathlib.Data.Finmap
-import Mathlib.Init.Data.List.Lemmas
 
 import Clear.Ast
 import Clear.State

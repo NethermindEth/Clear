@@ -22,9 +22,9 @@ def ByteArray.byteArrayToUInt256 (μ₀ : UInt256) (size : ℕ) (Id : ByteArray)
   open Array in
   let v₀ := μ₀.val
   let arr : ByteArray := extractBytes v₀ size Id
-  let arr1 : Array UInt8 := arr.data
+  let arr1 : Array UInt8 := arr.toArray
   -- converting to big endian
-  let step p v := (p.1 - 8, Fin.lor p.2 (Nat.shiftLeft v.val p.1))
+  let step p v := (p.1 - 8, Fin.lor p.2 (Nat.shiftLeft v.toNat p.1))
   let r : (ℕ × UInt256) := Array.foldl step ((size - 1) * 8, 0) arr1
   r.2
 
@@ -34,13 +34,15 @@ namespace Clear
 -- 2^160 https://www.wolframalpha.com/input?i=2%5E160
 def Address.size : Nat := 1461501637330902918203684832716283019655932542976
 
+instance : NeZero Address.size := ⟨by norm_num [Address.size]⟩
+
 abbrev Address : Type := Fin Address.size
 
-instance : Inhabited Address := ⟨Fin.ofNat 0⟩
+instance : Inhabited Address := ⟨Fin.ofNat Address.size 0⟩
 
-def Address.ofNat {n : ℕ} : Address := Fin.ofNat n
-def Address.ofUInt256 (v : UInt256) : Address := Fin.ofNat (v.val  % Address.size)
-instance {n : Nat} : OfNat Address n := ⟨Fin.ofNat n⟩
+def Address.ofNat {n : ℕ} : Address := Fin.ofNat Address.size n
+def Address.ofUInt256 (v : UInt256) : Address := Fin.ofNat Address.size (v.val  % Address.size)
+instance {n : Nat} : OfNat Address n := ⟨Fin.ofNat Address.size n⟩
 
 instance byteArrayDecEq : DecidableEq ByteArray := λ xs ys => by {
   rcases xs with ⟨ xs1 ⟩ ; rcases ys with ⟨ ys1 ⟩
@@ -187,7 +189,7 @@ def balanceOf (σ : EVMState) (k : UInt256) : UInt256 :=
   let addr : Address := Address.ofUInt256 k
   match Finmap.lookup addr σ.account_map with
   | .some act => act.balance
-  | .none => Fin.ofNat 0
+  | .none => 0
 
 -- functions for accessing memory
 
@@ -202,13 +204,13 @@ def calldataload (σ : EVMState) (v : UInt256) : UInt256 :=
 def calldatacopy (σ : EVMState) (mstart datastart s : UInt256) : EVMState :=
   let size := s.val
   let arr := extractBytes datastart.val size σ.execution_env.input_data
-  let r := arr.foldl (λ (sa , j) i => (EVMState.updateMemory sa j i.val, j + 1)) (σ , mstart)
+  let r := arr.foldl (λ (sa , j) i => (EVMState.updateMemory sa j i.toNat, j + 1)) (σ , mstart)
   r.1
 
 def mkInterval (ms : MachineState) (p n : UInt256) : List UInt256 :=
   let i : ℕ := p.val
   let f : ℕ := n.val
-  let m     := (List.range' i f).map Fin.ofNat
+  let m     := (List.range' i f).map (Fin.ofNat UInt256.size)
   m.map ms.lookupMemory
 
 def keccak256 (σ : EVMState) (p n : UInt256) : Option (UInt256 × EVMState) :=
@@ -247,7 +249,7 @@ def extCodeCopy (σ : EVMState) (act mstart cstart s : UInt256) : EVMState :=
     r.1
   | _ =>
     let size := s.val
-    let r := size.fold (λ _ (sa , j) => (EVMState.updateMemory sa j 0, j + 1)) (σ, mstart)
+    let r := (List.range size).foldl (λ (sa , j) _ => (EVMState.updateMemory sa j 0, j + 1)) (σ, mstart)
     r.1
 
 def extCodeHash (σ : EVMState) (v : UInt256) : UInt256 :=
@@ -288,7 +290,7 @@ def selfbalance (σ : EVMState) : UInt256 :=
   let addr := σ.execution_env.code_owner
   match Finmap.lookup addr σ.account_map with
   | .some act => act.balance
-  | .none => Fin.ofNat 0
+  | .none => 0
 
 -- memory and storage operations
 
@@ -299,7 +301,7 @@ def mstore (σ : EVMState) (spos sval : UInt256) : EVMState :=
   σ.updateMemory spos sval
 
 def mstore8 (σ : EVMState) (spos sval : UInt256) : EVMState :=
-  σ.updateMemory spos (Fin.ofNat (sval.val % 256))
+  σ.updateMemory spos (Fin.ofNat UInt256.size (sval.val % 256))
 
 def sload (σ : EVMState) (spos : UInt256) : UInt256 :=
   match σ.lookupAccount σ.execution_env.code_owner with
@@ -331,13 +333,13 @@ def returndatacopy (σ : EVMState) (mstart rstart s : UInt256) : Option EVMState
   else
     let arr := σ.machine_state.return_data.toArray
     let rdata := arr.extract rstart.val (rstart.val + s.val - 1)
-    let s := rdata.data.foldr (λ v (ac,p) => (ac.updateMemory p v, p +1)) (σ , mstart)
+    let s := rdata.toList.foldr (λ v (ac,p) => (ac.updateMemory p v, p +1)) (σ , mstart)
     .some s.1
 
 def evm_return (σ : EVMState) (mstart s : UInt256) : EVMState :=
   let arr := σ.machine_state.return_data.toArray
   let vals := extractFill mstart.val s.val arr
-  {σ with machine_state := σ.machine_state.setReturnData vals.data}
+  {σ with machine_state := σ.machine_state.setReturnData vals.toList}
 
 def evm_revert (σ : EVMState) (mstart s : UInt256) : EVMState :=
   σ.evm_return mstart s

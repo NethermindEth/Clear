@@ -25,12 +25,12 @@ lemma Zero.zero_le {n : ℕ} : Zero.zero ≤ n := by ring_nf; exact Nat.zero_le 
 @[simp]
 lemma List.zero_lt_sizeOf : 0 < sizeOf xs
 := by
-  rcases xs <;> simp_arith
+  rcases xs <;> simp +arith
 
 @[simp]
 lemma List.reverseAux_size : sizeOf (List.reverseAux args args') = sizeOf args + sizeOf args' - 1 := by
   induction args generalizing args' with
-    | nil => simp_arith
+    | nil => simp +arith
     | cons z zs ih =>
       aesop (config := {warnOnNonterminal := false}); omega
 
@@ -38,14 +38,14 @@ lemma List.reverseAux_size : sizeOf (List.reverseAux args args') = sizeOf args +
 lemma List.reverse_size : sizeOf (args.reverse) = sizeOf args := by
   unfold List.reverse
   rw [List.reverseAux_size]
-  simp_arith
+  simp +arith
 
 /--
   Expressions have positive size.
 -/ 
 @[simp]
 lemma Expr.zero_lt_sizeOf : 0 < sizeOf expr := by
-  rcases expr <;> simp_arith
+  rcases expr <;> simp +arith
 
 @[simp]
 lemma Stmt.sizeOf_stmt_ne_0 : sizeOf stmt ≠ 0 := by cases stmt <;> aesop
@@ -68,11 +68,11 @@ lemma Expr.zero_lt_sizeOf_List : 0 < sizeOf exprs := by
 
 @[simp]
 lemma Expr.sizeOf_head_lt_sizeOf_List : sizeOf expr < sizeOf (expr :: exprs) := by
-  simp_arith
+  simp +arith
 
 @[simp]
 lemma Expr.sizeOf_tail_lt_sizeOf_List : sizeOf exprs < sizeOf (expr :: exprs) := by
-  simp_arith
+  simp +arith
 
 /--
   Lists of statements have positive size.
@@ -88,11 +88,11 @@ lemma FunctionDefinition.zero_lt_sizeOf : 0 < sizeOf f := by cases f; aesop
 
 @[simp]
 lemma Expr.sizeOf_args_lt_sizeOf_Call : sizeOf args < sizeOf (Call f args) := by
-  simp_arith
+  simp +arith
 
 @[simp]
 lemma Expr.sizeOf_args_lt_sizeOf_PrimCall : sizeOf args < sizeOf (PrimCall prim args) := by
-  simp_arith
+  simp +arith
 
 /--
   The size of the body of a function is less than the size of the function itself.
@@ -103,7 +103,7 @@ lemma FunctionDefinition.sizeOf_body_lt_sizeOf : sizeOf (body f) < sizeOf f := b
 lemma FunctionDefinition.sizeOf_body_succ_lt_sizeOf : sizeOf (FunctionDefinition.body f) + 1 < sizeOf f := by
   cases f
   unfold body
-  simp_arith
+  simp +arith
   exact le_add_right List.zero_lt_sizeOf
 
 /--
